@@ -21,6 +21,7 @@ fi
 if [ "$MODE" = "static" ] || [ "$MODE" = "all" ]; then
   node "$QA_DIR/lint_gate.cjs"
   node "$QA_DIR/static_route_check.cjs"
+  npm --prefix "$QA_DIR/../../../03_Веб_прототип_Диван_Хана" test
 fi
 
 if [ "$MODE" = "runtime" ] || [ "$MODE" = "all" ]; then

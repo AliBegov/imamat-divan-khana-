@@ -952,6 +952,8 @@ export function PauseMenu({
   saveSlotsMeta = [],
   onSaveSlot,
   onLoadSlot,
+  onExportSaveFile,
+  onImportSaveFile,
   onTitle,
   onToggleSound,
   onOpenGlossary,
@@ -961,6 +963,7 @@ export function PauseMenu({
   spectatorActive = false,
   soundEnabled
 }) {
+  const importInputRef = useRef(null);
   return (
     <div className="fixed inset-0 z-[90] bg-black/75 backdrop-blur-sm flex items-center justify-center p-3" role="dialog" aria-modal="true" onClick={onResume}>
       <div className="relative hud-panel hud-walnut-bezel w-[490px] max-w-[94vw] max-h-[90vh] overflow-y-auto p-5 hud-fade-up" onClick={(e) => e.stopPropagation()}>
@@ -1030,6 +1033,41 @@ export function PauseMenu({
                   </div>
                 </div>
               ))}
+              {(onExportSaveFile || onImportSaveFile) && (
+                <div className="pt-1.5 mt-1 border-t border-amber-700/30 grid grid-cols-2 gap-1.5 text-[10.5px] font-serif">
+                  {onExportSaveFile && (
+                    <button
+                      onClick={onExportSaveFile}
+                      className="px-2 py-1 rounded-lg bg-amber-950/60 hover:bg-amber-900/70 border border-amber-500/45 text-amber-200 font-bold cursor-pointer transition"
+                      title={t('Скачать текущую кампанию переносимым файлом .imamat-save', 'Download current campaign as a portable .imamat-save file')}
+                    >
+                      ⬇️ {t('Экспорт .imamat-save', 'Export .imamat-save')}
+                    </button>
+                  )}
+                  {onImportSaveFile && (
+                    <>
+                      <input
+                        ref={importInputRef}
+                        type="file"
+                        accept=".imamat-save,.json"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) onImportSaveFile(file);
+                          e.target.value = '';
+                        }}
+                      />
+                      <button
+                        onClick={() => importInputRef.current?.click()}
+                        className="px-2 py-1 rounded-lg bg-sky-950/60 hover:bg-sky-900/70 border border-sky-500/45 text-sky-200 font-bold cursor-pointer transition"
+                        title={t('Загрузить кампанию из файла .imamat-save или JSON', 'Load a campaign from a .imamat-save or JSON file')}
+                      >
+                        ⬆️ {t('Импорт .imamat-save', 'Import .imamat-save')}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <>

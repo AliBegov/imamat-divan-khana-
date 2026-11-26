@@ -19,6 +19,34 @@ import {
 } from 'lucide-react';
 import { playHistoricalSound, syncCaucasianAmbient } from './game/audio.js';
 import { clientToMapPoint } from './game/mapProjection.js';
+import {
+  computeBaseTurnEconomy,
+  computeCampaignAudit,
+  computeLeaderStress,
+  computeNextNaibatesState,
+  computeNizamModifiers,
+  computeOrderExecutionBreakdown,
+  createFreshTurnActionQuota,
+  evaluateCampaignClimax,
+  refreshFieldUnitsForNewTurn,
+  resolveEnvoysForTurn
+} from './game/turnEngine.js';
+import {
+  resolveImperialAiDirective,
+  selectTurnHotspotFocus,
+  stepImperialColumnsForTurn
+} from './game/aiGenerals.js';
+import {
+  buildCampaignSavePayload,
+  buildImamatSaveFilename,
+  getLatestSaveSummary,
+  hasAnySavedCampaign,
+  listSaveSlotsMeta,
+  readSaveSlot,
+  serializeImamatSaveFile,
+  validateAndMigrateSavePayload,
+  writeSaveSlot
+} from './game/saveSystem.js';
 import { HighlandEagleIcon, WaxSealIcon } from './views/hud/PeriodIcons.jsx';
 import {
   CAMPAIGN_SCENARIOS,
@@ -2459,161 +2487,60 @@ export default function App() {
     [naibates, selectedNaibateId]
   );
 
-  // Суммарные модификаторы от принятых Низамов Шамиля
-  const nizamModifiers = useMemo(() => {
-    return nizams
-      .filter((n) => n.enacted)
-      .reduce(
-        (acc, n) => ({
-          stressReduction: acc.stressReduction + n.modifiers.stressReduction,
-          globalImanBonus: acc.globalImanBonus + n.modifiers.globalImanBonus,
-          greedPenaltyReduction: Math.min(70, acc.greedPenaltyReduction + n.modifiers.greedPenaltyReduction),
-          pridePenaltyReduction: Math.min(70, acc.pridePenaltyReduction + n.modifiers.pridePenaltyReduction),
-          powderPerTurnBonus: acc.powderPerTurnBonus + n.modifiers.powderPerTurnBonus,
-          provisionsPerTurnBonus: acc.provisionsPerTurnBonus + n.modifiers.provisionsPerTurnBonus,
-          silverPerTurnBonus: acc.silverPerTurnBonus + n.modifiers.silverPerTurnBonus
-        }),
-        {
-          stressReduction: 0,
-          globalImanBonus: 0,
-          greedPenaltyReduction: 0,
-          pridePenaltyReduction: 0,
-          powderPerTurnBonus: 0,
-          provisionsPerTurnBonus: 0,
-          silverPerTurnBonus: 0
-        }
-      );
-  }, [nizams]);
+  // Суммарные модификаторы от принятых Низамов Шамиля (чистый движок src/game/turnEngine.js)
+  const nizamModifiers = useMemo(() => computeNizamModifiers(nizams), [nizams]);
 
-  // Математическая модель давления и нагрузки на лидера (Шамиля)
-  const leaderStressData = useMemo(() => {
-    const avgPressure =
-      naibates.reduce((sum, n) => sum + n.imperialPressure, 0) / naibates.length;
-    const lowPowderCount = naibates.filter((n) => n.gunpowder < 35).length;
-    const highPrideCount = naibates.filter((n) => n.traits.pride > 80 && n.traits.iman < 75).length;
-    const rawStress =
-      avgPressure * 0.55 +
-      lowPowderCount * 7.5 +
-      highPrideCount * 8 -
-      resources.ottomanSupport * 0.22 -
-      nizamModifiers.stressReduction -
-      zulmatClearedCount * 9;
-    const totalStress = Math.max(12, Math.min(98, Math.round(rawStress)));
-    return {
-      totalStress,
-      avgPressure: Math.round(avgPressure),
-      lowPowderCount,
-      highPrideCount
-    };
-  }, [naibates, resources.ottomanSupport, nizamModifiers.stressReduction, zulmatClearedCount]);
+  // Математическая модель давления и нагрузки на лидера (Шамиля), включая флаг Зульмата (>=80%)
+  const leaderStressData = useMemo(
+    () =>
+      computeLeaderStress({
+        naibates,
+        ottomanSupport: resources.ottomanSupport,
+        stressReduction: nizamModifiers.stressReduction,
+        zulmatClearedCount
+      }),
+    [naibates, resources.ottomanSupport, nizamModifiers.stressReduction, zulmatClearedCount]
+  );
 
   // Интегральный индекс военной устойчивости и прогресса кампании 1845 года
-  const campaignAudit = useMemo(() => {
-    const totalGarrison = naibates.reduce((s, n) => s + n.garrison + n.murtazeks, 0);
-    const besiegedCount = naibates.filter((n) => n.underSiege).length;
-    const enactedNizamsCount = nizams.filter((n) => n.enacted).length;
-    const avgIman = Math.round(
-      naibates.reduce((s, n) => s + Math.min(100, n.traits.iman + nizamModifiers.globalImanBonus), 0) /
-        naibates.length
-    );
-    const victoryScore = Math.min(
-      100,
-      Math.max(
-        10,
-        Math.round(
-          avgIman * 0.35 +
-            (100 - leaderStressData.totalStress) * 0.25 +
-            enactedNizamsCount * 2.5 +
-            (7 - besiegedCount) * 4
-        )
-      )
-    );
-    return {
-      totalGarrison,
-      besiegedCount,
-      enactedNizamsCount,
-      avgIman,
-      victoryScore
-    };
-  }, [naibates, nizams, nizamModifiers.globalImanBonus, leaderStressData.totalStress]);
+  const campaignAudit = useMemo(
+    () =>
+      computeCampaignAudit({
+        naibates,
+        nizams,
+        globalImanBonus: nizamModifiers.globalImanBonus,
+        totalStress: leaderStressData.totalStress
+      }),
+    [naibates, nizams, nizamModifiers.globalImanBonus, leaderStressData.totalStress]
+  );
 
   // Математическая формула вероятности честного исполнения приказа наибом (P_exec) — 1-в-1 с FOrderProbabilityBreakdown
-  const orderExecutionCalc = useMemo(() => {
-    const t = selectedNaibate.traits;
-    const effectiveIman = Math.min(100, t.iman + nizamModifiers.globalImanBonus);
-    const baseImanContribution = +(effectiveIman * 0.52).toFixed(1);
-    const baseCourageContribution = +(t.courage * 0.34).toFixed(1);
-    const basePositive = baseImanContribution + baseCourageContribution;
-    const greedFactor =
-      t.greed * 0.28 * (1 - nizamModifiers.greedPenaltyReduction / 100) * (attachedSilver < 30 ? 1.25 : 0.45);
-    const prideFactor =
-      t.pride * 0.22 * (1 - nizamModifiers.pridePenaltyReduction / 100) * (selectedOrderType === 'zakat' ? 1.2 : 0.75);
-    const supplyBonus = Math.min(22, attachedPowder * 0.42 + attachedSilver * 0.12);
-    const stressPenalty = leaderStressData.totalStress > 75 ? 8 : 0;
-    const naibMemory = getNaibLoyaltyMemory(selectedNaibate);
-    const relicObedienceBonus = activeRelicBonuses.obedienceBonus || 0;
-
-    const chance = Math.round(
-      Math.max(
-        25,
-        Math.min(
-          98,
-          basePositive +
-            supplyBonus +
-            naibMemory.obedienceMod +
-            relicObedienceBonus -
-            greedFactor -
-            prideFactor -
-            stressPenalty
-        )
-      )
-    );
-    const convoyInterceptPenalty = attachedPowder >= 45 ? 16 : attachedPowder >= 30 ? 8 : 0;
-    const activeGenMod = IMPERIAL_GENERALS[imperialAi.generalIdx]?.doctrineModifiers || {
-      interceptRiskBonus: 0
-    };
-    const baseInterceptRisk =
-      routeMode === 'fast_road'
-        ? Math.min(45, Math.round(selectedNaibate.imperialPressure * 0.38))
-        : Math.max(4, Math.round(selectedNaibate.imperialPressure * 0.12));
-    const interceptRisk = Math.max(
-      2,
-      Math.min(
-        routeMode === 'fast_road' ? 68 : 48,
-        baseInterceptRisk + convoyInterceptPenalty + (activeGenMod.interceptRiskBonus || 0)
-      )
-    );
-    const estimatedTravelTurns =
-      routeMode === 'fast_road'
-        ? Math.max(1, selectedNaibate.travelTurns - 1)
-        : Math.max(1, selectedNaibate.travelTurns);
-
-    return {
-      chance,
-      interceptRisk,
-      convoyInterceptPenalty,
-      effectiveIman,
-      baseImanContribution,
-      baseCourageContribution,
-      greedPenalty: +greedFactor.toFixed(1),
-      pridePenalty: +prideFactor.toFixed(1),
-      supplyBonus: +supplyBonus.toFixed(1),
-      stressPenalty,
-      memoryMod: naibMemory.obedienceMod,
-      relicBonus: relicObedienceBonus,
-      estimatedTravelTurns
-    };
-  }, [
-    selectedNaibate,
-    nizamModifiers,
-    attachedSilver,
-    attachedPowder,
-    selectedOrderType,
-    routeMode,
-    leaderStressData.totalStress,
-    imperialAi.generalIdx,
-    activeRelicBonuses.obedienceBonus
-  ]);
+  const orderExecutionCalc = useMemo(
+    () =>
+      computeOrderExecutionBreakdown({
+        naibate: selectedNaibate,
+        nizamModifiers,
+        attachedSilver,
+        attachedPowder,
+        orderType: selectedOrderType,
+        routeMode,
+        totalStress: leaderStressData.totalStress,
+        generalMod: IMPERIAL_GENERALS[imperialAi.generalIdx]?.doctrineModifiers,
+        relicObedienceBonus: activeRelicBonuses.obedienceBonus || 0,
+        naibMemory: getNaibLoyaltyMemory(selectedNaibate)
+      }),
+    [
+      selectedNaibate,
+      nizamModifiers,
+      attachedSilver,
+      attachedPowder,
+      selectedOrderType,
+      routeMode,
+      leaderStressData.totalStress,
+      imperialAi.generalIdx,
+      activeRelicBonuses.obedienceBonus
+    ]
+  );
 
   // ============================================================================
   // ПОШАГОВО-ОПЕРАТИВНАЯ МОДЕЛЬ (ВАРИАНТ Б): ОЧКИ МАРША (MP), ТУМАН ВОЙНЫ И ЛИНИИ СНАБЖЕНИЯ
@@ -7766,50 +7693,15 @@ export default function App() {
   };
 
   // ============================================================================
-  // ГЛОБАЛЬНЫЙ ПЕРЕХОД ХОДА (СИМУЛЯЦИЯ ГОНЦОВ, ТЕРРАС, ПОРОХА И НАТИСКА ИМПЕРИИ)
+  // ГЛОБАЛЬНЫЙ ПЕРЕХОД ХОДА (СИМУЛЯЦИЯ ГОНЦОВ, ТЕРРАС, ПОРОХА И НАТИСКА ИМПЕРИИ — turnEngine.js + aiGenerals.js)
   // ============================================================================
   const handleNextTurn = () => {
     playHistoricalSound('horn', soundEnabled);
     const nextTurnNum = turn + 1;
     setTurn(nextTurnNum);
-    // Определяем главную точку театра нового хода, чтобы 3D-камера мягко показала фронт при смене хода
-    const hotSiege = naibates.find((n) => n.underSiege && n.coords);
-    const hotCol = (liveImperialColumns || []).find(
-      (c) => !c.fogHidden && c.status !== 'routed' && c.status !== 'destroyed' && Number.isFinite(c.x)
-    );
-    if (hotSiege) {
-      setTurnFocusEvent({
-        mx: hotSiege.coords.x,
-        my: hotSiege.coords.y,
-        labelRu: `Осада: ${hotSiege.name}`,
-        labelEn: `Siege: ${hotSiege.nameEn || hotSiege.name}`,
-        seq: nextTurnNum
-      });
-    } else if (hotCol) {
-      setTurnFocusEvent({
-        mx: hotCol.x,
-        my: hotCol.y,
-        labelRu: hotCol.nameRu,
-        labelEn: hotCol.nameEn,
-        seq: nextTurnNum
-      });
-    }
-    setTurnActionQuota({
-      sealsRemaining: 3,
-      maxSeals: 3,
-      envoysSent: 0,
-      maxEnvoysPerTurn: 2,
-      nizamsEnacted: 0,
-      maxNizamsPerTurn: 1,
-      courtCasesResolved: 0,
-      maxCourtCasesPerTurn: 1,
-      stateOrdersUsed: 0,
-      maxStateOrdersPerTurn: 1,
-      tacticalMovesUsed: 0,
-      maxTacticalMovesPerTurn: 4,
-      crisesResolved: 0,
-      maxCrisesPerTurn: 1
-    });
+    const nextFocus = selectTurnHotspotFocus({ naibates, liveImperialColumns, nextTurnNum });
+    if (nextFocus) setTurnFocusEvent(nextFocus);
+    setTurnActionQuota(createFreshTurnActionQuota());
 
     const nextSeasonClimate =
       SEASON_CLIMATE_MODIFIERS[(nextTurnNum - 1) % SEASON_CLIMATE_MODIFIERS.length];
@@ -7822,30 +7714,17 @@ export default function App() {
       interceptRiskBonus: 0,
       provisionsModPerTurn: 0
     };
-    let powderDelta = 8 + nizamModifiers.powderPerTurnBonus + nextSeasonClimate.powderMod;
-    let provisionsDelta =
-      110 +
-      nizamModifiers.provisionsPerTurnBonus +
-      nextSeasonClimate.provisionsMod +
-      (activeDocMod.provisionsModPerTurn || 0);
-    let silverDelta = 52 + nizamModifiers.silverPerTurnBonus;
+    const baseEco = computeBaseTurnEconomy({
+      nextTurnNum,
+      nizamModifiers,
+      seasonClimate: nextSeasonClimate,
+      doctrineModifiers: activeDocMod,
+      naibates
+    });
+    let powderDelta = baseEco.powderDelta;
+    let provisionsDelta = baseEco.provisionsDelta;
+    let silverDelta = baseEco.silverDelta;
     let authorityDelta = 0;
-
-    // Поздний баланс ходов 7–16: содержание конных сотен муртазеков, артиллерийского парка и потери зерна от просек в Большой Чечне
-    const totalMurtazeksUpkeepPool = naibates.reduce((s, n) => s + (n.murtazeks || 0), 0);
-    const lateWarTurnOffset = Math.max(0, nextTurnNum - 6);
-    if (lateWarTurnOffset > 0) {
-      const lateWarSilverUpkeep = Math.min(
-        88,
-        Math.round(totalMurtazeksUpkeepPool * 0.011 + lateWarTurnOffset * 4.5)
-      );
-      const lateWarPowderUpkeep = Math.min(18, 3 + Math.floor(lateWarTurnOffset * 1.4));
-      const clearingGrainPenalty =
-        nextTurnNum >= 8 ? Math.min(95, 28 + (nextTurnNum - 7) * 7) : 0;
-      powderDelta -= lateWarPowderUpkeep;
-      provisionsDelta -= clearingGrainPenalty;
-      silverDelta -= lateWarSilverUpkeep;
-    }
 
     // Автоматическое продвижение сквозной цепочки Эпизодов III → IV → V в большой кампании 1845 года
     if (activeScenarioId === 'camp_1845') {
@@ -7864,476 +7743,100 @@ export default function App() {
       }
     }
 
-    // 0. Пошаговое восстановление очков марша (MP) и пополнение сабель отрядов Имамата у аулов/лазаретов (Вариант Б)
-    setLiveFieldUnits((prevUnits) => {
-      const refreshed = prevUnits.map((u) => {
-        const fullMp = u.maxMp || 150;
-        const maxSab = u.maxSabers ?? 500;
-        const curSab = u.sabers ?? maxSab;
-        const nearFriendlyBase =
-          naibates.some((n) => !n.underSiege && Math.hypot(n.coords.x - u.x, n.coords.y - u.y) <= 55) ||
-          sampleHospitalBonusAtPoint(u.x, u.y, fieldHospitals).inHospitalZone;
-        const nextSabers =
-          u.status === 'idle' && nearFriendlyBase
-            ? Math.min(maxSab, curSab + 38)
-            : Math.min(maxSab, curSab + 12);
-        const hasPendingRoute =
-          u.status === 'camped' &&
-          u.waypoints &&
-          u.waypoints.length > 0 &&
-          Math.hypot((u.targetX ?? u.x) - u.x, (u.targetY ?? u.y) - u.y) > 5;
-        return {
-          ...u,
-          mp: fullMp,
-          sabers: nextSabers,
-          hesitationMult: 1.0,
-          status: hasPendingRoute ? 'moving' : u.status === 'camped' ? 'idle' : u.status
-        };
-      });
-      liveUnitsRef.current = refreshed;
-      return refreshed;
+    // 0. Пошаговое восстановление очков марша (MP) и пополнение сабель отрядов Имамата (src/game/turnEngine.js)
+    const refreshedUnits = refreshFieldUnitsForNewTurn({
+      units: liveUnitsRef.current || liveFieldUnits,
+      naibates,
+      fieldHospitals,
+      sampleHospitalBonusAtPoint
     });
+    liveUnitsRef.current = refreshedUnits;
+    setLiveFieldUnits(refreshedUnits);
 
-    const isWinterClimate =
-      (nextSeasonClimate.imperialPressureMod || 0) < 0 || (nextSeasonClimate.provisionsMod || 0) < -25;
-    const baseImperialMarchBudget = Math.round(
-      (isWinterClimate ? 38 : 54) * Math.max(0.8, Math.min(1.3, simDifficultyWeight || 1.0))
-    );
+    const isWinterClimate = baseEco.isWinterClimate;
 
-    setLiveImperialColumns((prevCols) => {
-      const nextCols = prevCols.map((col) => {
-        // Если отступавшая колонна дошла до кордонной крепости — пополняет штыки и готовит новый марш на уязвимое наибство
-        const distToOrigin = Math.hypot(col.x - col.originX, col.y - col.originY);
-        if (col.status === 'retreating' && distToOrigin <= 30) {
-          const replenishedBayonets = Math.min(
-            col.maxBayonets || 4200,
-            col.bayonets + Math.round(320 * (simDifficultyWeight || 1.0))
-          );
-          const vulnNaib =
-            [...naibates].sort(
-              (a, b) =>
-                b.imperialPressure * 0.65 -
-                b.garrison * 0.015 -
-                (a.imperialPressure * 0.65 - a.garrison * 0.015)
-            )[0] || naibates[0];
-          const freshPath = computeTerrainAwarePath(
-            col.x,
-            col.y,
-            vulnNaib.coords.x,
-            vulnNaib.coords.y
-          );
-          return {
-            ...col,
-            bayonets: replenishedBayonets,
-            supplyCut: false,
-            status: 'advancing',
-            targetNaibateId: vulnNaib.id,
-            targetNameRu: vulnNaib.name,
-            targetNameEn: vulnNaib.nameEn || vulnNaib.name,
-            turnMarchBudget: baseImperialMarchBudget,
-            waypoints: freshPath,
-            waypointIdx: Math.min(1, freshPath.length - 1)
-          };
-        }
-
-        const segDx = col.x - col.originX;
-        const segDy = col.y - col.originY;
-        const segLenSq = segDx * segDx + segDy * segDy;
-        const unitBlockingLine =
-          segLenSq > 900 &&
-          (liveUnitsRef.current || []).some((u) => {
-            if (u.id === 'unit_powder_caravan') return false;
-            if ((u.sabers ?? 400) < 240) return false;
-            const tProj = ((u.x - col.originX) * segDx + (u.y - col.originY) * segDy) / segLenSq;
-            if (tProj < 0.06 || tProj > 0.88) return false;
-            const px = col.originX + segDx * tProj;
-            const py = col.originY + segDy * tProj;
-            return Math.hypot(u.x - px, u.y - py) <= 34;
-          });
-
-        // Оперативный ИИ: если мюриды ушли с перерезанного тракта, а у колонны достаточно сил — казачий конвой восстанавливает обоз
-        const cossackReopenedRoad =
-          col.status === 'advancing' &&
-          col.supplyCut &&
-          !unitBlockingLine &&
-          col.bayonets >= 1650 &&
-          !isWinterClimate;
-
-        if (cossackReopenedRoad) {
-          newLogs.push({
-            id: `log-supply-reopen-${col.id}-${nextTurnNum}`,
-            turn: nextTurnNum,
-            category: 'battle',
-            sender: 'Разведка кунаков на кордоне',
-            senderEn: 'Kunak Cordon Reconnaissance',
-            title: `Казачий конвой деблокировал обозный тракт колонны (${col.commanderRu || col.nameRu})`,
-            titleEn: `Cossack Escort Reopened Supply Road (${col.commanderEn || col.nameEn})`,
-            text: `Так как конные сотни отошли с коммуникаций, штаб колонны выслал линейный резерв и восстановил подвоз сухарей из крепости.`,
-            textEn: `With murid squadrons withdrawn from the supply road, the column’s HQ dispatched a reserve escort and restored biscuit convoys.`
-          });
-          return {
-            ...col,
-            supplyCut: false,
-            turnMarchBudget: Math.round(baseImperialMarchBudget * 0.82)
-          };
-        }
-
-        const isSupplySevered = col.status === 'advancing' && (col.supplyCut || unitBlockingLine);
-        if (isSupplySevered) {
-          const attrition = Math.max(120, Math.round(col.bayonets * 0.14));
-          const nextBayonets = Math.max(600, col.bayonets - attrition);
-          if (nextBayonets <= 1150) {
-            const retreatPath = computeTerrainAwarePath(col.x, col.y, col.originX, col.originY);
-            return {
-              ...col,
-              bayonets: nextBayonets,
-              supplyCut: true,
-              status: 'retreating',
-              turnMarchBudget: 52,
-              waypoints: retreatPath,
-              waypointIdx: Math.min(1, retreatPath.length - 1)
-            };
-          }
-          return {
-            ...col,
-            bayonets: nextBayonets,
-            supplyCut: true,
-            convoyProgress: 0,
-            turnMarchBudget: 24
-          };
-        }
-        // ВОЛНА IV (Шаг 3): Продвижение живого обоза с сухарями и зарядами вдоль линии коммуникации РИ
-        if (col.status === 'advancing') {
-          const nextConvoy = +((col.convoyProgress ?? 0.42) + 0.32).toFixed(2);
-          if (nextConvoy >= 1.0) {
-            const reinforcedBayonets = Math.min(col.maxBayonets || 4400, col.bayonets + 220);
-            newLogs.push({
-              id: `log-convoy-arrived-${col.id}-${nextTurnNum}`,
-              turn: nextTurnNum,
-              category: 'battle',
-              sender: 'Лазутчики на коммуникациях РИ',
-              senderEn: 'Supply Road Scouts',
-              title: `🥖 Обоз из крепости «${col.originNameRu}» усилил колонну (+220 штыков)`,
-              titleEn: `🥖 Convoy from “${col.originNameEn}” Reinforced Column (+220 bayonets)`,
-              text: `Неперехваченный сухарный и зарядный транспорт дошёл до лагеря «${col.nameRu}», пополнив строй на +220 штыков. Перережьте коммуникацию конницей!`,
-              textEn: `An unraided biscuit and caisson wagon train reached “${col.nameEn}”, replenishing +220 bayonets. Sever the supply road with cavalry!`
-            });
-            return {
-              ...col,
-              bayonets: reinforcedBayonets,
-              convoyProgress: 0.24,
-              supplyCut: false,
-              turnMarchBudget: baseImperialMarchBudget
-            };
-          }
-          return {
-            ...col,
-            convoyProgress: nextConvoy,
-            supplyCut: false,
-            turnMarchBudget: baseImperialMarchBudget
-          };
-        }
-        return {
-          ...col,
-          supplyCut: false,
-          turnMarchBudget: baseImperialMarchBudget
-        };
-      });
-      liveColumnsRef.current = nextCols;
-      return nextCols;
+    // 0.5. Шаг экспедиционных колонн РИ и сухарных обозов (src/game/aiGenerals.js)
+    const columnStep = stepImperialColumnsForTurn({
+      columns: liveColumnsRef.current || liveImperialColumns,
+      naibates,
+      liveUnits: refreshedUnits,
+      isWinterClimate,
+      difficultyWeight: simDifficultyWeight || 1.0,
+      nextTurnNum,
+      computePath: computeTerrainAwarePath
     });
+    liveColumnsRef.current = columnStep.nextColumns;
+    setLiveImperialColumns(columnStep.nextColumns);
+    if (columnStep.logs.length > 0) newLogs.push(...columnStep.logs);
 
-    // 1. Обработка активной операции Штаба Кавказского корпуса (Адаптивный оперативный ИИ царских генералов)
-    const targetNaibObj =
-      naibates.find((n) => n.id === imperialAi.targetNaibateId) || naibates[0];
-    let aiStrikeTargetId = null;
-    const scaledStrikePressure = Math.round(
-      activeDocMod.strikePressureBonus * Math.max(0.85, Math.min(1.25, simDifficultyWeight || 1.0))
-    );
-
-    if (imperialAi.turnsUntilStrike <= 1) {
-      aiStrikeTargetId = imperialAi.targetNaibateId;
-      newLogs.push({
-        id: `log-ai-strike-${nextTurnNum}`,
-        turn: nextTurnNum,
-        category: 'battle',
-        sender: `Штаб Отдельного Кавказского корпуса (${activeGen.name})`,
-        senderEn: `Separate Caucasian Corps HQ (${activeGen.nameEn || activeGen.name})`,
-        title: `УДАР ИМПЕРСКОЙ КОЛОННЫ по округу «${targetNaibObj.name}»!`,
-        titleEn: `IMPERIAL COLUMN STRIKE on “${targetNaibObj.nameEn || targetNaibObj.name}”!`,
-        text: `Экспедиционный отряд (${imperialAi.columnStrength} штыков при горных орудиях) провёл операцию по доктрине ${activeGen.doctrineName}. Нажим на округ «${targetNaibObj.name}» вырос на +${scaledStrikePressure}%, гарнизон израсходовал ${Math.abs(activeDocMod.strikePowderDrain)} пудов пороха на оборону завалов!`,
-        textEn: `An expeditionary column (${imperialAi.columnStrength} bayonets with mountain guns) executed an offensive under doctrine ${activeGen.doctrineNameEn || activeGen.doctrineName}. Pressure on “${targetNaibObj.nameEn || targetNaibObj.name}” rose by +${scaledStrikePressure}%, and the garrison expended ${Math.abs(activeDocMod.strikePowderDrain)} poods of powder defending the abatis!`
-      });
-
-      // Хронологическая смена командующих Кавказским корпусом РИ по эпохам + выбор самого уязвимого сектора обороны
-      const epochGeneralIdx =
-        activeScenarioId === 'camp_1839'
-          ? 1
-          : nextTurnNum <= 4
-            ? 0
-            : nextTurnNum <= 8
-              ? 2
-              : 3;
-      const nextGenIdx = imperialAi.aiDoctrineLocked
-        ? imperialAi.generalIdx
-        : epochGeneralIdx;
-      const nextGen = IMPERIAL_GENERALS[nextGenIdx] || IMPERIAL_GENERALS[0];
-      const rankedTargets = [...naibates]
-        .filter((n) => n.id !== aiStrikeTargetId)
-        .sort((a, b) => {
-          const scoreA =
-            a.imperialPressure * 0.65 -
-            a.garrison * 0.014 -
-            a.gunpowder * 0.16 +
-            (nextGen.preferredTargets.includes(a.id) ? 18 : 0);
-          const scoreB =
-            b.imperialPressure * 0.65 -
-            b.garrison * 0.014 -
-            b.gunpowder * 0.16 +
-            (nextGen.preferredTargets.includes(b.id) ? 18 : 0);
-          return scoreB - scoreA;
-        });
-      const nextTargetId =
-        rankedTargets[0]?.id ||
-        nextGen.preferredTargets[nextTurnNum % nextGen.preferredTargets.length];
-
-      setImperialAi((prev) => ({
-        ...prev,
-        generalIdx: nextGenIdx,
-        targetNaibateId: nextTargetId,
-        turnsUntilStrike: isWinterClimate ? 3 : 2,
-        columnStrength: Math.round(
-          (3600 + (nextTurnNum % 4) * 650) * Math.max(0.85, Math.min(1.25, simDifficultyWeight || 1.0))
-        ),
-        scouted: true
-      }));
-    } else {
-      setImperialAi((prev) => ({
-        ...prev,
-        turnsUntilStrike: prev.turnsUntilStrike - 1
-      }));
-    }
-
-    // 2. Продвижение и прибытие конных гонцов (синхронировано с C++ ProcessNextStrategicTurn)
-    const remainingEnvoys = [];
-    const updatedNaibatesMap = {};
-    const resolvedRegionsThisTurn = new Set();
-    let turnInterceptedCount = 0;
-    let turnObeyedCount = 0;
-    let turnRefusedCount = 0;
-
-    activeEnvoys.forEach((env) => {
-      if (env.turnsLeft > 1) {
-        remainingEnvoys.push({ ...env, turnsLeft: env.turnsLeft - 1 });
-      } else {
-        const intercepted = Math.random() * 100 < env.interceptRisk;
-        if (intercepted) {
-          turnInterceptedCount += 1;
-          newLogs.push({
-            id: `log-int-${env.id}`,
-            turn: nextTurnNum,
-            category: 'envoy',
-            sender: 'Разведка кордонной линии',
-            senderEn: 'Cordon Line Reconnaissance',
-            title: `Гонец в округ «${env.targetName}» перехвачен казачьим разъездом!`,
-            titleEn: `Envoy to “${env.targetName}” Intercepted by Cossack Patrol!`,
-            text: `Мюрид, везший приказ «${env.orderTitle}» и ${env.powder} пуд. пороха наибу ${env.naibName}, попал в засаду пластунов на переправе.`,
-            textEn: `The mounted murid carrying order “${env.orderTitle}” and ${env.powder} poods of powder to Naib ${env.naibName} was ambushed at the river crossing.`
-          });
-        } else {
-          const executed = Math.random() * 100 < env.execChance;
-          const mod = updatedNaibatesMap[env.targetId] || {
-            powderDelta: 0,
-            imperialPressureDelta: 0,
-            garrisonDelta: 0,
-            murtazeksDelta: 0,
-            imanDelta: 0,
-            prideDelta: 0,
-            clearSiege: false
-          };
-          mod.powderDelta += env.powder;
-
-          if (executed) {
-            turnObeyedCount += 1;
-            resolvedRegionsThisTurn.add(env.targetId);
-            if (env.orderType === 'raid') {
-              mod.imperialPressureDelta -= 18;
-              mod.imanDelta += 4;
-              powderDelta += 12;
-              silverDelta += 65;
-            } else if (env.orderType === 'fortify') {
-              mod.imperialPressureDelta -= 24;
-              mod.clearSiege = true;
-              mod.imanDelta += 5;
-            } else if (env.orderType === 'zakat') {
-              silverDelta += 135;
-              provisionsDelta += 160;
-              powderDelta += 10;
-            } else if (env.orderType === 'mobilize') {
-              mod.garrisonDelta += 220;
-              mod.murtazeksDelta += 90;
-              mod.imperialPressureDelta -= 12;
-            }
-
-            updatedNaibatesMap[env.targetId] = mod;
-
-            newLogs.push({
-              id: `log-ok-${env.id}`,
-              turn: nextTurnNum,
-              category: 'envoy',
-              sender: `Ответное письмо наиба: ${env.naibName} (${env.targetName})`,
-              senderEn: `Naib’s Reply Letter: ${env.naibName} (${env.targetName})`,
-              title: `Приказ Имама «${env.orderTitle}» исполнен в точности!`,
-              titleEn: `Imam’s Order “${env.orderTitle}” Executed Faithfully!`,
-              text: `«Во имя Аллаха Милостивого! Твой гонец доставил печать и ${env.powder} пудов пороха. Сотни муртазеков исполнили повеление Диван-ханы!»`,
-              textEn: `“In the Name of Allah, the Merciful! Your envoy delivered the seal and ${env.powder} poods of powder. Our Murtazek squadrons have fulfilled the Divan-Khana’s command!”`
-            });
-          } else {
-            turnRefusedCount += 1;
-            updatedNaibatesMap[env.targetId] = mod;
-            authorityDelta -= 3;
-            newLogs.push({
-              id: `log-fail-${env.id}`,
-              turn: nextTurnNum,
-              category: 'envoy',
-              sender: `Уклончивое донесение: ${env.naibName} (${env.targetName})`,
-              senderEn: `Evasive Report: ${env.naibName} (${env.targetName})`,
-              title: `Наиб ${env.naibName} уклонился от приказа «${env.orderTitle}»`,
-              titleEn: `Naib ${env.naibName} Evaded Order “${env.orderTitle}”`,
-              text: `Из-за высокой гордыни или нехватки жалования наиб оставил присланные ${env.powder} пуд. пороха в своём ауле, сославшись на непогоду на перевалах.`,
-              textEn: `Due to high pride or insufficient stipends, the Naib retained the ${env.powder} poods of powder in his own aul, citing impassable mountain weather.`
-            });
-          }
-        }
-      }
+    // 1. Оперативная директива Штаба Отдельного Кавказского корпуса (src/game/aiGenerals.js)
+    const aiStep = resolveImperialAiDirective({
+      imperialAi,
+      naibates,
+      imperialGenerals: IMPERIAL_GENERALS,
+      activeScenarioId,
+      nextTurnNum,
+      isWinterClimate,
+      difficultyWeight: simDifficultyWeight || 1.0
     });
+    setImperialAi(aiStep.nextImperialAi);
+    if (aiStep.logs.length > 0) newLogs.push(...aiStep.logs);
+
+    // 2. Продвижение и прибытие конных гонцов (src/game/turnEngine.js)
+    const envoyStep = resolveEnvoysForTurn({ activeEnvoys, nextTurnNum });
+    const remainingEnvoys = envoyStep.remainingEnvoys;
+    const updatedNaibatesMap = envoyStep.updatedNaibatesMap;
+    const resolvedRegionsThisTurn = envoyStep.resolvedRegionsThisTurn;
+    powderDelta += envoyStep.powderBonus;
+    provisionsDelta += envoyStep.provisionsBonus;
+    silverDelta += envoyStep.silverBonus;
+    authorityDelta += envoyStep.authorityDelta;
+    const turnInterceptedCount = envoyStep.turnInterceptedCount;
+    const turnObeyedCount = envoyStep.turnObeyedCount;
+    const turnRefusedCount = envoyStep.turnRefusedCount;
+    if (envoyStep.logs.length > 0) newLogs.push(...envoyStep.logs);
 
     setActiveEnvoys(remainingEnvoys);
 
-    let emergencyPowderSupport = 0;
-    const computedNextNaibates = naibates.map((n) => {
-      const mod = updatedNaibatesMap[n.id] || {};
-      const aiStrikeBonus = n.id === aiStrikeTargetId ? scaledStrikePressure : 0;
-      const aiPowderDrain = n.id === aiStrikeTargetId ? activeDocMod.strikePowderDrain : 0;
-      const isResolvedHere = resolvedRegionsThisTurn.has(n.id);
-      const passiveDrift =
-        !isResolvedHere && n.id !== aiStrikeTargetId
-          ? Math.random() * 3.7 - 0.5 + nextSeasonClimate.imperialPressureMod * 0.45
-          : 0;
-      const nextPressure = Math.max(
-        15,
-        Math.min(
-          96,
-          Math.round(n.imperialPressure + passiveDrift + (mod.imperialPressureDelta || 0) + aiStrikeBonus)
-        )
-      );
-      const nextUnderSiege = mod.clearSiege ? false : nextPressure >= 80;
-      const powderBurn = nextUnderSiege ? 6 : 3;
-      let nextPowder = Math.max(
-        4,
-        n.gunpowder - powderBurn + (mod.powderDelta || 0) + aiPowderDrain
-      );
-      if (nextPowder < 24 && resources.gunpowder + powderDelta - emergencyPowderSupport >= 12) {
-        nextPowder += 2;
-        emergencyPowderSupport += 2;
-      }
-      const isHighlandPass = ['khunzakh', 'karata', 'gunib', 'gidatl'].includes(n.id);
-      const hasLitBeaconNearPass = signalBeacons.some(
-        (b) => b.isLit && n.coords && Math.hypot(b.x - n.coords.x, b.y - n.coords.y) <= 130
-      );
-      const isSnowboundPass = Boolean(isWinterClimate && isHighlandPass && !hasLitBeaconNearPass);
-      const snowDriftDrain = isSnowboundPass
-        ? Math.round(-25 * (activeRelicBonuses.winterAttritionMult ?? 1.0))
-        : 0;
-      const pastureBonus = n.pastureAccess ? 25 : -15;
-      const nextProvisions = Math.max(
-        80,
-        n.provisions + Math.round(n.terraceYield * 0.4) + pastureBonus + snowDriftDrain - 20
-      );
-
-      const nextSiegeTurns = nextUnderSiege ? (n.siegeTurns || 0) + 1 : 0;
-      const nextIman = Math.min(100, Math.max(20, n.traits.iman + (mod.imanDelta || 0)));
-      const nextPride = Math.min(
-        100,
-        Math.max(
-          10,
-          n.traits.pride +
-            (mod.prideDelta || 0) +
-            (nextUnderSiege && !isResolvedHere ? 3 : 0)
-        )
-      );
-      const isEstranged =
-        !isResolvedHere &&
-        ((nextUnderSiege && nextSiegeTurns >= 2 && nextPowder <= 14) ||
-          (nextPride >= 84 && nextIman <= 48));
-
-      let schismMurtazekPenalty = 0;
-      if (isEstranged && nextTurnNum >= 4) {
-        schismMurtazekPenalty = -80;
-        authorityDelta -= 3;
-        newLogs.push({
-          id: `log-schism-${n.id}-${nextTurnNum}`,
-          turn: nextTurnNum,
-          category: 'envoy',
-          sender: `Тревожная весть мухтасиба (${n.name})`,
-          senderEn: `Urgent Muhtasib Warning (${n.nameEn || n.name})`,
-          title: `⚠️ Раскол и брожение в наибстве «${n.name}» (${n.naibName})!`,
-          titleEn: `⚠️ Schism & Unrest in “${n.nameEn || n.name}” (${n.naibNameEn || n.naibName})!`,
-          text: `Оставшись без пороха в блокаде или при уязвлённой гордости (${nextPride}), часть сотен разошлась по аулам (-80 муртазеков). Срочно направьте гонца или разрешите сургучный пакет!`,
-          textEn: `Left without powder under blockade or stung by wounded pride (${nextPride}), squadrons dispersed (-80 murtazeks). Dispatch an envoy or resolve the sealed packet urgently!`
-        });
-      }
-
-      return {
-        ...n,
-        imperialPressure: nextPressure,
-        underSiege: nextUnderSiege,
-        siegeTurns: nextSiegeTurns,
-        estranged: isEstranged,
-        trustScore: isEstranged ? Math.max(-3, (n.trustScore ?? 0) - 1) : n.trustScore ?? 0,
-        lastMemoryRu: isEstranged
-          ? `Обижен отсутствием пороховой подмоги при осаде (${nextSiegeTurns} ход.)`
-          : n.lastMemoryRu,
-        lastMemoryEn: isEstranged
-          ? `Resents lack of powder relief during siege (${nextSiegeTurns} turns)`
-          : n.lastMemoryEn,
-        snowbound: isSnowboundPass,
-        gunpowder: nextPowder,
-        provisions: nextProvisions,
-        garrison: Math.max(400, n.garrison + (mod.garrisonDelta || 0)),
-        murtazeks: Math.max(100, n.murtazeks + (mod.murtazeksDelta || 0) + schismMurtazekPenalty),
-        traits: {
-          ...n.traits,
-          iman: nextIman,
-          pride: nextPride
-        }
-      };
+    // 3. Пересчёт всех наибств на новый ход (src/game/turnEngine.js)
+    const naibatesStep = computeNextNaibatesState({
+      naibates,
+      updatedNaibatesMap,
+      resolvedRegionsThisTurn,
+      aiStrikeTargetId: aiStep.aiStrikeTargetId,
+      scaledStrikePressure: aiStep.scaledStrikePressure,
+      aiPowderDrain: aiStep.aiPowderDrain,
+      seasonClimate: nextSeasonClimate,
+      isWinterClimate,
+      signalBeacons,
+      activeRelicBonuses,
+      availableCentralPowder: resources.gunpowder + powderDelta,
+      nextTurnNum
     });
+    const computedNextNaibates = naibatesStep.nextNaibates;
+    const emergencyPowderSupport = naibatesStep.emergencyPowderSupport;
+    authorityDelta += naibatesStep.authorityDelta;
+    if (naibatesStep.logs.length > 0) newLogs.push(...naibatesStep.logs);
     setNaibates(computedNextNaibates);
 
     const nextVedenoPowder = Math.max(0, resources.gunpowder + powderDelta - emergencyPowderSupport);
     const nextProvisionsTotal = Math.max(0, resources.provisions + provisionsDelta);
     const nextSilverTotal = Math.max(0, resources.silver + silverDelta);
     const nextAuthTotal = Math.min(100, Math.max(15, resources.authority + authorityDelta));
-    setResources((prev) => ({
-      ...prev,
+    const nextResourcesObj = {
+      ...resources,
       gunpowder: nextVedenoPowder,
       provisions: nextProvisionsTotal,
       silver: nextSilverTotal,
       authority: nextAuthTotal
-    }));
+    };
+    setResources(nextResourcesObj);
 
     // ВОЛНА III (Шаг 1): Доставка реактивного сургучного пакета гонца в Палату Диван-ханы при смене сезона
     if (!spectatorMode.active && !pitchTour.active && !activeDivanPacket) {
       const nextPkt = pickReactiveDivanPacket(
         computedNextNaibates,
-        {
-          ...resources,
-          gunpowder: nextVedenoPowder,
-          provisions: nextProvisionsTotal,
-          silver: nextSilverTotal,
-          authority: nextAuthTotal
-        },
+        nextResourcesObj,
         resolvedPacketIds
       );
       if (nextPkt) {
@@ -8346,32 +7849,16 @@ export default function App() {
     const nextSiegesCount = computedNextNaibates.filter((n) => n.underSiege).length;
 
     // ВОЛНА III (Шаг 3): Проверка исторической кульминации (Триумф Имамата / Последний оплот на Гунибе) с Хода 5+
-    if (nextTurnNum >= 5 && !climaxDismissed && !spectatorMode.active && !pitchTour.active) {
-      if (nextSiegesCount >= 8 || nextAuthTotal <= 20) {
-        setCampaignClimaxState({
-          outcome: 'last_stand',
-          turn: nextTurnNum,
-          victoryScore: campaignAudit.victoryScore,
-          titleRu: 'Последний рубеж на скале Верхний Гуниб',
-          titleEn: 'The Final Stand on Upper Gunib Plateau',
-          summaryRu:
-            'Кольцо двухсоттысячной Кавказской армии сомкнулось вокруг горных аулов. Подобно 25 августа 1859 года, перед Имамом встаёт выбор между безнадёжным боем последних сотен и почётным миром ради спасения семей горцев.',
-          summaryEn:
-            'The ring of the 200,000-strong Caucasus Army has closed around the highland auls. As on August 25, 1859, the Imam faces the fateful choice between a final stand and an honorable peace to spare the mountaineer families.'
-        });
-      } else if (nextSiegesCount <= 1 && nextAuthTotal >= 85 && campaignAudit.victoryScore >= 82) {
-        setCampaignClimaxState({
-          outcome: 'triumph',
-          turn: nextTurnNum,
-          victoryScore: campaignAudit.victoryScore,
-          titleRu: 'Исторический Триумф Северо-Кавказского Имамата!',
-          titleEn: 'Historical Triumph of the Caucasian Imamate!',
-          summaryRu:
-            'Экспедиционные колонны отброшены за Терек и Сулак с перерезанными обозами, арсеналы Ведено и Гуниба полны пороха, а единство наибов по Кодексу Низамов вынудило Петербург признать неприступность горной державы.',
-          summaryEn:
-            'Expeditionary columns have been driven back across the Terek and Sulak with severed supply lines, Vedeno’s arsenals stand full, and the unity of the Naibs under the Nizam Code has secured the survival of the highland state.'
-        });
-      }
+    const climaxResult = evaluateCampaignClimax({
+      nextTurnNum,
+      nextSiegesCount,
+      nextAuthTotal,
+      victoryScore: campaignAudit.victoryScore,
+      climaxDismissed,
+      suppressed: spectatorMode.active || pitchTour.active
+    });
+    if (climaxResult) {
+      setCampaignClimaxState(climaxResult);
     }
     const headlineEventRu =
       newLogs.length > 0
@@ -8418,34 +7905,26 @@ export default function App() {
       setChronicle(nextChronicle);
     }
 
-    // Тихое автосохранение хода в отдельный слот imamat_save_autosave (полный паритет с ручным сейвом!)
-    try {
-      const autoPayload = {
-        schemaVersion: 'UImamatSaveGame_UE5_5_v2',
-        campaignSeed: 18450706,
+    // Тихое автосохранение хода в отдельный слот autosave (с актуальным nextImperialAi — src/game/saveSystem.js)
+    const autoPayload = buildCampaignSavePayload(
+      {
         turn: nextTurnNum,
         activeScenarioId,
         simDifficultyWeight,
-        resources: {
-          ...resources,
-          gunpowder: nextVedenoPowder,
-          provisions: nextProvisionsTotal,
-          silver: nextSilverTotal,
-          authority: Math.min(100, Math.max(15, resources.authority + authorityDelta))
-        },
+        resources: nextResourcesObj,
         naibates: computedNextNaibates,
         nizams,
         courtCases,
         crises,
         activeEnvoys: remainingEnvoys,
-        imperialAi,
-        liveFieldUnits: liveUnitsRef.current,
-        liveImperialColumns: liveColumnsRef.current,
+        imperialAi: aiStep.nextImperialAi,
+        liveFieldUnits: refreshedUnits,
+        liveImperialColumns: columnStep.nextColumns,
         kunakSpyRings,
         signalBeacons: signalBeaconsRef.current || signalBeacons,
         riverBridges: riverBridgesRef.current || riverBridges,
         liveMapFortifications: liveFortsRef.current || liveMapFortifications,
-        chronicle: nextChronicle.slice(0, 50),
+        chronicle: nextChronicle,
         zulmatClearedCount,
         activatedFigurePerks,
         executedDispatchesIds,
@@ -8458,18 +7937,12 @@ export default function App() {
         capitalLabelEn,
         imperialHeldIds,
         campaignHistoryLog: nextCampaignHistoryLog,
-        tacticalBattleSession,
-        seasonShortRu: String(SEASONS[(nextTurnNum - 1) % SEASONS.length]).split(' (')[0],
-        seasonShortEn: String(SEASONS_EN[(nextTurnNum - 1) % SEASONS_EN.length]).split(' (')[0],
-        savedAt: new Date().toLocaleTimeString('ru-RU')
-      };
-      localStorage.setItem('imamat_save_autosave', JSON.stringify(autoPayload));
-      if (!localStorage.getItem('imamat_stage1_save')) {
-        localStorage.setItem('imamat_stage1_save', JSON.stringify(autoPayload));
-      }
+        tacticalBattleSession
+      },
+      { seasons: SEASONS, seasonsEn: SEASONS_EN }
+    );
+    if (writeSaveSlot('autosave', autoPayload, { updateLatest: true, onlyInitLatestIfMissing: true }).ok) {
       setSaveSlotsRefreshTick((v) => v + 1);
-    } catch {
-      // Игнорируем переполнение localStorage в приватном режиме
     }
   };
 
@@ -11001,14 +10474,10 @@ struct FImamatCampaignSnapshot
     ]);
   };
 
-  // Сохранение и загрузка полной партии в 3 именованных слота + Автосейв (синхронизировано с C++ UImamatSaveGame)
-  const handleSaveCampaignState = (slotOrEvent = 1) => {
-    const slotId =
-      typeof slotOrEvent === 'number' || typeof slotOrEvent === 'string' ? slotOrEvent : 1;
-    try {
-      const payload = {
-        schemaVersion: 'UImamatSaveGame_UE5_5_v2',
-        campaignSeed: 18450706,
+  // Сохранение, загрузка, экспорт и импорт .imamat-save (синхронизировано с C++ UImamatSaveGame — src/game/saveSystem.js)
+  const buildCurrentCampaignSnapshot = () =>
+    buildCampaignSavePayload(
+      {
         turn,
         activeScenarioId,
         simDifficultyWeight,
@@ -11025,7 +10494,7 @@ struct FImamatCampaignSnapshot
         signalBeacons,
         riverBridges,
         liveMapFortifications,
-        chronicle: chronicle.slice(0, 50),
+        chronicle,
         zulmatClearedCount,
         activatedFigurePerks,
         executedDispatchesIds,
@@ -11038,16 +10507,77 @@ struct FImamatCampaignSnapshot
         capitalLabelEn,
         imperialHeldIds,
         campaignHistoryLog,
-        tacticalBattleSession,
-        seasonShortRu: String(SEASONS[(turn - 1) % SEASONS.length]).split(' (')[0],
-        seasonShortEn: String(SEASONS_EN[(turn - 1) % SEASONS_EN.length]).split(' (')[0],
-        savedAt: new Date().toLocaleTimeString('ru-RU')
-      };
-      const storageKey =
-        slotId === 'autosave' ? 'imamat_save_autosave' : `imamat_save_slot_${slotId}`;
-      const serialized = JSON.stringify(payload);
-      localStorage.setItem(storageKey, serialized);
-      localStorage.setItem('imamat_stage1_save', serialized);
+        tacticalBattleSession
+      },
+      { seasons: SEASONS, seasonsEn: SEASONS_EN }
+    );
+
+  const applyValidatedCampaignData = (data, sourceLabelRu, sourceLabelEn) => {
+    if (data.turn) setTurn(data.turn);
+    if (data.activeScenarioId) setActiveScenarioId(data.activeScenarioId);
+    if (typeof data.simDifficultyWeight === 'number') setSimDifficultyWeight(data.simDifficultyWeight);
+    if (data.resources) setResources(data.resources);
+    if (data.naibates) setNaibates(data.naibates);
+    if (data.nizams) setNizams(data.nizams);
+    if (Array.isArray(data.courtCases)) setCourtCases(data.courtCases);
+    if (Array.isArray(data.crises)) setCrises(data.crises);
+    if (Array.isArray(data.activeEnvoys)) setActiveEnvoys(data.activeEnvoys);
+    if (data.imperialAi) setImperialAi(data.imperialAi);
+    if (Array.isArray(data.liveFieldUnits)) {
+      liveUnitsRef.current = data.liveFieldUnits;
+      setLiveFieldUnits(data.liveFieldUnits);
+    }
+    if (Array.isArray(data.liveImperialColumns)) {
+      liveColumnsRef.current = data.liveImperialColumns;
+      setLiveImperialColumns(data.liveImperialColumns);
+    }
+    if (Array.isArray(data.kunakSpyRings)) setKunakSpyRings(data.kunakSpyRings);
+    if (Array.isArray(data.signalBeacons)) {
+      signalBeaconsRef.current = data.signalBeacons;
+      setSignalBeacons(data.signalBeacons);
+    }
+    if (Array.isArray(data.riverBridges)) {
+      riverBridgesRef.current = data.riverBridges;
+      setRiverBridges(data.riverBridges);
+    }
+    if (Array.isArray(data.liveMapFortifications)) {
+      liveFortsRef.current = data.liveMapFortifications;
+      setLiveMapFortifications(data.liveMapFortifications);
+    }
+    if (Array.isArray(data.chronicle)) setChronicle(data.chronicle);
+    if (typeof data.zulmatClearedCount === 'number') setZulmatClearedCount(data.zulmatClearedCount);
+    if (Array.isArray(data.activatedFigurePerks)) setActivatedFigurePerks(data.activatedFigurePerks);
+    if (Array.isArray(data.executedDispatchesIds)) setExecutedDispatchesIds(data.executedDispatchesIds);
+    if (typeof data.prologueRewardClaimed === 'boolean') setPrologueRewardClaimed(data.prologueRewardClaimed);
+    if (data.heroArcsState && typeof data.heroArcsState === 'object') {
+      setHeroArcsState(data.heroArcsState);
+    }
+    if (data.episodesState && typeof data.episodesState === 'object') {
+      setEpisodesState(data.episodesState);
+    }
+    if (typeof data.activeEpisodeId === 'string') setActiveEpisodeId(data.activeEpisodeId);
+    if (typeof data.capitalNaibateId === 'string') setCapitalNaibateId(data.capitalNaibateId);
+    if (typeof data.capitalLabelRu === 'string') setCapitalLabelRu(data.capitalLabelRu);
+    if (typeof data.capitalLabelEn === 'string') setCapitalLabelEn(data.capitalLabelEn);
+    if (Array.isArray(data.imperialHeldIds)) setImperialHeldIds(data.imperialHeldIds);
+    if (Array.isArray(data.campaignHistoryLog)) setCampaignHistoryLog(data.campaignHistoryLog);
+    if (data.tacticalBattleSession) setTacticalBattleSession(data.tacticalBattleSession);
+    setActiveTacticalEncounter(null);
+    playHistoricalSound('horn', soundEnabled, { volume: audioMixerConfig.masterVolume });
+    alertMsg(
+      t(
+        `Загружен ${sourceLabelRu} (Ход #${data.turn}, сохранено в ${data.savedAt || 'архиве'}).`,
+        `Loaded ${sourceLabelEn} (Turn #${data.turn}, saved at ${data.savedAt || 'archive'}).`
+      )
+    );
+  };
+
+  const handleSaveCampaignState = (slotOrEvent = 1) => {
+    const slotId =
+      typeof slotOrEvent === 'number' || typeof slotOrEvent === 'string' ? slotOrEvent : 1;
+    const payload = buildCurrentCampaignSnapshot();
+    const res = writeSaveSlot(slotId, payload, { updateLatest: true });
+    if (res.ok) {
       setSaveSlotsRefreshTick((v) => v + 1);
       playHistoricalSound('seal', soundEnabled, { volume: audioMixerConfig.masterVolume });
       alertMsg(
@@ -11056,7 +10586,7 @@ struct FImamatCampaignSnapshot
           `Campaign saved to UImamatSaveGame Slot #${slotId} (Turn #${turn}, ${payload.savedAt}).`
         )
       );
-    } catch {
+    } else {
       alertMsg(
         t(
           'Не удалось сохранить состояние партии в локальное хранилище.',
@@ -11069,97 +10599,73 @@ struct FImamatCampaignSnapshot
   const handleLoadCampaignState = (slotOrEvent = null) => {
     const slotId =
       typeof slotOrEvent === 'number' || typeof slotOrEvent === 'string' ? slotOrEvent : null;
-    try {
-      const raw = slotId
-        ? localStorage.getItem(
-            slotId === 'autosave' ? 'imamat_save_autosave' : `imamat_save_slot_${slotId}`
-          )
-        : localStorage.getItem('imamat_stage1_save') ||
-          localStorage.getItem('imamat_save_autosave') ||
-          localStorage.getItem('imamat_save_slot_1');
-      if (!raw) {
-        alertMsg(
-          t(
-            'В архиве Диван-ханы пока нет сохранённой партии.',
-            'No saved campaign found in the Divan-Khana archive yet.'
-          )
-        );
-        return;
-      }
-      const data = JSON.parse(raw);
-      if (data.turn) setTurn(data.turn);
-      if (data.activeScenarioId) setActiveScenarioId(data.activeScenarioId);
-      if (typeof data.simDifficultyWeight === 'number') setSimDifficultyWeight(data.simDifficultyWeight);
-      if (data.resources) setResources(data.resources);
-      if (data.naibates) setNaibates(data.naibates);
-      if (data.nizams) setNizams(data.nizams);
-      if (Array.isArray(data.courtCases)) setCourtCases(data.courtCases);
-      if (Array.isArray(data.crises)) setCrises(data.crises);
-      if (data.activeEnvoys) setActiveEnvoys(data.activeEnvoys);
-      if (data.imperialAi) setImperialAi(data.imperialAi);
-      if (Array.isArray(data.liveFieldUnits)) {
-        liveUnitsRef.current = data.liveFieldUnits;
-        setLiveFieldUnits(data.liveFieldUnits);
-      }
-      if (Array.isArray(data.liveImperialColumns)) {
-        liveColumnsRef.current = data.liveImperialColumns;
-        setLiveImperialColumns(data.liveImperialColumns);
-      }
-      if (Array.isArray(data.kunakSpyRings)) setKunakSpyRings(data.kunakSpyRings);
-      if (Array.isArray(data.signalBeacons)) {
-        signalBeaconsRef.current = data.signalBeacons;
-        setSignalBeacons(data.signalBeacons);
-      }
-      if (Array.isArray(data.riverBridges)) {
-        // Миграция старых сохранений на актуальные SRTM-координаты русел (сохраняя статус подрыва/целостности моста!)
-        const migratedBridges = data.riverBridges.map((br) => {
-          const canon = INITIAL_RIVER_BRIDGES.find((ib) => ib.id === br.id);
-          if (!canon) return br;
-          return {
-            ...canon,
-            status: br.status || canon.status
-          };
-        });
-        riverBridgesRef.current = migratedBridges;
-        setRiverBridges(migratedBridges);
-      }
-      if (Array.isArray(data.liveMapFortifications)) {
-        liveFortsRef.current = data.liveMapFortifications;
-        setLiveMapFortifications(data.liveMapFortifications);
-      }
-      if (Array.isArray(data.chronicle)) setChronicle(data.chronicle);
-      if (typeof data.zulmatClearedCount === 'number') setZulmatClearedCount(data.zulmatClearedCount);
-      if (Array.isArray(data.activatedFigurePerks)) setActivatedFigurePerks(data.activatedFigurePerks);
-      if (Array.isArray(data.executedDispatchesIds)) setExecutedDispatchesIds(data.executedDispatchesIds);
-      if (typeof data.prologueRewardClaimed === 'boolean') setPrologueRewardClaimed(data.prologueRewardClaimed);
-      if (data.heroArcsState && typeof data.heroArcsState === 'object') {
-        setHeroArcsState({ ...createInitialHeroArcsState(), ...data.heroArcsState });
-      }
-      if (data.episodesState && typeof data.episodesState === 'object') {
-        setEpisodesState({ ...createInitialEpisodesState(), ...data.episodesState });
-      }
-      if (typeof data.activeEpisodeId === 'string') setActiveEpisodeId(data.activeEpisodeId);
-      if (typeof data.capitalNaibateId === 'string') setCapitalNaibateId(data.capitalNaibateId);
-      if (typeof data.capitalLabelRu === 'string') setCapitalLabelRu(data.capitalLabelRu);
-      if (typeof data.capitalLabelEn === 'string') setCapitalLabelEn(data.capitalLabelEn);
-      if (Array.isArray(data.imperialHeldIds)) setImperialHeldIds(data.imperialHeldIds);
-      if (Array.isArray(data.campaignHistoryLog)) setCampaignHistoryLog(data.campaignHistoryLog);
-      if (data.tacticalBattleSession) setTacticalBattleSession(data.tacticalBattleSession);
-      setActiveTacticalEncounter(null);
-      playHistoricalSound('horn', soundEnabled, { volume: audioMixerConfig.masterVolume });
-      const slotLabelRu = slotId === 'autosave' ? 'Автосейв' : slotId ? `Слот #${slotId}` : 'UImamatSaveGame';
-      const slotLabelEn = slotId === 'autosave' ? 'Autosave' : slotId ? `Slot #${slotId}` : 'UImamatSaveGame';
+    const raw = readSaveSlot(slotId);
+    if (!raw) {
       alertMsg(
         t(
-          `Загружен ${slotLabelRu} (Ход #${data.turn}, сохранено в ${data.savedAt || 'архиве'}).`,
-          `Loaded ${slotLabelEn} (Turn #${data.turn}, saved at ${data.savedAt || 'archive'}).`
+          'В архиве Диван-ханы пока нет сохранённой партии.',
+          'No saved campaign found in the Divan-Khana archive yet.'
         )
       );
+      return;
+    }
+    const parsed = validateAndMigrateSavePayload(raw, {
+      initialRiverBridges: INITIAL_RIVER_BRIDGES,
+      createInitialHeroArcsState,
+      createInitialEpisodesState
+    });
+    if (!parsed.ok) {
+      alertMsg(t(parsed.errorRu, parsed.errorEn));
+      return;
+    }
+    const slotLabelRu = slotId === 'autosave' ? 'Автосейв' : slotId ? `Слот #${slotId}` : 'UImamatSaveGame';
+    const slotLabelEn = slotId === 'autosave' ? 'Autosave' : slotId ? `Slot #${slotId}` : 'UImamatSaveGame';
+    applyValidatedCampaignData(parsed.data, slotLabelRu, slotLabelEn);
+  };
+
+  const handleExportImamatSaveFile = () => {
+    const payload = buildCurrentCampaignSnapshot();
+    const jsonStr = serializeImamatSaveFile(payload);
+    const filename = buildImamatSaveFilename(payload);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    playHistoricalSound('seal', soundEnabled, { volume: audioMixerConfig.masterVolume });
+    alertMsg(
+      t(
+        `Летопись выгружена в переносимый файл ${filename} (Ход #${payload.turn}).`,
+        `Chronicle exported to portable file ${filename} (Turn #${payload.turn}).`
+      )
+    );
+  };
+
+  const handleImportImamatSaveFile = async (file) => {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = validateAndMigrateSavePayload(text, {
+        initialRiverBridges: INITIAL_RIVER_BRIDGES,
+        createInitialHeroArcsState,
+        createInitialEpisodesState
+      });
+      if (!parsed.ok) {
+        alertMsg(t(parsed.errorRu, parsed.errorEn));
+        return;
+      }
+      writeSaveSlot(1, parsed.data, { updateLatest: true });
+      setSaveSlotsRefreshTick((v) => v + 1);
+      applyValidatedCampaignData(parsed.data, `файл ${file.name}`, `file ${file.name}`);
     } catch {
       alertMsg(
         t(
-          'Ошибка чтения сохранения из архива.',
-          'Error reading save file from the archive.'
+          'Не удалось прочитать выбранный файл сохранения.',
+          'Failed to read the selected save file.'
         )
       );
     }
@@ -11628,55 +11134,17 @@ struct FImamatCampaignSnapshot
 
   const saveSlotsMeta = useMemo(() => {
     void saveSlotsRefreshTick;
-    const defs = [
-      { id: 'autosave', key: 'imamat_save_autosave', isAuto: true },
-      { id: 1, key: 'imamat_save_slot_1', isAuto: false },
-      { id: 2, key: 'imamat_save_slot_2', isAuto: false },
-      { id: 3, key: 'imamat_save_slot_3', isAuto: false }
-    ];
-    return defs.map((d) => {
-      try {
-        const raw = localStorage.getItem(d.key);
-        if (!raw) return { ...d, exists: false };
-        const parsed = JSON.parse(raw);
-        return {
-          ...d,
-          exists: true,
-          turn: parsed.turn || 1,
-          savedAt: parsed.savedAt || '',
-          seasonShort: lang === 'en' ? parsed.seasonShortEn || '' : parsed.seasonShortRu || ''
-        };
-      } catch {
-        return { ...d, exists: false };
-      }
-    });
+    return listSaveSlotsMeta(lang);
   }, [saveSlotsRefreshTick, lang]);
 
   const hasSavedCampaign = useMemo(() => {
     void saveSlotsRefreshTick;
-    try {
-      return (
-        Boolean(localStorage.getItem('imamat_stage1_save')) ||
-        saveSlotsMeta.some((s) => s.exists)
-      );
-    } catch {
-      return false;
-    }
+    return hasAnySavedCampaign(saveSlotsMeta);
   }, [saveSlotsRefreshTick, saveSlotsMeta]);
 
   const saveMetaSummary = useMemo(() => {
     void saveSlotsRefreshTick;
-    try {
-      const raw =
-        localStorage.getItem('imamat_stage1_save') ||
-        localStorage.getItem('imamat_save_autosave') ||
-        localStorage.getItem('imamat_save_slot_1');
-      if (!raw) return '';
-      const p = JSON.parse(raw);
-      return lang === 'en' ? `Turn #${p.turn || 1}` : `Ход #${p.turn || 1}`;
-    } catch {
-      return '';
-    }
+    return getLatestSaveSummary(lang);
   }, [saveSlotsRefreshTick, lang]);
   const fmtMod = (v) => (v > 0 ? `+${v}` : `${v}`);
   const currentMonthShortRu = String(SEASONS[(turn - 1) % SEASONS.length]).split(' (')[0];
@@ -13027,6 +12495,13 @@ struct FImamatCampaignSnapshot
           }}
           onLoadSlot={(slotId) => {
             handleLoadCampaignState(slotId);
+            setShowPauseMenu(false);
+          }}
+          onExportSaveFile={() => {
+            handleExportImamatSaveFile();
+          }}
+          onImportSaveFile={async (file) => {
+            await handleImportImamatSaveFile(file);
             setShowPauseMenu(false);
           }}
           onResume={() => setShowPauseMenu(false)}
