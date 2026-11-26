@@ -1,0 +1,62 @@
+[
+  {
+    "Name": "seg_rechel",
+    "SegmentID": "seg_rechel",
+    "SegmentName": "1. Крутой спуск с хребта Речель (Ретло)",
+    "ElevationLabel": "2100 м",
+    "WidthDescription": "Узкий глинистый карниз (в 2 вьюка)",
+    "InitialAbatisBarricades": 1,
+    "InitialAmbushSquads": 2,
+    "MapCoordinates": "(X=7500.0,Y=7800.0,Z=0.0)"
+  },
+  {
+    "Name": "seg_beech_gorge",
+    "SegmentID": "seg_beech_gorge",
+    "SegmentName": "2. Первая буковая теснина («Ворота смерти»)",
+    "ElevationLabel": "1850 м",
+    "WidthDescription": "Глубокая лесная промоина под вековыми буками",
+    "InitialAbatisBarricades": 2,
+    "InitialAmbushSquads": 3,
+    "MapCoordinates": "(X=20500.0,Y=15800.0,Z=0.0)"
+  },
+  {
+    "Name": "seg_ravine_1",
+    "SegmentID": "seg_ravine_1",
+    "SegmentName": "3. Поперечная балка у кургана (Место гибели ген. Пассека)",
+    "ElevationLabel": "1620 м",
+    "WidthDescription": "Расселина с завалами из срубленных стволов",
+    "InitialAbatisBarricades": 2,
+    "InitialAmbushSquads": 3,
+    "MapCoordinates": "(X=34500.0,Y=12200.0,Z=0.0)"
+  },
+  {
+    "Name": "seg_mud_slope",
+    "SegmentID": "seg_mud_slope",
+    "SegmentName": "4. Размытый косогор над речкой Аксай",
+    "ElevationLabel": "1440 м",
+    "WidthDescription": "Скользкая глиняная тропа над обрывом",
+    "InitialAbatisBarricades": 1,
+    "InitialAmbushSquads": 2,
+    "MapCoordinates": "(X=47500.0,Y=19200.0,Z=0.0)"
+  },
+  {
+    "Name": "seg_kozhalk",
+    "SegmentID": "seg_kozhalk",
+    "SegmentName": "5. Лесной перешеек под горой Кожалк-Дук",
+    "ElevationLabel": "1290 м",
+    "WidthDescription": "Простреливаемая с двух сторон поляна",
+    "InitialAbatisBarricades": 1,
+    "InitialAmbushSquads": 2,
+    "MapCoordinates": "(X=60500.0,Y=14500.0,Z=0.0)"
+  },
+  {
+    "Name": "seg_dargo_out",
+    "SegmentID": "seg_dargo_out",
+    "SegmentName": "6. Выход к пепелищу лагеря Дарго",
+    "ElevationLabel": "1150 м",
+    "WidthDescription": "Разбитая артиллерийская дорога у реки",
+    "InitialAbatisBarricades": 0,
+    "InitialAmbushSquads": 1,
+    "MapCoordinates": "(X=73500.0,Y=18500.0,Z=0.0)"
+  }
+]

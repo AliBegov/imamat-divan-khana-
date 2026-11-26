@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "ImamatUE5_MovieRenderQueuePreset_v1.8",
+  "presetAssetName": "MP_ImamatTrailer_4K_Preset",
+  "uePackagePath": "/Game/ImamatWargame/Cinematics",
+  "targetLevelSequence": "/Game/ImamatWargame/Cinematics/LS_SteamTrailer_60s",
+  "engineVersion": "Unreal Engine 5.5 (Lumen GI + Virtual Shadow Maps + Nanite Landscape)",
+  "outputSettings": {
+    "outputResolutionSteam16x9": [3840, 2160],
+    "outputResolutionCinemaScope239": [3840, 1608],
+    "outputFrameRateFps": 24,
+    "gameplayCaptureFrameRateFps": 60,
+    "customStartFrame": 0,
+    "customEndFrame": 1440,
+    "fileNameFormat": "{sequence_name}_{shot_name}_{frame_number}",
+    "outputDirectory": "{project_dir}/Saved/MovieRenders/SteamTrailer_60s",
+    "exrCompression": "DWAA_16Bit_MultiLayer",
+    "videoDeliveryCodec": "AppleProRes_422_HQ_MOV"
+  },
+  "antiAliasingAndWarmUp": {
+    "spatialSampleCount": 4,
+    "temporalSampleCount": 8,
+    "overrideAntiAliasing": true,
+    "antiAliasingMethod": "NONE_UseMRQSubsampling",
+    "renderWarmUpCount": 64,
+    "engineWarmUpCount": 64,
+    "renderWarmUpFrames": true
+  },
+  "highResTiling": {
+    "tileCount": 1,
+    "textureSharpnessBias": -0.35,
+    "overlapRatio": 0.1
+  },
+  "consoleVariables": {
+    "r.Lumen.Reflections.Allow": 1,
+    "r.Lumen.DiffuseIndirect.Allow": 1,
+    "r.Lumen.ScreenProbeGather.Temporal.MaxFramesAccumulated": 32,
+    "r.Shadow.Virtual.Enable": 1,
+    "r.Shadow.Virtual.SMRT.RayCountLocal": 8,
+    "r.Shadow.Virtual.SMRT.SamplesPerRayLocal": 4,
+    "r.VolumetricFog": 1,
+    "r.VolumetricFog.GridPixelSize": 4,
+    "r.VolumetricFog.GridSizeZ": 128,
+    "r.Nanite.MaxPixelsPerEdge": 0.5,
+    "r.LandscapeLOD0DistributionScale": 4.0,
+    "r.LandscapeLODDistributionScale": 3.0,
+    "r.MotionBlurQuality": 4,
+    "r.DepthOfFieldQuality": 4,
+    "imamat.Cutaway.EnableMilyutinPlane": 1,
+    "imamat.Sonar.CopperBasinRippleGain": 1.25
+  },
+  "shotOverrides": [
+    {
+      "shotIndex": 1,
+      "shotName": "SHOT_01_DivanKhanaTable",
+      "frameRange": [0, 240],
+      "activeArenaID": "tactical_dargo_ichkeria",
+      "milyutinCutawayEnabled": 0,
+      "focalLengthMm": 35.0,
+      "apertureFStop": 2.0
+    },
+    {
+      "shotIndex": 2,
+      "shotName": "SHOT_02_ShamilSignetStamp",
+      "frameRange": [240, 480],
+      "activeArenaID": "tactical_ahulgo_citadel",
+      "milyutinCutawayEnabled": 0,
+      "focalLengthMm": 50.0,
+      "apertureFStop": 2.4
+    },
+    {
+      "shotIndex": 3,
+      "shotName": "SHOT_03_MilyutinCutawayAndCopperBasin",
+      "frameRange": [480, 768],
+      "activeArenaID": "tactical_salti_siege",
+      "milyutinCutawayEnabled": 1,
+      "focalLengthMm": 28.0,
+      "apertureFStop": 2.8
+    },
+    {
+      "shotIndex": 4,
+      "shotName": "SHOT_04_IchkeriaBeechAbatisAnd18Gazyrs",
+      "frameRange": [768, 1056],
+      "activeArenaID": "tactical_dargo_ichkeria",
+      "milyutinCutawayEnabled": 0,
+      "focalLengthMm": 24.0,
+      "apertureFStop": 2.8
+    },
+    {
+      "shotIndex": 5,
+      "shotName": "SHOT_05_NizamCodeAndGergebilBastion",
+      "frameRange": [1056, 1248],
+      "activeArenaID": "tactical_gergebil_bastion",
+      "milyutinCutawayEnabled": 1,
+      "focalLengthMm": 40.0,
+      "apertureFStop": 2.2
+    },
+    {
+      "shotIndex": 6,
+      "shotName": "SHOT_06_UpperGunibRevealAndSteamPackshot",
+      "frameRange": [1248, 1440],
+      "activeArenaID": "tactical_ahulgo_citadel",
+      "milyutinCutawayEnabled": 0,
+      "focalLengthMm": 18.0,
+      "apertureFStop": 4.0
+    }
+  ]
+}

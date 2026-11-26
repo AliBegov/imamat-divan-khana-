@@ -1,0 +1,594 @@
+[
+  {
+    "Name": "UI_App_Title",
+    "Key": "UI_App_Title",
+    "Namespace": "Imamat_HUD",
+    "SourceStringRU": "ИМАМАТ: ДИВАН-ХАНА (1845)",
+    "TranslationEN": "IMAMAT: DIVAN-KHANA (1845)",
+    "HistoricalContextNote": "Main war-table header title"
+  },
+  {
+    "Name": "UI_App_Subtitle",
+    "Key": "UI_App_Subtitle",
+    "Namespace": "Imamat_HUD",
+    "SourceStringRU": "Ставка Имама Шамиля в Дарго-Ведено • Управление наибствами, Низамами, порохом и осадами",
+    "TranslationEN": "Imam Shamil's Headquarters in Dargo-Vedeno • Govern Naibates, Sharia Nizams, Black Powder & Sieges",
+    "HistoricalContextNote": "Header subtitle"
+  },
+  {
+    "Name": "UI_Res_Gunpowder",
+    "Key": "UI_Res_Gunpowder",
+    "Namespace": "Imamat_HUD",
+    "SourceStringRU": "Порох (Арсенал)",
+    "TranslationEN": "Gunpowder (Arsenal)",
+    "HistoricalContextNote": "Measured in Russian poods (1 pood = 16.38 kg)"
+  },
+  {
+    "Name": "UI_Res_Provisions",
+    "Key": "UI_Res_Provisions",
+    "Namespace": "Imamat_HUD",
+    "SourceStringRU": "Провиант (Террасы)",
+    "TranslationEN": "Provisions (Terraces)",
+    "HistoricalContextNote": "Mountain terrace grain and dried bread reserves"
+  },
+  {
+    "Name": "UI_Res_Treasury",
+    "Key": "UI_Res_Treasury",
+    "Namespace": "Imamat_HUD",
+    "SourceStringRU": "Казна (Байт аль-маль)",
+    "TranslationEN": "Treasury (Bayt al-Mal)",
+    "HistoricalContextNote": "State treasury managed by Treasurer Hadjiyav"
+  },
+  {
+    "Name": "UI_Res_Authority",
+    "Key": "UI_Res_Authority",
+    "Namespace": "Imamat_HUD",
+    "SourceStringRU": "Авторитет",
+    "TranslationEN": "Authority",
+    "HistoricalContextNote": "Imam Shamil's political and spiritual authority"
+  },
+  {
+    "Name": "UI_Res_ArmyStability",
+    "Key": "UI_Res_ArmyStability",
+    "Namespace": "Imamat_HUD",
+    "SourceStringRU": "Войско / Устойчивость",
+    "TranslationEN": "Forces / Stability",
+    "HistoricalContextNote": "Total garrison and integral resilience score"
+  },
+  {
+    "Name": "UI_Res_LeaderStress",
+    "Key": "UI_Res_LeaderStress",
+    "Namespace": "Imamat_HUD",
+    "SourceStringRU": "Нагрузка Имама",
+    "TranslationEN": "Imam's Burden",
+    "HistoricalContextNote": "Triggers Zulmat crisis at >= 85%"
+  },
+  {
+    "Name": "UI_Tab_1_Map",
+    "Key": "UI_Tab_1_Map",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "1. Карта Кавказа и Наибы",
+    "TranslationEN": "1. Caucasus Map & Naibs",
+    "HistoricalContextNote": "Strategic 10-Naibate relief map"
+  },
+  {
+    "Name": "UI_Tab_2_Nizams",
+    "Key": "UI_Tab_2_Nizams",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "2. Кодекс Низамов Шамиля",
+    "TranslationEN": "2. Shamil's Nizam Code",
+    "HistoricalContextNote": "State law reforms and Sharia vs. Adat courts"
+  },
+  {
+    "Name": "UI_Tab_3_Diplomacy",
+    "Key": "UI_Tab_3_Diplomacy",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "3. Стамбул и Серебряные Ордена",
+    "TranslationEN": "3. Istanbul & Silver Orders",
+    "HistoricalContextNote": "Sublime Porte diplomacy and Kubachi silver medals"
+  },
+  {
+    "Name": "UI_Tab_4_Siege",
+    "Key": "UI_Tab_4_Siege",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "4. Тактический симулятор",
+    "TranslationEN": "4. Tactical Siege & Spline",
+    "HistoricalContextNote": "Milyutin cliffside siege and Dargo forest ambush"
+  },
+  {
+    "Name": "UI_Tab_5_Arsenal",
+    "Key": "UI_Tab_5_Arsenal",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "5. Арсенал Ведено и Штаб Врага",
+    "TranslationEN": "5. Vedeno Arsenal & Enemy HQ",
+    "HistoricalContextNote": "Cannon foundry, saltpeter barns, Imperial AI doctrines"
+  },
+  {
+    "Name": "UI_Tab_6_Chronicle",
+    "Key": "UI_Tab_6_Chronicle",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "6. Хроника аль-Карахи",
+    "TranslationEN": "6. Al-Qarakhi Chronicle",
+    "HistoricalContextNote": "Court secretary Muhammed-Tahir al-Qarakhi's dispatches"
+  },
+  {
+    "Name": "UI_Tab_7_Crises",
+    "Key": "UI_Tab_7_Crises",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "7. Исторические развилки и Мост в UE5",
+    "TranslationEN": "7. Historical Forks & UE5 Bridge",
+    "HistoricalContextNote": "6 historical crises and live C++/JSON exporter"
+  },
+  {
+    "Name": "UI_Tab_8_Verdict",
+    "Key": "UI_Tab_8_Verdict",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "8. Тарикат, Кампании и 3D-Реестр",
+    "TranslationEN": "8. Tariqat, Campaigns & 3D Spec",
+    "HistoricalContextNote": "Khalwat practices, 4 campaigns (1839-1859), 3D registry"
+  },
+  {
+    "Name": "UI_Tab_9_SimEpilogue",
+    "Key": "UI_Tab_9_SimEpilogue",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "9. ИИ-Баланс и Эпилог (1859–1877)",
+    "TranslationEN": "9. AI Balance & Epilogue (1859–1877)",
+    "HistoricalContextNote": "4,000-run Monte Carlo benchmark and Kaluga/Medina epilogue"
+  },
+  {
+    "Name": "UI_Tab_10_Archive",
+    "Key": "UI_Tab_10_Archive",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "10. Архив Лиц, Газыри и 3D-Промпты",
+    "TranslationEN": "10. Figures, Gazyrs & 3D Prompts",
+    "HistoricalContextNote": "Historical portraits, 18-gazyr ballistics, MetaHuman specs"
+  },
+  {
+    "Name": "UI_Tab_11_3DTactical",
+    "Key": "UI_Tab_11_3DTactical",
+    "Namespace": "Imamat_Tabs",
+    "SourceStringRU": "11. 3D-Полигон и Разрез Скалы (Этап 2)",
+    "TranslationEN": "11. 3D Cutaway Siege Polygon (Stage 2)",
+    "HistoricalContextNote": "Interactive 60-FPS 3D cliffside cutaway & counter-mine arena"
+  },
+  {
+    "Name": "Naibate_Khunzakh",
+    "Key": "Naibate_Khunzakh",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Хунзах и Авария (Наиб Хаджи-Мурат)",
+    "TranslationEN": "Khunzakh & Avaria (Naib Hadji Murad)",
+    "HistoricalContextNote": "Central Avar plateau stronghold"
+  },
+  {
+    "Name": "Naibate_Vedeno",
+    "Key": "Naibate_Vedeno",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Столица Дарго-Ведено (Ставка Шамиля и устаз Джабраил)",
+    "TranslationEN": "Capital Dargo-Vedeno (Shamil's HQ & Master Djabrail)",
+    "HistoricalContextNote": "Capital of the Imamate after 1845"
+  },
+  {
+    "Name": "Naibate_Gunib",
+    "Key": "Naibate_Gunib",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Высокогорный Гуниб (Цитадель 1859 г.)",
+    "TranslationEN": "Highland Gunib Plateau (Citadel of 1859)",
+    "HistoricalContextNote": "Natural mountain fortress in inner Dagestan"
+  },
+  {
+    "Name": "Naibate_Chokh",
+    "Key": "Naibate_Chokh",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Бастион Чох и Согратль (Инженер Сафаров и Муса Балаханский)",
+    "TranslationEN": "Chokh & Sogratl Bastion (Engineer Safarov & Musa)",
+    "HistoricalContextNote": "Site of the famous 1849 siege"
+  },
+  {
+    "Name": "Naibate_Gergebil",
+    "Key": "Naibate_Gergebil",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Гергебиль (Наиб Идрис Гергебильский)",
+    "TranslationEN": "Gergebil Fortress (Naib Idris of Gergebil)",
+    "HistoricalContextNote": "Guards the confluence of the Koisu rivers"
+  },
+  {
+    "Name": "Naibate_Salty",
+    "Key": "Naibate_Salty",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Аул Салты и Телетль (Мудир Кибит-Магома)",
+    "TranslationEN": "Salti & Teletl (Mudir Kibit-Magoma)",
+    "HistoricalContextNote": "Famous underground blindage siege of 1847"
+  },
+  {
+    "Name": "Naibate_Benoy",
+    "Key": "Naibate_Benoy",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Ичкерия и Беной (Наиб Байсунгур Беноевский)",
+    "TranslationEN": "Ichkeria & Benoy (Naib Baysungur of Benoy)",
+    "HistoricalContextNote": "Forested stronghold of eastern Chechnya"
+  },
+  {
+    "Name": "Naibate_Shali",
+    "Key": "Naibate_Shali",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Большая Чечня и Шали (Наиб Талгик Шалинский)",
+    "TranslationEN": "Greater Chechnya & Shali (Naib Talgik of Shali)",
+    "HistoricalContextNote": "Primary grain breadbasket of the Imamate"
+  },
+  {
+    "Name": "Naibate_Irib",
+    "Key": "Naibate_Irib",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Ириб и Карах (Султан Даниял-бек Илисуйский)",
+    "TranslationEN": "Irib & Karakh (Sultan Daniyal-bek of Ilisu)",
+    "HistoricalContextNote": "Southern Dagestan mudirate"
+  },
+  {
+    "Name": "Naibate_Karata",
+    "Key": "Naibate_Karata",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Карата и Андия (Старший сын Гази-Мухаммад)",
+    "TranslationEN": "Karata & Andi (Eldest Son Ghazi-Muhammad)",
+    "HistoricalContextNote": "Western mountain passes and Rechel ridge"
+  },
+  {
+    "Name": "NAIB_KHUNZAKH",
+    "Key": "NAIB_KHUNZAKH",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Хунзахское наибство (Хаджи-Мурат)",
+    "TranslationEN": "Khunzakh Naibate (Hadji Murad)",
+    "HistoricalContextNote": "Нагорный Дагестан (Аварское плато)"
+  },
+  {
+    "Name": "NAIB_VEDENO",
+    "Key": "NAIB_VEDENO",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Большая Чечня — Аух и Мичик (Шуаиб-Мулла / Талхиг)",
+    "TranslationEN": "Greater Chechnya — Aukh & Michik (Shuaib-Mullah / Talkhig)",
+    "HistoricalContextNote": "Ичкерия и предгорья Чечни"
+  },
+  {
+    "Name": "NAIB_GOTSATL",
+    "Key": "NAIB_GOTSATL",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Гоцатль и Андалал (Кибит-Магома Телетлинский)",
+    "TranslationEN": "Gotsatl & Andalal (Kibit-Magoma of Teletl)",
+    "HistoricalContextNote": "Центральный Дагестан"
+  },
+  {
+    "Name": "NAIB_GEKHI",
+    "Key": "NAIB_GEKHI",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Малая Чечня — Гехи и Гойты (Ахверды-Магома / Саиб-Дулла)",
+    "TranslationEN": "Lesser Chechnya — Gekhi & Goity (Akhverdy-Magoma / Saib-Dulla)",
+    "HistoricalContextNote": "Западная Чечня и Сунженский рубеж"
+  },
+  {
+    "Name": "NAIB_SHARO_ARGUN",
+    "Key": "NAIB_SHARO_ARGUN",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Шаро-Аргун и Шатой (Батуко Шатоевский)",
+    "TranslationEN": "Sharo-Argun & Shatoy (Batuko of Shatoy)",
+    "HistoricalContextNote": "Верховья Аргунского ущелья"
+  },
+  {
+    "Name": "NAIB_IRGALITL",
+    "Key": "NAIB_IRGALITL",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Гумбет и Андия (Абакар-Хаджи Акушинский)",
+    "TranslationEN": "Gumbet & Andia (Abakar-Hadji of Akusha)",
+    "HistoricalContextNote": "Северо-Западный Дагестан"
+  },
+  {
+    "Name": "NAIB_SALTY_GERGEBIL",
+    "Key": "NAIB_SALTY_GERGEBIL",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Гергебиль и Салты — Минный пояс (Идрис Гергебильский)",
+    "TranslationEN": "Gergebil & Salty — Counter-Mine Belt (Idris of Gergebil)",
+    "HistoricalContextNote": "Южные ворота Аварии"
+  },
+  {
+    "Name": "NAIB_DARGO_VEDENO",
+    "Key": "NAIB_DARGO_VEDENO",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Столичный округ Дарго-Ведено (Гази-Мухаммад)",
+    "TranslationEN": "Dargo-Vedeno Capital District (Ghazi-Muhammad)",
+    "HistoricalContextNote": "Столица Имамата (Ичкерия)"
+  },
+  {
+    "Name": "NAIB_GUNIB_CITADEL",
+    "Key": "NAIB_GUNIB_CITADEL",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Верхний Гуниб и Карадах (Инженер Хаджи-Юсуф Сафаров)",
+    "TranslationEN": "Upper Gunib & Karadakh (Engineer Hajji Yusuf Safarov)",
+    "HistoricalContextNote": "Внутренний горный бастион"
+  },
+  {
+    "Name": "NAIB_CHOKH_SOGRATL",
+    "Key": "NAIB_CHOKH_SOGRATL",
+    "Namespace": "Imamat_Map",
+    "SourceStringRU": "Бастион Чох и Согратль (Мудир Даниял-бек Елисуйский)",
+    "TranslationEN": "Chokh & Sogratl Bastion (Mudir Daniyal-Bek of Elisu)",
+    "HistoricalContextNote": "Южный Дагестан и Андалал"
+  },
+  {
+    "Name": "ORDER_RAID",
+    "Key": "ORDER_RAID",
+    "Namespace": "Imamat_Orders",
+    "SourceStringRU": "Набег на линию (Конный рейд)",
+    "TranslationEN": "Caucasus Line Raid (Cavalry Strike)",
+    "HistoricalContextNote": "Снижает натиск Империи (-18%), даёт трофеи"
+  },
+  {
+    "Name": "ORDER_FORTIFY",
+    "Key": "ORDER_FORTIFY",
+    "Namespace": "Imamat_Orders",
+    "SourceStringRU": "Инженерная оборона (Блиндажи и завалы)",
+    "TranslationEN": "Engineering Defense (Blindages & Abatis)",
+    "HistoricalContextNote": "Укрепляет бастионы и снижает натиск (-14%)"
+  },
+  {
+    "Name": "ORDER_TAX",
+    "Key": "ORDER_TAX",
+    "Namespace": "Imamat_Orders",
+    "SourceStringRU": "Сбор зейката и хараджа в Байт аль-маль",
+    "TranslationEN": "Collect Zakat & Kharaj for Bayt al-Mal",
+    "HistoricalContextNote": "Пополняет казну (+110 руб.) и террасы (+140 мер)"
+  },
+  {
+    "Name": "ORDER_AUDIT",
+    "Key": "ORDER_AUDIT",
+    "Namespace": "Imamat_Orders",
+    "SourceStringRU": "Тайная ревизия мухтасиба (Суд Низама)",
+    "TranslationEN": "Secret Muhtasib Audit (Nizam Tribunal)",
+    "HistoricalContextNote": "Сбивает Алчность (-18) и Гордыню (-10) наиба"
+  },
+  {
+    "Name": "ROUTE_MOUNTAIN_PATH",
+    "Key": "ROUTE_MOUNTAIN_PATH",
+    "Namespace": "Imamat_Logistics",
+    "SourceStringRU": "Тайная пастушья тропа через хребет (2 хода)",
+    "TranslationEN": "Secret Shepherd Ridge Trail (2 Turns)",
+    "HistoricalContextNote": "Низкий риск перехвата казачьими пикетами"
+  },
+  {
+    "Name": "ROUTE_CANYON_ROAD",
+    "Key": "ROUTE_CANYON_ROAD",
+    "Namespace": "Imamat_Logistics",
+    "SourceStringRU": "Быстрый прорыв по руслу ущелья (1 ход)",
+    "TranslationEN": "Fast Gorge Riverbed Dash (1 Turn)",
+    "HistoricalContextNote": "Доставка за 1 ход, повышенный риск засады"
+  },
+  {
+    "Name": "FORMULA_TITLE",
+    "Key": "FORMULA_TITLE",
+    "Namespace": "Imamat_Math",
+    "SourceStringRU": "Декомпозиция расчёта Диван-ханы (FOrderProbabilityBreakdown)",
+    "TranslationEN": "Divan-Khana Obedience Breakdown (FOrderProbabilityBreakdown)",
+    "HistoricalContextNote": "Прозрачная формула воли наиба"
+  },
+  {
+    "Name": "FORMULA_POSITIVE",
+    "Key": "FORMULA_POSITIVE",
+    "Namespace": "Imamat_Math",
+    "SourceStringRU": "Сумма верности (Иман + Смелость + Порох/Серебро)",
+    "TranslationEN": "Loyalty Sum (Iman + Courage + Powder/Silver)",
+    "HistoricalContextNote": "Числитель / положительный вклад"
+  },
+  {
+    "Name": "FORMULA_NEGATIVE",
+    "Key": "FORMULA_NEGATIVE",
+    "Namespace": "Imamat_Math",
+    "SourceStringRU": "Сумма сопротивления (Алчность + Гордыня + Угроза + Стресс)",
+    "TranslationEN": "Resistance Penalty (Greed + Pride + Threat + Strain)",
+    "HistoricalContextNote": "Штрафы неповиновения"
+  },
+  {
+    "Name": "UI_ACHIEVEMENTS_BTN",
+    "Key": "UI_ACHIEVEMENTS_BTN",
+    "Namespace": "Imamat_UI",
+    "SourceStringRU": "Достижения",
+    "TranslationEN": "Achievements",
+    "HistoricalContextNote": "Кнопка Steamworks Achievements в шапке"
+  },
+  {
+    "Name": "TRAILER_SHOT_01_DIVAN_TABLE",
+    "Key": "TRAILER_SHOT_01_DIVAN_TABLE",
+    "Namespace": "Imamat_Trailer_60s",
+    "SourceStringRU": "Дубовый стол государственного совета Диван-ханы в Дарго-Ведено: расчёт вероятности повиновения наиба P_exec и отправка конного гонца.",
+    "TranslationEN": "Oak command table of the Divan-Khana state council in Dargo-Vedeno: computing Naib obedience P_exec and dispatching a mounted courier.",
+    "HistoricalContextNote": "Milestone M16–M19 (Trailer_60s)"
+  },
+  {
+    "Name": "TRAILER_SHOT_02_SIGNET_STAMP",
+    "Key": "TRAILER_SHOT_02_SIGNET_STAMP",
+    "Namespace": "Imamat_Trailer_60s",
+    "SourceStringRU": "Восьмиугольный серебряный перстень-печать Шамиля опускается на сургуч приказа; конный муртазек скачет сквозь ущелье Андийского Койсу.",
+    "TranslationEN": "Shamil's octagonal silver signet ring presses into sealing wax; a Murtazek rider gallops through the Andi Koysu gorge.",
+    "HistoricalContextNote": "Milestone M16–M19 (Trailer_60s)"
+  },
+  {
+    "Name": "TRAILER_SHOT_03_MILYUTIN_CUTAWAY",
+    "Key": "TRAILER_SHOT_03_MILYUTIN_CUTAWAY",
+    "Namespace": "Imamat_Trailer_60s",
+    "SourceStringRU": "Геодезический 3D-разрез скалы Д. А. Милютина и круги на воде в медном тазу инженера Хаджи-Юсуфа Сафарова: подрыв встречного камуфлета.",
+    "TranslationEN": "D. A. Milyutin's 3D cross-section cutaway and concentric ripples in engineer Hajji-Yusuf Safarov's copper water basin: counter-mine camouflet detonation.",
+    "HistoricalContextNote": "Milestone M16–M19 (Trailer_60s)"
+  },
+  {
+    "Name": "TRAILER_SHOT_04_ICHKERIA_18_GAZYRS",
+    "Key": "TRAILER_SHOT_04_ICHKERIA_18_GAZYRS",
+    "Namespace": "Imamat_Trailer_60s",
+    "SourceStringRU": "Лесная засада в буковых засеках Ичкерии: отстрел 18 нагрудных газырей до 0/18 и стремительная контратака в шашки под буркой.",
+    "TranslationEN": "Forest ambush in the Ichkeria beech abatis: firing all 18 chest gazyrs down to 0/18 and launching a downhill shashka charge.",
+    "HistoricalContextNote": "Milestone M16–M19 (Trailer_60s)"
+  },
+  {
+    "Name": "TRAILER_SHOT_05_NIZAM_GERGEBIL",
+    "Key": "TRAILER_SHOT_05_NIZAM_GERGEBIL",
+    "Namespace": "Imamat_Trailer_60s",
+    "SourceStringRU": "Принятие статей Кодекса Низамов (проба пороха на бумаге) и артиллерийская дуэль на бастионах Гергебиля и Салты.",
+    "TranslationEN": "Enacting the Nizam Code (gunpowder flash-paper test) and artillery duel atop the bastions of Gergebil and Salty.",
+    "HistoricalContextNote": "Milestone M16–M19 (Trailer_60s)"
+  },
+  {
+    "Name": "TRAILER_SHOT_06_GUNIB_PACKSHOT",
+    "Key": "TRAILER_SHOT_06_GUNIB_PACKSHOT",
+    "Namespace": "Imamat_Trailer_60s",
+    "SourceStringRU": "Вертикальная панорама плато Верхнего Гуниба над облаками и финальный титул ИМАМАТ: ДИВАН-ХАНА — Добавьте в Желаемое в Steam.",
+    "TranslationEN": "Vertical crane reveal of the Upper Gunib plateau above the clouds and packshot IMAMAT: DIVAN-KHANA — Wishlist on Steam.",
+    "HistoricalContextNote": "Milestone M16–M19 (Trailer_60s)"
+  },
+  {
+    "Name": "MUSEUM_EX_01_SHAMIL_DENIER",
+    "Key": "MUSEUM_EX_01_SHAMIL_DENIER",
+    "Namespace": "Imamat_Museum_Portraits",
+    "SourceStringRU": "Имам Шамиль (Альбуминовый фотопортрет А. И. Деньера, Санкт-Петербург, октябрь 1859 г., Эрмитаж / ГАРФ).",
+    "TranslationEN": "Imam Shamil (Albumen print by A. I. Denier, St. Petersburg, October 1859, Hermitage / GARF).",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Portraits)"
+  },
+  {
+    "Name": "MUSEUM_EX_02_HADJI_MURAT_GAGARIN",
+    "Key": "MUSEUM_EX_02_HADJI_MURAT_GAGARIN",
+    "Namespace": "Imamat_Museum_Portraits",
+    "SourceStringRU": "Наиб Хаджи-Мурат Хунзахский (Акварель с натуры кн. Г. Г. Гагарина, Тифлис, 1851 г., Русский музей).",
+    "TranslationEN": "Naib Hadji Murad of Khunzakh (Watercolor from life by Prince G. G. Gagarin, Tiflis, 1851, Russian Museum).",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Portraits)"
+  },
+  {
+    "Name": "MUSEUM_EX_03_SAFAROV_ENGINEER",
+    "Key": "MUSEUM_EX_03_SAFAROV_ENGINEER",
+    "Namespace": "Imamat_Museum_Portraits",
+    "SourceStringRU": "Мудир и главный военный инженер Хаджи-Юсуф Сафаров — создатель минных галерей, 3-накатных блиндажей и сонара медного таза.",
+    "TranslationEN": "Mudir and Chief Military Engineer Hajji-Yusuf Safarov — architect of counter-mines, 3-layer log blindages, and the copper basin sonar.",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Portraits)"
+  },
+  {
+    "Name": "MUSEUM_EX_04_GHAZI_MUHAMMAD_MARSHAL",
+    "Key": "MUSEUM_EX_04_GHAZI_MUHAMMAD_MARSHAL",
+    "Namespace": "Imamat_Museum_Portraits",
+    "SourceStringRU": "Старший сын имама Гази-Мухаммад — наиб Карата (1850–1859) и впоследствии османский маршал (мушир) в Стамбуле и Медине.",
+    "TranslationEN": "Eldest active military son Ghazi-Muhammad — Naib of Karata (1850–1859) and later Ottoman Field Marshal (Mushir) in Istanbul and Medina.",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Portraits)"
+  },
+  {
+    "Name": "MUSEUM_EX_05_BAZALAI_GURDA_ARMS",
+    "Key": "MUSEUM_EX_05_BAZALAI_GURDA_ARMS",
+    "Namespace": "Imamat_Museum_Weapons",
+    "SourceStringRU": "Кинжал кама старого Чилла-Базалая (Казанище) и шашка волчок «Гурда» с клеймом генуэзских челюстей.",
+    "TranslationEN": "Kama dagger by Old Chilla-Bazalai (Kazanishche) and 'Gurda' shashka saber bearing the Genoese jaws hallmark.",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Weapons)"
+  },
+  {
+    "Name": "MUSEUM_EX_06_18_GAZYRS_KRIMKAKH",
+    "Key": "MUSEUM_EX_06_18_GAZYRS_KRIMKAKH",
+    "Namespace": "Imamat_Museum_Weapons",
+    "SourceStringRU": "18 нагрудных газырей черкески (отмеренные заряды пороха Ведено) и нарезная кремнёвая винтовка крым-ках (Кубачи / Харбук).",
+    "TranslationEN": "18 chest gazyr tubes (pre-measured Vedeno gunpowder charges) and a Kubachi/Kharbuk rifled flintlock musket (Krim-Kakh).",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Weapons)"
+  },
+  {
+    "Name": "MUSEUM_EX_07_VEDENO_BRONZE_UNICORN",
+    "Key": "MUSEUM_EX_07_VEDENO_BRONZE_UNICORN",
+    "Namespace": "Imamat_Museum_Weapons",
+    "SourceStringRU": "Горный бронзовый единорог литейного двора Дарго-Ведено и чугунные гранаты с деревянными дистанционными трубками.",
+    "TranslationEN": "Mountain bronze licorne cannon cast at the Dargo-Vedeno foundry with fused cast-iron shells.",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Weapons)"
+  },
+  {
+    "Name": "MUSEUM_EX_08_SILVER_ORDERS_SEAL",
+    "Key": "MUSEUM_EX_08_SILVER_ORDERS_SEAL",
+    "Namespace": "Imamat_Museum_Orders",
+    "SourceStringRU": "Серебряные чернёные ордена Шамиля («Кто думает о последствиях — тот не храбрец») и восьмиугольная печать Диван-ханы.",
+    "TranslationEN": "Shamil's nielloed silver orders ('He who ponders the consequences lacks courage') and the octagonal signet seal of the Divan-Khana.",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Orders)"
+  },
+  {
+    "Name": "MUSEUM_EX_09_MILYUTIN_ATLAS_1839",
+    "Key": "MUSEUM_EX_09_MILYUTIN_ATLAS_1839",
+    "Namespace": "Imamat_Museum_Maps",
+    "SourceStringRU": "Геодезический план и вертикальный разрез скалы Старого и Нового Ахульго (капитан Генштаба Д. А. Милютин, 1839 г., РГВИА ф. 846).",
+    "TranslationEN": "Geodetic survey plan and vertical cutaway of Old and New Akhulgo (General Staff Capt. D. A. Milyutin, 1839, RGVIA F. 846).",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Maps)"
+  },
+  {
+    "Name": "MUSEUM_EX_10_SAFAROV_ARABIC_MAP_1856",
+    "Key": "MUSEUM_EX_10_SAFAROV_ARABIC_MAP_1856",
+    "Namespace": "Imamat_Museum_Maps",
+    "SourceStringRU": "Арабоязычная военно-административная карта наибств Имамата Хаджи-Юсуфа Сафарова и хроника Мухаммед-Тахира аль-Карахи.",
+    "TranslationEN": "Hajji-Yusuf Safarov's 1856 Arabic administrative map of the Imamate Naibates and the chronicle of Muhammad-Tahir al-Qarakhi.",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Maps)"
+  },
+  {
+    "Name": "MUSEUM_EX_11_THREE_ARCHIVES_SYNTHESIS",
+    "Key": "MUSEUM_EX_11_THREE_ARCHIVES_SYNTHESIS",
+    "Namespace": "Imamat_Museum_Sources",
+    "SourceStringRU": "Синтез трёх архивных корпусов (31 глава, 2.23 МБ): труды проф. Х. М. Доного, АКАК/РГВИА и Османский архив BOA в Стамбуле.",
+    "TranslationEN": "Synthesis of three archival corpora (31 chapters, 2.23 MB): works of Prof. Kh. M. Donogo, AKAK/RGVIA, and the Ottoman BOA archive in Istanbul.",
+    "HistoricalContextNote": "Milestone M16–M19 (Museum_Sources)"
+  },
+  {
+    "Name": "IRONMAN_01_AKHULGO_1839",
+    "Key": "IRONMAN_01_AKHULGO_1839",
+    "Namespace": "Imamat_Ironman_Challenge",
+    "SourceStringRU": "Испытание Ironman 1839: 80 дней блокады Ахульго (доктрина ген. П. Х. Граббе «Осадный таран и мины», порох Ведено 115 пуд.).",
+    "TranslationEN": "Ironman Challenge 1839: 80 Days of Akhulgo (Gen. P. Kh. Grabbe 'Siege Ram & Mines' doctrine, Vedeno gunpowder 115 poods).",
+    "HistoricalContextNote": "Milestone M16–M19 (Ironman_Challenge)"
+  },
+  {
+    "Name": "IRONMAN_02_DARGO_1845",
+    "Key": "IRONMAN_02_DARGO_1845",
+    "Namespace": "Imamat_Ironman_Challenge",
+    "SourceStringRU": "Испытание Ironman 1845: Сухарная экспедиция в Ичкерийском лесу (доктрина кн. М. С. Воронцова «Глубокий клин на Дарго»).",
+    "TranslationEN": "Ironman Challenge 1845: The Biscuit Expedition in Ichkeria (Prince M. S. Vorontsov 'Deep Column to Dargo' doctrine).",
+    "HistoricalContextNote": "Milestone M16–M19 (Ironman_Challenge)"
+  },
+  {
+    "Name": "IRONMAN_03_GUNIB_1857",
+    "Key": "IRONMAN_03_GUNIB_1857",
+    "Namespace": "Imamat_Ironman_Challenge",
+    "SourceStringRU": "Испытание Ironman 1857–1859: Просеки и кольцо кн. А. И. Барятинского (критический дефицит пороха 85 пуд. и тотальная блокада).",
+    "TranslationEN": "Ironman Challenge 1857–1859: Prince A. I. Baryatinsky's Forest Clearings & Ring (critical powder shortage 85 poods and total blockade).",
+    "HistoricalContextNote": "Milestone M16–M19 (Ironman_Challenge)"
+  },
+  {
+    "Name": "DISPATCH_01_SULTAN_ABDULMEJID_1853",
+    "Key": "DISPATCH_01_SULTAN_ABDULMEJID_1853",
+    "Namespace": "Imamat_Diplomacy_Chancellery",
+    "SourceStringRU": "Фирман султану Абдул-Меджиду I и сераскиру Риза-паше (Стамбул / Трапезунд, 1853, BOA İ.DH. 284/17852): прорыв фелуки с порохом.",
+    "TranslationEN": "Firman to Sultan Abdülmejid I & Serasker Riza Pasha (Istanbul / Trebizond, 1853, BOA İ.DH. 284/17852): felucca gunpowder blockade run.",
+    "HistoricalContextNote": "Milestone M16–M19 (Diplomacy_Chancellery)"
+  },
+  {
+    "Name": "DISPATCH_02_MICHIK_JAMALUDDIN_1855",
+    "Key": "DISPATCH_02_MICHIK_JAMALUDDIN_1855",
+    "Namespace": "Imamat_Diplomacy_Chancellery",
+    "SourceStringRU": "Трактат на реке Мичик (10 марта 1855 г., РГВИА ф. 846): обмен поручика Джемалуддина и 40 000 руб. серебром на княгинь Чавчавадзе и Орбелиани.",
+    "TranslationEN": "Michik River Treaty (March 10, 1855, RGVIA F. 846): exchange of Lt. Jamaluddin and 40,000 silver rubles for Princesses Chavchavadze and Orbeliani.",
+    "HistoricalContextNote": "Milestone M16–M19 (Diplomacy_Chancellery)"
+  },
+  {
+    "Name": "DISPATCH_03_ANATOLIAN_MUSHIR_1854",
+    "Key": "DISPATCH_03_ANATOLIAN_MUSHIR_1854",
+    "Namespace": "Imamat_Diplomacy_Chancellery",
+    "SourceStringRU": "Депеша муширу Анатолийской армии Абди-паше у Карса (июль 1854 г., BOA A.MKT.UM): диверсия в Кахетии и караван селитры.",
+    "TranslationEN": "Dispatch to Anatolian Mushir Abdi Pasha at Kars (July 1854, BOA A.MKT.UM): Kakheti diversion and nitre caravan.",
+    "HistoricalContextNote": "Milestone M16–M19 (Diplomacy_Chancellery)"
+  },
+  {
+    "Name": "DISPATCH_04_KABARDA_MANIFESTO_1846",
+    "Key": "DISPATCH_04_KABARDA_MANIFESTO_1846",
+    "Namespace": "Imamat_Diplomacy_Chancellery",
+    "SourceStringRU": "Воззвание с восьмиугольной печатью к князьям и узденям Кабарды (апрель 1846 г., РГВИА ф. ВУА): прорыв кордонов на Тереке и Сунже.",
+    "TranslationEN": "Octagonal Signet Manifesto to the Princes & Uzdens of Kabarda (April 1846, RGVIA F. VUA): breaking the Terek and Sunzha cordons.",
+    "HistoricalContextNote": "Milestone M16–M19 (Diplomacy_Chancellery)"
+  },
+  {
+    "Name": "DISPATCH_05_VORONTSOV_PARLEY_1845",
+    "Key": "DISPATCH_05_VORONTSOV_PARLEY_1845",
+    "Namespace": "Imamat_Diplomacy_Chancellery",
+    "SourceStringRU": "Парламентёрская нота Диван-ханы князю М. С. Воронцову (июль 1845 г., АКАК т. X): трёхдневное перемирие на перевалах Анди.",
+    "TranslationEN": "Divan-Khana Truce Note to Prince M. S. Vorontsov (July 1845, AKAK Vol. X): three-day parley on the Andi passes.",
+    "HistoricalContextNote": "Milestone M16–M19 (Diplomacy_Chancellery)"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "Name": "porte_envoys",
+    "OptionID": "porte_envoys",
+    "Title": "Посольство Хаджи-Исмаила в Стамбул (Дворец Долмабахче)",
+    "Description": "Запрос султану Абдул-Меджиду I о признании титула Сердар-ы Экрем, присылке золотых червонцев и военного союза.",
+    "CostSilver": 110,
+    "RewardPowderPoods": 25,
+    "RewardSilverRubles": 260,
+    "RewardSupportPercent": 14.0
+  },
+  {
+    "Name": "trabzon_smugglers",
+    "OptionID": "trabzon_smugglers",
+    "Title": "Караван фелюг из Трабзона и Синопа (Контрабанда пороха и свинца)",
+    "Description": "Тайная закупка английского ружейного пороха, кремней и штуцеров через черкесские берега в обход крейсеров Черноморского флота.",
+    "CostSilver": 165,
+    "RewardPowderPoods": 75,
+    "RewardSilverRubles": 0,
+    "RewardSupportPercent": 8.0
+  },
+  {
+    "Name": "cairo_engineers",
+    "OptionID": "cairo_engineers",
+    "Title": "Переписка с Ибрагим-пашой Египетским и инженерами Низама",
+    "Description": "Привлечение арабских и черкесских артиллерийских офицеров (школа Хаджи-Юсуфа Сафарова) для минной обороны аулов.",
+    "CostSilver": 130,
+    "RewardPowderPoods": 40,
+    "RewardSilverRubles": 80,
+    "RewardSupportPercent": 11.0
+  }
+]

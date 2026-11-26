@@ -1,0 +1,50 @@
+Name,Key,Namespace,SourceStringRU,TranslationEN,HistoricalContextNote
+UI_App_Title,UI_App_Title,Imamat_HUD,ИМАМАТ: ДИВАН-ХАНА (1845),IMAMAT: DIVAN-KHANA (1845),Main war-table header title
+UI_App_Subtitle,UI_App_Subtitle,Imamat_HUD,"Ставка Имама Шамиля в Дарго-Ведено • Управление наибствами, Низамами, порохом и осадами","Imam Shamil's Headquarters in Dargo-Vedeno • Govern Naibates, Sharia Nizams, Black Powder & Sieges",Header subtitle
+UI_Res_Gunpowder,UI_Res_Gunpowder,Imamat_HUD,Порох (Арсенал),Gunpowder (Arsenal),Measured in Russian poods (1 pood = 16.38 kg)
+UI_Res_Provisions,UI_Res_Provisions,Imamat_HUD,Провиант (Террасы),Provisions (Terraces),Mountain terrace grain and dried bread reserves
+UI_Res_Treasury,UI_Res_Treasury,Imamat_HUD,Казна (Байт аль-маль),Treasury (Bayt al-Mal),State treasury managed by Treasurer Hadjiyav
+UI_Res_Authority,UI_Res_Authority,Imamat_HUD,Авторитет,Authority,Imam Shamil's political and spiritual authority
+UI_Res_ArmyStability,UI_Res_ArmyStability,Imamat_HUD,Войско / Устойчивость,Forces / Stability,Total garrison and integral resilience score
+UI_Res_LeaderStress,UI_Res_LeaderStress,Imamat_HUD,Нагрузка Имама,Imam's Burden,Triggers Zulmat crisis at >= 85%
+UI_Tab_1_Map,UI_Tab_1_Map,Imamat_Tabs,1. Карта Кавказа и Наибы,1. Caucasus Map & Naibs,Strategic 10-Naibate relief map
+UI_Tab_2_Nizams,UI_Tab_2_Nizams,Imamat_Tabs,2. Кодекс Низамов Шамиля,2. Shamil's Nizam Code,State law reforms and Sharia vs. Adat courts
+UI_Tab_3_Diplomacy,UI_Tab_3_Diplomacy,Imamat_Tabs,3. Стамбул и Серебряные Ордена,3. Istanbul & Silver Orders,Sublime Porte diplomacy and Kubachi silver medals
+UI_Tab_4_Siege,UI_Tab_4_Siege,Imamat_Tabs,4. Тактический симулятор,4. Tactical Siege & Spline,Milyutin cliffside siege and Dargo forest ambush
+UI_Tab_5_Arsenal,UI_Tab_5_Arsenal,Imamat_Tabs,5. Арсенал Ведено и Штаб Врага,5. Vedeno Arsenal & Enemy HQ,"Cannon foundry, saltpeter barns, Imperial AI doctrines"
+UI_Tab_6_Chronicle,UI_Tab_6_Chronicle,Imamat_Tabs,6. Хроника аль-Карахи,6. Al-Qarakhi Chronicle,Court secretary Muhammed-Tahir al-Qarakhi's dispatches
+UI_Tab_7_Crises,UI_Tab_7_Crises,Imamat_Tabs,7. Исторические развилки и Мост в UE5,7. Historical Forks & UE5 Bridge,6 historical crises and live C++/JSON exporter
+UI_Tab_8_Verdict,UI_Tab_8_Verdict,Imamat_Tabs,"8. Тарикат, Кампании и 3D-Реестр","8. Tariqat, Campaigns & 3D Spec","Khalwat practices, 4 campaigns (1839-1859), 3D registry"
+UI_Tab_9_SimEpilogue,UI_Tab_9_SimEpilogue,Imamat_Tabs,9. ИИ-Баланс и Эпилог (1859–1877),9. AI Balance & Epilogue (1859–1877),"4,000-run Monte Carlo benchmark and Kaluga/Medina epilogue"
+UI_Tab_10_Archive,UI_Tab_10_Archive,Imamat_Tabs,"10. Архив Лиц, Газыри и 3D-Промпты","10. Figures, Gazyrs & 3D Prompts","Historical portraits, 18-gazyr ballistics, MetaHuman specs"
+UI_Tab_11_3DTactical,UI_Tab_11_3DTactical,Imamat_Tabs,11. 3D-Полигон и Разрез Скалы (Этап 2),11. 3D Cutaway Siege Polygon (Stage 2),Interactive 60-FPS 3D cliffside cutaway & counter-mine arena
+Naibate_Khunzakh,Naibate_Khunzakh,Imamat_Map,Хунзах и Авария (Наиб Хаджи-Мурат),Khunzakh & Avaria (Naib Hadji Murad),Central Avar plateau stronghold
+Naibate_Vedeno,Naibate_Vedeno,Imamat_Map,Столица Дарго-Ведено (Ставка Шамиля и устаз Джабраил),Capital Dargo-Vedeno (Shamil's HQ & Master Djabrail),Capital of the Imamate after 1845
+Naibate_Gunib,Naibate_Gunib,Imamat_Map,Высокогорный Гуниб (Цитадель 1859 г.),Highland Gunib Plateau (Citadel of 1859),Natural mountain fortress in inner Dagestan
+Naibate_Chokh,Naibate_Chokh,Imamat_Map,Бастион Чох и Согратль (Инженер Сафаров и Муса Балаханский),Chokh & Sogratl Bastion (Engineer Safarov & Musa),Site of the famous 1849 siege
+Naibate_Gergebil,Naibate_Gergebil,Imamat_Map,Гергебиль (Наиб Идрис Гергебильский),Gergebil Fortress (Naib Idris of Gergebil),Guards the confluence of the Koisu rivers
+Naibate_Salty,Naibate_Salty,Imamat_Map,Аул Салты и Телетль (Мудир Кибит-Магома),Salti & Teletl (Mudir Kibit-Magoma),Famous underground blindage siege of 1847
+Naibate_Benoy,Naibate_Benoy,Imamat_Map,Ичкерия и Беной (Наиб Байсунгур Беноевский),Ichkeria & Benoy (Naib Baysungur of Benoy),Forested stronghold of eastern Chechnya
+Naibate_Shali,Naibate_Shali,Imamat_Map,Большая Чечня и Шали (Наиб Талгик Шалинский),Greater Chechnya & Shali (Naib Talgik of Shali),Primary grain breadbasket of the Imamate
+Naibate_Irib,Naibate_Irib,Imamat_Map,Ириб и Карах (Султан Даниял-бек Илисуйский),Irib & Karakh (Sultan Daniyal-bek of Ilisu),Southern Dagestan mudirate
+Naibate_Karata,Naibate_Karata,Imamat_Map,Карата и Андия (Старший сын Гази-Мухаммад),Karata & Andi (Eldest Son Ghazi-Muhammad),Western mountain passes and Rechel ridge
+NAIB_KHUNZAKH,NAIB_KHUNZAKH,Imamat_Map,Хунзахское наибство (Хаджи-Мурат),Khunzakh Naibate (Hadji Murad),Нагорный Дагестан (Аварское плато)
+NAIB_VEDENO,NAIB_VEDENO,Imamat_Map,Большая Чечня — Аух и Мичик (Шуаиб-Мулла / Талхиг),Greater Chechnya — Aukh & Michik (Shuaib-Mullah / Talkhig),Ичкерия и предгорья Чечни
+NAIB_GOTSATL,NAIB_GOTSATL,Imamat_Map,Гоцатль и Андалал (Кибит-Магома Телетлинский),Gotsatl & Andalal (Kibit-Magoma of Teletl),Центральный Дагестан
+NAIB_GEKHI,NAIB_GEKHI,Imamat_Map,Малая Чечня — Гехи и Гойты (Ахверды-Магома / Саиб-Дулла),Lesser Chechnya — Gekhi & Goity (Akhverdy-Magoma / Saib-Dulla),Западная Чечня и Сунженский рубеж
+NAIB_SHARO_ARGUN,NAIB_SHARO_ARGUN,Imamat_Map,Шаро-Аргун и Шатой (Батуко Шатоевский),Sharo-Argun & Shatoy (Batuko of Shatoy),Верховья Аргунского ущелья
+NAIB_IRGALITL,NAIB_IRGALITL,Imamat_Map,Гумбет и Андия (Абакар-Хаджи Акушинский),Gumbet & Andia (Abakar-Hadji of Akusha),Северо-Западный Дагестан
+NAIB_SALTY_GERGEBIL,NAIB_SALTY_GERGEBIL,Imamat_Map,Гергебиль и Салты — Минный пояс (Идрис Гергебильский),Gergebil & Salty — Counter-Mine Belt (Idris of Gergebil),Южные ворота Аварии
+NAIB_DARGO_VEDENO,NAIB_DARGO_VEDENO,Imamat_Map,Столичный округ Дарго-Ведено (Гази-Мухаммад),Dargo-Vedeno Capital District (Ghazi-Muhammad),Столица Имамата (Ичкерия)
+NAIB_GUNIB_CITADEL,NAIB_GUNIB_CITADEL,Imamat_Map,Верхний Гуниб и Карадах (Инженер Хаджи-Юсуф Сафаров),Upper Gunib & Karadakh (Engineer Hajji Yusuf Safarov),Внутренний горный бастион
+NAIB_CHOKH_SOGRATL,NAIB_CHOKH_SOGRATL,Imamat_Map,Бастион Чох и Согратль (Мудир Даниял-бек Елисуйский),Chokh & Sogratl Bastion (Mudir Daniyal-Bek of Elisu),Южный Дагестан и Андалал
+ORDER_RAID,ORDER_RAID,Imamat_Orders,Набег на линию (Конный рейд),Caucasus Line Raid (Cavalry Strike),"Снижает натиск Империи (-18%), даёт трофеи"
+ORDER_FORTIFY,ORDER_FORTIFY,Imamat_Orders,Инженерная оборона (Блиндажи и завалы),Engineering Defense (Blindages & Abatis),Укрепляет бастионы и снижает натиск (-14%)
+ORDER_TAX,ORDER_TAX,Imamat_Orders,Сбор зейката и хараджа в Байт аль-маль,Collect Zakat & Kharaj for Bayt al-Mal,Пополняет казну (+110 руб.) и террасы (+140 мер)
+ORDER_AUDIT,ORDER_AUDIT,Imamat_Orders,Тайная ревизия мухтасиба (Суд Низама),Secret Muhtasib Audit (Nizam Tribunal),Сбивает Алчность (-18) и Гордыню (-10) наиба
+ROUTE_MOUNTAIN_PATH,ROUTE_MOUNTAIN_PATH,Imamat_Logistics,Тайная пастушья тропа через хребет (2 хода),Secret Shepherd Ridge Trail (2 Turns),Низкий риск перехвата казачьими пикетами
+ROUTE_CANYON_ROAD,ROUTE_CANYON_ROAD,Imamat_Logistics,Быстрый прорыв по руслу ущелья (1 ход),Fast Gorge Riverbed Dash (1 Turn),"Доставка за 1 ход, повышенный риск засады"
+FORMULA_TITLE,FORMULA_TITLE,Imamat_Math,Декомпозиция расчёта Диван-ханы (FOrderProbabilityBreakdown),Divan-Khana Obedience Breakdown (FOrderProbabilityBreakdown),Прозрачная формула воли наиба
+FORMULA_POSITIVE,FORMULA_POSITIVE,Imamat_Math,Сумма верности (Иман + Смелость + Порох/Серебро),Loyalty Sum (Iman + Courage + Powder/Silver),Числитель / положительный вклад
+FORMULA_NEGATIVE,FORMULA_NEGATIVE,Imamat_Math,Сумма сопротивления (Алчность + Гордыня + Угроза + Стресс),Resistance Penalty (Greed + Pride + Threat + Strain),Штрафы неповиновения
+UI_ACHIEVEMENTS_BTN,UI_ACHIEVEMENTS_BTN,Imamat_UI,Достижения,Achievements,Кнопка Steamworks Achievements в шапке

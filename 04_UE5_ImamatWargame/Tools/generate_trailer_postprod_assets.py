@@ -1,0 +1,201 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+IMAMAT: DIVAN-KHANA — 60s Steam Trailer Post-Production Assets Generator (Milestone M17)
+Generates industry-standard video editing & localization files in:
+  05_Steam_Release_and_Playtest_Kit/Trailer_PostProduction/
+    1) Imamat_Steam_Trailer_60s_RU.srt (SubRip Russian voiceover + lower-third subtitles)
+    2) Imamat_Steam_Trailer_60s_EN.srt (SubRip English voiceover + lower-third subtitles)
+    3) Imamat_Steam_Trailer_60s_CMX3600.edl (CMX 3600 Edit Decision List @ 24fps for DaVinci Resolve / Premiere Pro)
+    4) Imamat_Steam_Trailer_60s_Timeline.json (Full NLE & UE5 Movie Render Queue metadata)
+"""
+
+import json
+import pathlib
+from datetime import datetime, timezone
+
+ROOT_DIR = pathlib.Path(__file__).resolve().parents[2]
+OUT_DIR = ROOT_DIR / "05_Steam_Release_and_Playtest_Kit" / "Trailer_PostProduction"
+
+TRAILER_SHOTS = [
+    {
+        "index": 1,
+        "reel": "SHOT_01",
+        "srtStart": "00:00:00,000",
+        "srtEnd": "00:00:10,000",
+        "edlSrcIn": "01:00:00:00",
+        "edlSrcOut": "01:00:10:00",
+        "edlRecIn": "00:00:00:00",
+        "edlRecOut": "00:00:10:00",
+        "clipName": "LS_SteamTrailer_Shot01_DivanKhanaTable_35mm.exr",
+        "lens": "35mm Prime, f/2.0",
+        "audioLayer": "Hearth_And_Vedeno_Watermill_Layer3",
+        "titleRu": "Кадр 1: Очаг Диван-ханы и карта Кавказа при свечах",
+        "titleEn": "Shot 1: Divan-Khana Hearth & Candlelit Caucasus Map",
+        "voRu": "«Ведено, 1845 год. За этим дубовым столом нет абстрактных гексов — только гонцы, порох и воля десяти наибов...»",
+        "voEn": "\"Vedeno, 1845. Across this oak table there are no abstract hexes — only couriers, gunpowder, and the will of ten Naibs...\"",
+        "lowerThirdRu": "ДИЕГЕТИЧЕСКИЙ КОМАНДНЫЙ СТОЛ (UE 5.5 • БЕЗ ИСКУССТВЕННОГО HUD)",
+        "lowerThirdEn": "DIEGETIC COMMAND TABLE (UE 5.5 • ZERO ARTIFICIAL HUD)",
+    },
+    {
+        "index": 2,
+        "reel": "SHOT_02",
+        "srtStart": "00:00:10,000",
+        "srtEnd": "00:00:20,000",
+        "edlSrcIn": "01:00:10:00",
+        "edlSrcOut": "01:00:20:00",
+        "edlRecIn": "00:00:10:00",
+        "edlRecOut": "00:00:20:00",
+        "clipName": "LS_SteamTrailer_Shot02_ShamilSignetSeal_50mm.exr",
+        "lens": "50mm Macro Anamorphic, f/1.4",
+        "audioLayer": "WaxSeal_And_AhkTash_Gorge_Wind_Layer1",
+        "titleRu": "Кадр 2: Оттиск восьмиугольного перстня Шамиля и выезд чапара",
+        "titleEn": "Shot 2: Shamil's Octagonal Signet Stamp & Chapar Dispatch",
+        "voRu": "«Каждый приказ скрепляется серебряным перстнем. Но доедет ли чапар сквозь летучие кордоны Фрейтага — и подчинится ли гордый наиб?»",
+        "voEn": "\"Every decree is sealed in silver. Yet will your courier pierce Freytag's cordons — and will a proud Naib obey?\"",
+        "lowerThirdRu": "НЕПРЯМОЕ УПРАВЛЕНИЕ • МАТЕМАТИКА ПОВИНОВЕНИЯ НАИБОВ P(exec)",
+        "lowerThirdEn": "INDIRECT COMMAND • NAIB OBEDIENCE MATHEMATICS P(exec)",
+    },
+    {
+        "index": 3,
+        "reel": "SHOT_03",
+        "srtStart": "00:00:20,000",
+        "srtEnd": "00:00:32,000",
+        "edlSrcIn": "01:00:20:00",
+        "edlSrcOut": "01:00:32:00",
+        "edlRecIn": "00:00:20:00",
+        "edlRecOut": "00:00:32:00",
+        "clipName": "LS_SteamTrailer_Shot03_MilyutinCutaway_24mm.exr",
+        "lens": "24mm Wide Tilt-Shift, f/2.8",
+        "audioLayer": "Safarov_CopperBasin_Sonar_Layer2",
+        "titleRu": "Кадр 3: 3D-разрез скалы Милютина и медный таз Сафарова (Салты / Чох)",
+        "titleEn": "Shot 3: Milyutin 3D Rock Cutaway & Safarov's Copper Basin Sonar",
+        "voRu": "«Рассеките скалу по чертежам полковника Милютина. Слушайте звон горошин на медном тазу Сафарова и бейте встречным камуфлетом!»",
+        "voEn": "\"Slice the cliffside along Colonel Milyutin's blueprints. Listen to peas trembling on Safarov's copper basin and fire the counter-mine!\"",
+        "lowerThirdRu": "3D-ГЕОДЕЗИЯ ОСАД • КОНТРМИННАЯ АКУСТИКА ХАДЖИ-ЮСУФА САФАРОВА",
+        "lowerThirdEn": "3D SIEGE GEODESY • SAFAROV'S COPPER-BASIN COUNTER-MINE SONAR",
+    },
+    {
+        "index": 4,
+        "reel": "SHOT_04",
+        "srtStart": "00:00:32,000",
+        "srtEnd": "00:00:44,000",
+        "edlSrcIn": "01:00:32:00",
+        "edlSrcOut": "01:00:44:00",
+        "edlRecIn": "00:00:32:00",
+        "edlRecOut": "00:00:44:00",
+        "clipName": "LS_SteamTrailer_Shot04_IchkeriaAbatis_28mm.exr",
+        "lens": "28mm Handheld Combat, f/2.0",
+        "audioLayer": "Gazyr_Volley_And_Shashka_Charge",
+        "titleRu": "Кадр 4: Буковая засека в Ичкерии и залп 18 нагрудных газырей",
+        "titleEn": "Shot 4: Ichkeria Beech Abatis Ambush & 18-Gazyr Volley",
+        "voRu": "«Никаких полосок здоровья. На груди мюрида — восемнадцать газырей. Обрушьте буковую засеку на колонну Воронцова и сомкните кинжальный строй!»",
+        "voEn": "\"No health bars. Eighteen silver gazyrs across the chest. Drop the beech abatis onto Vorontsov's column and close with Bazalai steel!\"",
+        "lowerThirdRu": "18 НАГРУДНЫХ ГАЗЫРЕЙ • ЛЕСНЫЕ ЗАСАДЫ НА СПЛАЙНАХ В ИЧКЕРИИ",
+        "lowerThirdEn": "18 CHEST GAZYRS • SPLINE FOREST AMBUSHES IN ICHKERIA",
+    },
+    {
+        "index": 5,
+        "reel": "SHOT_05",
+        "srtStart": "00:00:44,000",
+        "srtEnd": "00:00:52,000",
+        "edlSrcIn": "01:00:44:00",
+        "edlSrcOut": "01:00:52:00",
+        "edlRecIn": "00:00:44:00",
+        "edlRecOut": "00:00:52:00",
+        "clipName": "LS_SteamTrailer_Shot05_NizamCourt_40mm.exr",
+        "lens": "40mm Anamorphic, f/2.2",
+        "audioLayer": "Nizam_Decree_And_Artillery_Echo",
+        "titleRu": "Кадр 5: Кодекс Низамов, суд по Шариату и 3 испытания Ironman",
+        "titleEn": "Shot 5: Code of Nizams, Sharia Court & 3 Ironman Challenges",
+        "voRu": "«Судите по Кодексу Низамов между Адатом и Шариатом. Проверьте свою стратегию против эталона 20 000 кампаний в Хронографе аль-Карахи.»",
+        "voEn": "\"Judge by the Code of Nizams between Adat and Sharia. Benchmark your campaign against 20,000 simulations in al-Karakhi's Chronograph.\"",
+        "lowerThirdRu": "20 000 СИМУЛЯЦИЙ МОНТЕ-КАРЛО • МОДДИНГ STEAM WORKSHOP • IRONMAN",
+        "lowerThirdEn": "20,000 MONTE CARLO SIMULATIONS • STEAM WORKSHOP MODDING • IRONMAN",
+    },
+    {
+        "index": 6,
+        "reel": "SHOT_06",
+        "srtStart": "00:00:52,000",
+        "srtEnd": "00:01:00,000",
+        "edlSrcIn": "01:00:52:00",
+        "edlSrcOut": "01:01:00:00",
+        "edlRecIn": "00:00:52:00",
+        "edlRecOut": "00:01:00:00",
+        "clipName": "LS_SteamTrailer_Shot06_GunibPackshot_18mm.exr",
+        "lens": "85mm Macro -> 18mm Wide Reveal, f/4.0",
+        "audioLayer": "Full_3Layer_Caucasus_Chord_Crescendo",
+        "titleRu": "Кадр 6: Сургучная печать 1261 AH и финальный пэкшот Steam",
+        "titleEn": "Shot 6: 1261 AH Signet Seal & Steam Wishlist Packshot",
+        "voRu": "«ИМАМАТ: ДИВАН-ХАНА. Кто думает о последствиях — тот не храбрец. Добавьте в список желаемого в Steam.»",
+        "voEn": "\"IMAMAT: DIVAN-KHANA. He who ponders the consequences is not brave. Add to your Steam Wishlist today.\"",
+        "lowerThirdRu": "ИМАМАТ: ДИВАН-ХАНА — ДОБАВЬТЕ В СПИСОК ЖЕЛАЕМОГО В STEAM",
+        "lowerThirdEn": "IMAMAT: DIVAN-KHANA — ADD TO YOUR STEAM WISHLIST NOW",
+    },
+]
+
+
+def build_srt(lang: str) -> str:
+    blocks = []
+    for s in TRAILER_SHOTS:
+        vo = s["voRu"] if lang == "ru" else s["voEn"]
+        lt = s["lowerThirdRu"] if lang == "ru" else s["lowerThirdEn"]
+        block = f"{s['index']}\n{s['srtStart']} --> {s['srtEnd']}\n{vo}\n[{lt}]\n"
+        blocks.append(block)
+    return "\n".join(blocks)
+
+
+def build_cmx3600_edl() -> str:
+    lines = [
+        "TITLE: IMAMAT_DIVAN_KHANA_STEAM_TRAILER_60S",
+        "FCM: NON-DROP FRAME",
+        "",
+    ]
+    for s in TRAILER_SHOTS:
+        idx_str = f"{s['index']:03d}"
+        lines.append(
+            f"{idx_str}  {s['reel']:<8} V     C        {s['edlSrcIn']} {s['edlSrcOut']} {s['edlRecIn']} {s['edlRecOut']}"
+        )
+        lines.append(f"* FROM CLIP NAME: {s['clipName']}")
+        lines.append(f"* COMMENT: LENS: {s['lens']} | AUDIO_CUE: {s['audioLayer']}")
+        lines.append(f"* LOC_TITLE_RU: {s['titleRu']}")
+        lines.append(f"* LOC_TITLE_EN: {s['titleEn']}")
+        lines.append(f"* SUBTITLE_EN: {s['voEn']}")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def main():
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    srt_ru_path = OUT_DIR / "Imamat_Steam_Trailer_60s_RU.srt"
+    srt_en_path = OUT_DIR / "Imamat_Steam_Trailer_60s_EN.srt"
+    edl_path = OUT_DIR / "Imamat_Steam_Trailer_60s_CMX3600.edl"
+    json_path = OUT_DIR / "Imamat_Steam_Trailer_60s_Timeline.json"
+
+    srt_ru_path.write_text(build_srt("ru"), encoding="utf-8")
+    srt_en_path.write_text(build_srt("en"), encoding="utf-8")
+    edl_path.write_text(build_cmx3600_edl(), encoding="utf-8")
+
+    timeline_manifest = {
+        "schemaVersion": "ImamatTrailerPostProd_v1.7",
+        "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
+        "frameRateFps": 24,
+        "resolution": "3840x1608 (2.39:1 Anamorphic Scope) & 3840x2160 (16:9 Steam Store)",
+        "audioPolicy": "Diegetic Material-Culture Synthesis Only (Hearth, Parchment, Vedeno Watermill, Gorge Wind, Safarov Copper Basin Sonar — Zero Religious Chants)",
+        "ue5LevelSequenceAsset": "/Game/ImamatWargame/Cinematics/LS_SteamTrailer_60s",
+        "shotsCount": len(TRAILER_SHOTS),
+        "shots": TRAILER_SHOTS,
+    }
+    json_path.write_text(json.dumps(timeline_manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    print("=" * 88)
+    print("IMAMAT: DIVAN-KHANA — 60s STEAM TRAILER POST-PRODUCTION ASSETS GENERATOR (M17)")
+    print("=" * 88)
+    for p in [srt_ru_path, srt_en_path, edl_path, json_path]:
+        print(f"  [OK] {p.name:<40} ({p.stat().st_size:,} bytes)")
+    print("=" * 88)
+
+
+if __name__ == "__main__":
+    main()

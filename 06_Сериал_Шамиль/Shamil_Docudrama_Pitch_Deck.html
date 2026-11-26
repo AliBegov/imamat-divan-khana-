@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ШАМИЛЬ: СВОД НЕБА И КРЕМЕНЬ — Питч-дек докудрамы (1797–1871)</title>
+  <style>
+    :root {
+      --bg: #0c0e12;
+      --panel: #151922;
+      --panel-2: #1d2330;
+      --gold: #d4a853;
+      --gold-soft: rgba(212, 168, 83, 0.18);
+      --crimson: #a63a3a;
+      --text: #ece9e2;
+      --muted: #a6acb8;
+      --border: rgba(212, 168, 83, 0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Georgia", "Times New Roman", serif;
+      background: radial-gradient(circle at 20% 0%, #1a202c 0%, #0b0d11 70%);
+      color: var(--text);
+      line-height: 1.55;
+      padding-bottom: 80px;
+    }
+    header.topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(12, 14, 18, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .brand {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .nav-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .nav-pills a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.2s;
+    }
+    .nav-pills a:hover {
+      color: var(--gold);
+      border-color: var(--gold);
+    }
+    .deck {
+      max-width: 1240px;
+      margin: 28px auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+    section.slide {
+      background: linear-gradient(160deg, var(--panel) 0%, #10131a 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 42px 48px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.55);
+      position: relative;
+      overflow: hidden;
+    }
+    .slide-num {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--gold);
+      margin-bottom: 10px;
+      display: block;
+    }
+    h1 {
+      font-size: 40px;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+    h2 {
+      font-size: 28px;
+      margin-bottom: 18px;
+      color: #fff;
+      border-left: 3px solid var(--gold);
+      padding-left: 14px;
+    }
+    h3 {
+      font-size: 18px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    p.lead {
+      font-size: 19px;
+      color: #dcd7cc;
+      max-width: 920px;
+      margin-bottom: 22px;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .badge {
+      background: var(--gold-soft);
+      border: 1px solid var(--border);
+      color: var(--gold);
+      padding: 6px 13px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+      align-items: center;
+    }
+    .hero-img, .card-img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.14);
+      display: block;
+      object-fit: cover;
+    }
+    .hero-img { height: 360px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .card {
+      background: var(--panel-2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .card p {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .portrait-card img {
+      width: 100%;
+      height: 230px;
+      object-fit: cover;
+      object-position: top center;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(212,168,83,0.22);
+    }
+    .look-card img {
+      width: 100%;
+      height: 210px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(212,168,83,0.22);
+    }
+    .season-box {
+      background: var(--panel-2);
+      border-top: 3px solid var(--gold);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .season-tag {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .season-box p {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .quote-bar {
+      margin-top: 20px;
+      padding: 16px 20px;
+      background: rgba(166, 58, 58, 0.14);
+      border-left: 3px solid #d46a6a;
+      border-radius: 6px;
+      font-style: italic;
+      color: #f0e6dc;
+    }
+    @media (max-width: 960px) {
+      .hero-grid, .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      section.slide { padding: 26px 22px; }
+      h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">ШАМИЛЬ (1797–1871) • SERIES PITCH DECK</div>
+  <nav class="nav-pills">
+    <a href="#s1">1. Титул</a>
+    <a href="#s2">2. Формат докудрамы</a>
+    <a href="#s3">3. Драма Аманата</a>
+    <a href="#s4">4. 4 Сезона</a>
+    <a href="#s5">5. Кастинг</a>
+    <a href="#s6">6. Лукбук</a>
+    <a href="#s7">7. 3D-Превиз</a>
+    <a href="#s8">8. Готовый пакет</a>
+  </nav>
+</header>
+
+<main class="deck">
+
+  <!-- SLIDE 1 -->
+  <section class="slide" id="s1">
+    <span class="slide-num">Слайд 01 • Концепция и позиционирование</span>
+    <div class="hero-grid">
+      <div>
+        <div class="badges">
+          <span class="badge">Историческая докудрама</span>
+          <span class="badge">4 сезона × 8 серий (52 мин)</span>
+          <span class="badge">Охват: 1797–1871</span>
+        </div>
+        <h1>ШАМИЛЬ: СВОД НЕБА И КРЕМЕНЬ</h1>
+        <p class="lead">
+          От болезненного мальчика Али из аула Гимры, которому сменили имя ради спасения жизни, до третьего имама Кавказа, четверть века державшего оборону против могущественной империи — и до седого паломника в Медине, чья личная боль отца оказалась тяжелее всех сражений.
+        </p>
+        <div class="quote-bar">
+          Референсы формата: <strong>«Восход Османской империи» (Netflix)</strong> × <strong>«Сёгун»</strong> × <strong>«Хаджи-Мурат»</strong> — сочетание большого драматического кино (85%) и верифицированной документальной реконструкции (15%).
+        </div>
+      </div>
+      <div>
+        <img class="hero-img" src="./Визуальный_каталог/KeyArt_DivanKhana_Council_Vedeno_1845.jpg" alt="Диван-хана Шамиля в Ведено" />
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2 -->
+  <section class="slide" id="s2">
+    <span class="slide-num">Слайд 02 • Язык гибридной докудрамы</span>
+    <h2>Два переплетённых слоя без «сухой лекции»</h2>
+    <div class="grid-3">
+      <div class="card">
+        <h3>1. Игровое кино (80–85%)</h3>
+        <p>Полнокровная драма с живой речью эпохи (аварский, чеченский, русский, французский, арабский). Камерная психология семьи Шамиля, заседания Диван-ханы, военные советы в Петербурге и Тифлисе.</p>
+      </div>
+      <div class="card">
+        <h3>2. Оживший архив и 3D-карты (10%)</h3>
+        <p>Подлинные арабские письма с личной печатью Шамиля, инженерные чертежи Д. А. Милютина и фотореалистичные 3D-макеты Ахульго, Дарго, Салтов и Гуниба, мгновенно объясняющие зрителю тактику ущелий.</p>
+      </div>
+      <div class="card">
+        <h3>3. Экспертная верификация (5–10%)</h3>
+        <p>Короткие, точные включения историков-кавказоведов и востоковедов, закрывающие белые пятна биографии и отсекающие романтические киномифы от архивных фактов РГВИА и хроники аль-Карахи.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3 -->
+  <section class="slide" id="s3">
+    <span class="slide-num">Слайд 03 • Эмоциональное сердце сериала</span>
+    <h2>Трагедия первенца: аманат Джемалуддин (1839–1858)</h2>
+    <div class="hero-grid">
+      <div>
+        <img class="hero-img" src="./Визуальный_каталог/KeyArt_Michik_1855_Jamaluddin_Exchange.jpg" alt="Обмен Джемалуддина на реке Мичик 10 марта 1855 года" />
+      </div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="card">
+          <h3>Жертва на скале Ахульго (1839)</h3>
+          <p>Под огнём 26 орудий генерала Граббе, чтобы дать передышку умирающим от жажды детям, Шамиль отдаёт в заложники 8-летнего старшего сына Джемалуддина.</p>
+        </div>
+        <div class="card">
+          <h3>Русский улан и обмен на реке Мичик (1854–1855)</h3>
+          <p>Воспитанный при Николае I в Петербурге, Джемалуддин становится офицером Владимирского уланского полка в Торжке (история подаётся строго по документам и исследованиям Х. М. Доного — без поздних вымыслов о «вечной незамужней невесте» Олениной). Ради его возвращения Гази-Мухаммад берёт в плен княгинь Чавчавадзе и Орбелиани в Цинандали.</p>
+        </div>
+        <div class="card">
+          <h3>Чужой среди своих (1855–1858)</h3>
+          <p>Вернувшись в горы спустя 16 лет, юноша пытается убедить отца в невозможности победить империю с железными дорогами и 200-тысячной армией — и тихо сгорает от чахотки в ауле Карата.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4 -->
+  <section class="slide" id="s4">
+    <span class="slide-num">Слайд 04 • Архитектура 32 серий</span>
+    <h2>Структура 4 сезонов: от рождения в Гимрах до Медины</h2>
+    <div class="grid-4">
+      <div class="season-box">
+        <div class="season-tag">Сезон 1 • Серии 1–8</div>
+        <h3>Три имама и скала Ахульго (1797–1839)</h3>
+        <p>Болезнь и смена имени Али на Шамиль. Братство с Гази-Мухаммадом и прорыв из Гимр со штыковой раной. Убийство Гамзат-бека Хаджи-Муратом. Переговоры с Клюгенау и 80 дней обороны Ахульго.</p>
+      </div>
+      <div class="season-box">
+        <div class="season-tag">Сезон 2 • Серии 9–16</div>
+        <h3>Блистательный Имамат (1840–1849)</h3>
+        <p>Возрождение в Чечне. Законы Диван-ханы, Низамы, собственная артиллерия Ведено. Молниеносный разгром крепостей в 1843 г., катастрофа армии Воронцова в лесах Дарго (1845) и подземная война осад (Салты, Чох).</p>
+      </div>
+      <div class="season-box">
+        <div class="season-tag">Сезон 3 • Серии 17–24</div>
+        <h3>Аманат, предательство и пленницы (1850–1856)</h3>
+        <p>Просеки Барятинского. Трагический конфликт и последний бой Хаджи-Мурата (1852). Уланская юность Джемалуддина, рейд на Цинандали, 8 месяцев плена грузинских княгинь в Ведено и обмен на Мичике.</p>
+      </div>
+      <div class="season-box">
+        <div class="season-tag">Сезон 4 • Серии 25–32</div>
+        <h3>Гуниб, Калуга и путь в Медину (1857–1871)</h3>
+        <p>Смерть Джемалуддина в Карате. Последний день на Гунибе (25 августа 1859). Железная дорога и встреча с Александром II, философские беседы с Руновским в Калуге, триумф в Стамбуле и покой в Медине.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5 -->
+  <section class="slide" id="s5">
+    <span class="slide-num">Слайд 05 • Галерея персонажей</span>
+    <h2>Ключевые исторические фигуры (обе стороны конфликта)</h2>
+    <div class="grid-4">
+      <div class="card portrait-card">
+        <img src="./Визуальный_каталог/Portrait_Imam_Shamil_Vedeno_1845.jpg" alt="Имам Шамиль" />
+        <h3>Имам Шамиль</h3>
+        <p>Вождь, реформатор и трагический отец (арка от 6 до 73 лет).</p>
+      </div>
+      <div class="card portrait-card">
+        <img src="./Визуальный_каталог/Portrait_Hadji_Murat_Khunzakh_1851.jpg" alt="Хаджи-Мурат" />
+        <h3>Хаджи-Мурат</h3>
+        <p>Легендарный наиб Хунзаха, зажатый между двумя жерновами.</p>
+      </div>
+      <div class="card portrait-card">
+        <img src="./Визуальный_каталог/Portrait_Ghazi_Muhammad_Karata_1845.jpg" alt="Гази-Мухаммад" />
+        <h3>Гази-Мухаммад (сын)</h3>
+        <p>Наиб Караты, организатор рейда на Цинандали ради брата.</p>
+      </div>
+      <div class="card portrait-card">
+        <img src="./Визуальный_каталог/Portrait_Baysungur_Benoy_1845.jpg" alt="Байсунгур Беноевский" />
+        <h3>Байсунгур Беноевский</h3>
+        <p>Несгибаемый чеченский наиб лесной Ичкерии.</p>
+      </div>
+      <div class="card portrait-card">
+        <img src="./Визуальный_каталог/Portrait_Vorontsov_1845.jpg" alt="Князь М. С. Воронцов" />
+        <h3>Князь М. С. Воронцов</h3>
+        <p>Наместник Кавказа, переживший катастрофу Даргинского похода 1845 г.</p>
+      </div>
+      <div class="card portrait-card">
+        <img src="./Визуальный_каталог/Portrait_Prince_Baryatinsky_1859.jpg" alt="Князь А. И. Барятинский" />
+        <h3>Князь А. И. Барятинский</h3>
+        <p>Системный стратег, завершивший войну почётным миром на Гунибе.</p>
+      </div>
+      <div class="card portrait-card">
+        <img src="./Визуальный_каталог/Portrait_Pirogov_Salty_1847.jpg" alt="Н. И. Пирогов" />
+        <h3>Хирург Н. И. Пирогов</h3>
+        <p>Впервые в мировой истории применил полевой эфирный наркоз при Салтах (1847).</p>
+      </div>
+      <div class="card portrait-card">
+        <img src="./Визуальный_каталог/Portrait_Hadji_Yusuf_Safarov_1845.jpg" alt="Хаджи-Юсуф Сафаров" />
+        <h3>Хаджи-Юсуф Сафаров</h3>
+        <p>Инженер и создатель многослойных блиндажей и крепостей Имамата.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6 -->
+  <section class="slide" id="s6">
+    <span class="slide-num">Слайд 06 • Художественная постановка (Lookbook)</span>
+    <h2>Материальный мир эпохи: крепости, литейни, клинки и рукописи</h2>
+    <div class="grid-3">
+      <div class="card look-card">
+        <img src="./Визуальный_каталог/KeyArt_Dargo_BeechForest_Ambush_1845.jpg" alt="Буковый лес Дарго" />
+        <h3>Засеки буковых лесов Ичкерии</h3>
+        <p>Влажный туман, вековые стволы и партизанская война на хребте Речель (Сезон 2).</p>
+      </div>
+      <div class="card look-card">
+        <img src="./Визуальный_каталог/KeyArt_Salty_Siege_CopperBasin_1847.jpg" alt="Осада Салтов" />
+        <h3>Война осад: Салты и Чох</h3>
+        <p>Подземные бревенчатые казематы, сапёрные мины и артиллерийские дуэли (Сезон 2).</p>
+      </div>
+      <div class="card look-card">
+        <img src="./Визуальный_каталог/KeyArt_Vedeno_Foundry_and_PowderMill_1846.jpg" alt="Пушечный двор Ведено" />
+        <h3>Литейный двор Дарго-Ведено</h3>
+        <p>Как в блокированных горах отливали собственные медные пушки и варили порох.</p>
+      </div>
+      <div class="card look-card">
+        <img src="./Визуальный_каталог/Orders_Shamil_Kubachi_Showcase_1845.jpg" alt="Серебряные ордена Шамиля" />
+        <h3>Серебряные ордена Имамата</h3>
+        <p>Чернёное серебро мастеров Кубачи и Гоцатля с кораническими девизами о доблести.</p>
+      </div>
+      <div class="card look-card">
+        <img src="./Визуальный_каталог/Archive_Arabic_Chronicle_AlQarakhi_1845.jpg" alt="Хроника аль-Карахи" />
+        <h3>Хроника аль-Карахи и печать Шамиля</h3>
+        <p>Документальный визуальный лейтмотив сериала — живые строки подлинных рукописей.</p>
+      </div>
+      <div class="card look-card">
+        <img src="./Визуальный_каталог/Epilogue_Kaluga_And_Medina_1859_1871.jpg" alt="Калуга и Медина" />
+        <h3>От снежной Калуги до Медины</h3>
+        <p>Контраст тихого губернского дома, блеска Босфора и последнего пристанища в Хиджазе.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7 -->
+  <section class="slide" id="s7">
+    <span class="slide-num">Слайд 07 • Технологическое преимущество (3D Previz & Virtual Production)</span>
+    <h2>Готовые 3D-реконструкции рельефа и сражений</h2>
+    <div class="grid-2">
+      <div class="card look-card">
+        <img src="./Previz_3D/caucasus3d_photoreal_avaria_gorges.png" alt="3D каньоны Аварии" />
+        <h3>Спутниковая 3D-топография каньонов Аварии</h3>
+        <p>Реальные высоты ущелий Андийского и Аварского Койсу (Гимры, Ахульго, Хунзах, Гуниб) — готовая база для документальных вставок в каждой серии.</p>
+      </div>
+      <div class="card look-card">
+        <img src="./Previz_3D/caucasus3d_photoreal_overview_day.png" alt="3D панорама Восточного Кавказа" />
+        <h3>Стратегическая 3D-карта театра войны</h3>
+        <p>Наглядная визуализация линий крепостей Ермолова, походов Граббе и Воронцова и маршрутов рейдов Шамиля.</p>
+      </div>
+      <div class="card look-card">
+        <img src="./Previz_3D/battle3d_siege_panorama_day.png" alt="3D превиз горной осады" />
+        <h3>3D-превизуализация штурмов горных аулов</h3>
+        <p>Позволяет заранее раскадровать сложные батальные сцены и сократить расходы на массовку и графику.</p>
+      </div>
+      <div class="card look-card">
+        <img src="./Previz_3D/battle3d_forest_ambush_dargo.png" alt="3D превиз лесного боя Дарго" />
+        <h3>3D-превизуализация лесных засад (Ичкерия / Дарго)</h3>
+        <p>Готовые ракурсы для постановки эпизодов 1842 и 1845 годов («Сухарная экспедиция»).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8 -->
+  <section class="slide" id="s8">
+    <span class="slide-num">Слайд 08 • Пакет проекта и экспортный потенциал</span>
+    <h2>Готовность к запуску девелопмента (Development Ready)</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Собранный сценарно-научный пакет</h3>
+        <p>
+          • <strong>Библия сериала</strong> и сетка всех 32 серий (4 сезона)<br/>
+          • <strong>Поэпизодный синопсис 1-го сезона</strong> (серии 1–8 с картами локаций)<br/>
+          • <strong>Пилотный сценарий 1-й серии</strong> («Мальчик по имени Али», 52 мин)<br/>
+          • <strong>32 тома верифицированного исторического досье</strong> (РГВИА, АКАК, BOA, аль-Карахи, Х. М. Доного)<br/>
+          • <strong>Визуальный каталог и 3D-превиз</strong> на реальном рельефе Кавказа
+        </p>
+      </div>
+      <div class="card">
+        <h3>Международные рынки дистрибуции</h3>
+        <p>
+          • <strong>Россия и СНГ:</strong> масштабное историческое событие федерального уровня<br/>
+          • <strong>Турция:</strong> огромный интерес к фигуре Шамиля, его сыну маршалу Гази-Мухаммаду и истории кавказских мухаджиров<br/>
+          • <strong>Ближний Восток (MENA):</strong> исторические связи с Египтом (открытие Суэцкого канала 1869 г.) и финал жизни в Мекке и Медине<br/>
+          • <strong>Глобальный стриминг:</strong> формат исторической докудрамы уровня премиальных мировых линеек
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>

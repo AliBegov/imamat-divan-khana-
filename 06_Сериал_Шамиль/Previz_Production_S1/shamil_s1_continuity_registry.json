@@ -1,0 +1,389 @@
+{
+  "schema_version": "2.0",
+  "series_title": "Шамиль: свод неба и кремень",
+  "season": 1,
+  "season_title": "Три имама и скала Ахульго (1797–1839)",
+  "rules_doc": "../GEMINI.md",
+  "character_canon_doc": "../06_Канон_персонажей_возраст_и_гардероб.md",
+  "location_canon_doc": "../07_Архитектурный_и_предметный_паспорт_локаций_С1.md",
+  "master_refs_manifest": "master_refs_manifest.json",
+  "visual_pipeline_law": "Reference-First 35mm Live-Action Cinema Pipeline: (1) Approve isolated close-up Master Character Casting Portraits in shared_refs/characters/ and (2) uninhabited Master Location Plates in shared_refs/locations/ BEFORE (3) rendering single-camera 16:9 scene keyframes. Zero split-screens/diptychs, zero glass-chimney kerosene lamps (strictly open-wick clay/copper chiragh), zero crossguards on Caucasian shashkas (strictly guardless cleft-pommel ushki).",
+  "shamil_hair_henna_law": "Imam Shamil [CHAR_01] is a natural Caucasian-Avar brunette with dense jet-black / very dark-brown hair, thick straight black eyebrows, and a dense jet-black beard with ZERO ginger/reddish/blond tint throughout childhood, youth, Season 1 (1797-1839), and early-to-mid 1840s. The copper-reddish tone appears ONLY in older age (late 1840s-1860s, Seasons 3-4) when he dyed his greying beard with henna by sunnah custom.",
+  "editorial_forbidden_terms_in_output": [
+    "накшбанд",
+    "силсил",
+    "тарикат",
+    "суфи"
+  ],
+  "eras_and_ages": {
+    "1803": "Childhood in Gimry (Episode 1 Sc. 1)",
+    "1811": "Adolescent training & godekan in Gimry (Episode 1 Sc. 2-3)",
+    "1817_1823": "Madrassa in Arakani, Sunzha line, sermon in Gimry, Kazikumukh (Episode 1 Sc. 4-9)",
+    "1825_1830": "Yarag sermon, Arakani split, First Imam election, winter assault on Khunzakh (Episode 2)",
+    "1831_1833": "Burnaya siege, 15 murids in Gimry tower, bayonet wound & Untsukul recovery (Episode 3)",
+    "1834": "Tobot ambush, Pakhu-Bike execution, Khunzakh mosque assassination, Third Imam election at Ashilta bridge (Episode 4)",
+    "1835_1837": "Teletl truce against Fezi, 6yo Jamaluddin in Chirkat, Burunduk-Kale meeting with Klugenau, Nicholas I order (Episode 5)",
+    "1839_summer": "Grabbe campaign, Arguani storm, 80-day Akhulgo siege, Surkhai tower defense & fall (Episode 6 - Episode 7 Sc. 1)",
+    "1839_aug_end": "Akhulgo thirst, Jamaluddin hostage transfer, final storm, cave decoy raft, breakout to Shuani (Episode 7 Sc. 2 - Episode 8)"
+  },
+  "characters": {
+    "CHAR_01": {
+      "name_ru": "Имам Шамиль (при рождении Али)",
+      "immutable_traits_en": "189cm tall athletic Caucasian-Avar brunette mountaineer with high straight forehead slightly sloping at temples, strong wide cheekbones, rectangular jaw, direct narrowed piercing grey-hazel eyes beneath thick straight black eyebrows, refined straight mountain nose, fair sun-weathered skin, natural dense coal-black hair and thick jet-black beard; natural left-handed swordsman",
+      "permanent_scars": [
+        {
+          "id": "SCAR_SHAMIL_GIMRY_CHEST",
+          "acquired_at": "S1E03_SC06",
+          "description_en": "Deep puckered triangular bayonet entry scar below right collarbone and jagged exit scar near right shoulder blade from Oct 17, 1832 Gimry tower breakout; visible whenever collar is unbuttoned",
+          "active_from": "S1E03_SC06"
+        }
+      ],
+      "age_profiles": {
+        "1803": "6-year-old emaciated Avar brunette boy Ali/Shamil with sunken cheeks, dark shadows under large grey-hazel eyes, straight dark brows, short knife-trimmed jet-black hair, fever-cracked lips",
+        "1811": "14-year-old wiry, abruptly tall (~172cm) adolescent Avar brunette Shamil with sharpened cheekbones, straight nose, stubborn gaze under straight black brows, cropped jet-black hair, zero beard, fresh scrapes on knuckles and left knee",
+        "1817_1823": "20-to-26-year-old full-grown 189cm Avar brunette Shamil with broad shoulders, clean unlined sun-weathered skin, short neatly trimmed dense jet-black beard and sunnah-trimmed dark mustache",
+        "1825_1830": "27-to-33-year-old Avar brunette Shamil with fuller dense jet-black beard to mid-neck and two faint vertical creases between straight black brows, no chest scar yet",
+        "1831_1833": "34-to-35-year-old lean hardened Avar brunette Shamil with dense black beard and deeper brow crease; from Oct 1832 pale from lung recovery and marked permanently by Gimry bayonet scars on chest and back",
+        "1834": "37-year-old Third Imam Shamil with austere weathered face, dense jet-black beard under white turban, permanent Gimry chest scar beneath collar",
+        "1835_1837": "38-to-40-year-old commanding Imam Shamil with dense black beard, iron poise, sun-creased outer eye corners from perpetual squint, Gimry chest scar",
+        "1839_summer": "42-year-old gaunt siege-hardened Imam Shamil with dense coal-black beard and two or three early silver threads at temples, hollow cheekbones and dust-parched lips during Akhulgo blockade",
+        "1839_aug_end": "42-year-old exhausted black-bearded Imam Shamil with hollow cheeks, dark fresh black-powder scorch on left cheekbone, shoulder contusion under torn coat, and bleeding right calf graze acquired at night picket"
+      }
+    },
+    "CHAR_02": {
+      "name_ru": "Гази-Мухаммад Гимринский (Первый имам)",
+      "immutable_traits_en": "175cm stocky broad-shouldered Avar thinker with broad intellectual forehead, olive-tanned skin, thick dark brows meeting over bridge, lively perceptive dark brown eyes, straight slightly broad nose",
+      "age_profiles": {
+        "1811": "16-year-old composed Ghazi-Muhammad with smooth face, early faint dark mustache fuzz, calm ironical eyes",
+        "1817_1823": "22-to-28-year-old scholar Ghazi-Muhammad with short dense black framed beard and focused eyes",
+        "1825_1830": "30-to-35-year-old passionate orator First Imam Ghazi-Muhammad with leaner face, first silver threads at black temples (deceased in E03)"
+      },
+      "exit_at": "S1E03_SC06"
+    },
+    "CHAR_03": {
+      "name_ru": "Денгав-Мухаммад (отец Шамиля)",
+      "immutable_traits_en": "184cm sinewy mountain freeman (uzden) with stark sculpted cheekbones, wind-burned leather skin, grey squinting eyes inherited by Shamil, strong straight nose, calloused blacksmith-farmer hands",
+      "age_profiles": {
+        "1803": "35-year-old Dengav-Muhammad with dense jet-black beard",
+        "1817_1823": "54-year-old Dengav-Muhammad with half-silver black beard and deep forehead lines, slight stiff gait"
+      }
+    },
+    "CHAR_04": {
+      "name_ru": "Баху-Меседу (мать Шамиля)",
+      "immutable_traits_en": "168cm fine-boned dignified Avar noblewoman from Ashilta with elongated oval face, high cheekbones, large dark hazel eyes, thin straight nose, proud upright neck",
+      "age_profiles": {
+        "1803": "30-year-old pale sleepless Bakhu-Mesedu without grey strands beneath her chukhta headdress",
+        "1817_1823": "49-year-old Bakhu-Mesedu with silver streaks at temples under black chukhta and fine lines around eyes"
+      }
+    },
+    "CHAR_05": {
+      "name_ru": "Саид Араканский",
+      "immutable_traits_en": "170cm slender intellectual scholar with high open forehead, shrewd dark eyes with faint ironic spark, aquiline thin nose, trimmed pointed beard, walnut-ink stains on right index and middle fingers",
+      "age_profiles": {
+        "1817_1823": "53-year-old Said Arakansky with salt-and-pepper beard",
+        "1825_1830": "63-year-old Said Arakansky with fully white trimmed beard and heavy eyelids"
+      }
+    },
+    "CHAR_06": {
+      "name_ru": "Шейх Джамалуддин Казикумухский",
+      "immutable_traits_en": "176cm ascetic fragile-built Lak theologian with luminous calm face, gentle deep brown eyes, straight nose, rounded neat beard, olive wooden prayer beads in left hand",
+      "age_profiles": {
+        "1817_1823": "35-year-old Sheikh Jamaluddin with unstreaked dark-chestnut beard",
+        "1825_1830": "40-year-old Sheikh Jamaluddin with faint silver strands at temples",
+        "1834": "46-year-old Sheikh Jamaluddin with noticeable silver streaks in chestnut beard"
+      }
+    },
+    "CHAR_07": {
+      "name_ru": "Мухаммад Ярагский",
+      "immutable_traits_en": "182cm gaunt Southern Dagestani (Kura) jurist-preacher with eagle-sharp profile, deep radiant dark eyes, long flowing snow-white beard below collarbones",
+      "age_profiles": {
+        "1825_1830": "54-to-58-year-old dignified elder Muhammad Yaragsky"
+      }
+    },
+    "CHAR_08": {
+      "name_ru": "Гамзат-бек Гоцатлинский (Второй имам)",
+      "immutable_traits_en": "183cm broad-shouldered Avar noble warrior (chanka) with heavy commanding jaw, cold dark eyes, shaven cheeks framing dense clipped black beard, shaved scalp under papakha",
+      "age_profiles": {
+        "1825_1830": "40-year-old ambitious commander Gamzat-bek",
+        "1831_1833": "43-year-old Second Imam Gamzat-bek wearing white imam turban",
+        "1834": "45-year-old hardened Second Imam Gamzat-bek assassinated in Khunzakh mosque"
+      },
+      "exit_at": "S1E04_SC06"
+    },
+    "CHAR_09": {
+      "name_ru": "Хаджи-Мурат Хунзахский",
+      "immutable_traits_en": "171cm extraordinarily broad-shouldered agile Avar rider with round shaven skull, wide-set gleaming dark eyes, aquiline Gagarin-drawing profile, short wedge-trimmed dark-reddish beard",
+      "permanent_scars": [
+        {
+          "id": "SCAR_HM_CHEEK_1834",
+          "acquired_at": "S1E04_SC06",
+          "description_en": "Thin oblique dagger cut across left cheekbone acquired during Khunzakh mosque melee Sep 19, 1834 (heals to thin pale line; NO limp yet throughout Season 1!)",
+          "active_from": "S1E04_SC06"
+        }
+      ],
+      "age_profiles": {
+        "1834": "18-year-old agile unlimping Hadji-Murat with early light wedge beard; after E04 Sc.6 bears fresh oblique slash on left cheek"
+      }
+    },
+    "CHAR_10": {
+      "name_ru": "Джемалуддин Шамилев (старший сын, аманат)",
+      "immutable_traits_en": "Slender delicate oval-faced brunette son of Shamil and Patimat inheriting father's dark hair, straight black brows, high straight forehead, chiseled nose and grey-hazel eyes softened by maternal melancholy",
+      "age_profiles": {
+        "1835_1837": "6-year-old bright-eyed shaved-head dark-browed boy Jamaluddin learning Arabic alif on wooden board",
+        "1839_summer": "8-year-old thin large-eyed serious dark-browed boy Jamaluddin handed over in white cherkeska as Akhulgo hostage",
+        "1839_aug_end": "8-year-old dark-browed Jamaluddin riding north in dusty white cherkeska inside Russian kibitka carriage"
+      }
+    },
+    "CHAR_11": {
+      "name_ru": "Гази-Мухаммад Шамиль (второй сын)",
+      "immutable_traits_en": "Broad-browed open dark-eyed boy matching father's heavy bone structure",
+      "permanent_scars": [
+        {
+          "id": "SCAR_GM2_CALF_1839",
+          "acquired_at": "S1E08_SC05",
+          "description_en": "Musket bullet wound on right calf bandaged with dark-red strip torn from mother Patimat's kerchief during Akhulgo cave descent Aug 22, 1839",
+          "active_from": "S1E08_SC05"
+        }
+      ],
+      "age_profiles": {
+        "1835_1837": "3-to-4-year-old sturdy toddler Ghazi-Muhammad playing with wooden toy shashka",
+        "1839_summer": "6-year-old thin sunburned child Ghazi-Muhammad with cut bare feet",
+        "1839_aug_end": "6-year-old Ghazi-Muhammad with right calf tightly bound in dark-red cloth strip, carried piggyback on Shamil's shoulders"
+      }
+    },
+    "CHAR_12A": {
+      "name_ru": "Патимат (первая жена Шамиля в Гимрах)",
+      "immutable_traits_en": "Modest graceful Avar woman with soft maternal eyes, dark braids under chukhta and black kerchief"
+    },
+    "CHAR_12B": {
+      "name_ru": "Джаварат (кебинная жена Шамиля)",
+      "immutable_traits_en": "22-25yo Kumyk-Avar woman with warm olive skin, winged dark brows, large almond black eyes, holding swaddled infant Said",
+      "exit_at": "S1E08_SC03"
+    },
+    "CHAR_12E": {
+      "name_ru": "Патимат (родная сестра Шамиля)",
+      "immutable_traits_en": "39-year-old tall austere sister of Shamil sharing Dengav-Muhammad's high straight forehead and steel-grey squint",
+      "exit_at": "S1E08_SC04"
+    },
+    "CHAR_13": {
+      "name_ru": "Паху-Бике (правительница Хунзаха)",
+      "immutable_traits_en": "48-52yo stony upright Avar khaness with high cheekbones, severe mouth creases, unblinking cold gaze, greying dark braids under brocade chukhta",
+      "exit_at": "S1E04_SC03"
+    },
+    "CHAR_14": {
+      "name_ru": "Генерал А. П. Ермолов",
+      "immutable_traits_en": "188cm massive heavy-boned Russian commander with leonine head of unruly greying dark-blond curls, low overhanging brow, fierce pale-grey eyes, heavy jaw",
+      "age_profiles": {
+        "1817_1823": "41-year-old vigorous General Ermolov in epaulet-free green frock coat",
+        "1825_1830": "48-year-old heavier silver-streaked Ermolov at Groznaya bastion"
+      }
+    },
+    "CHAR_15A": {
+      "name_ru": "Генерал Ф. К. Клюки фон Клюгенау",
+      "immutable_traits_en": "186cm broad-shouldered Austrian-born Russian general with thick greying mustache, ruddy soldierly face, slight limp leaning on gnarled cornelian walking stick"
+    },
+    "CHAR_15B": {
+      "name_ru": "Генерал П. Х. Граббе",
+      "immutable_traits_en": "Tall gaunt Baltic-German Russian general with high receding forehead, thin compressed lips, neat greying sideburns, cold staff officer posture"
+    },
+    "CHAR_15C": {
+      "name_ru": "Капитан Д. А. Милютин",
+      "immutable_traits_en": "Compact slender 23yo General Staff scholar-officer with high pure forehead, sharp observant grey eyes, clean-shaven jaw",
+      "permanent_scars": [
+        {
+          "id": "SCAR_MILYUTIN_SHOULDER_1839",
+          "acquired_at": "S1E07_SC02",
+          "description_en": "Through-and-through musket bullet wound in right shoulder from July 16 Akhulgo assault; right arm suspended in black silk sling from E07 Sc. 3 through end of E08",
+          "active_from": "S1E07_SC02"
+        }
+      ]
+    },
+    "CHAR_15G": {
+      "name_ru": "Барон Г. В. Розен",
+      "immutable_traits_en": "50yo aristocratic tall Baltic commander with cold elongated shaven face and silver-templed hair"
+    },
+    "CHAR_15H": {
+      "name_ru": "Генерал А. А. Вельяминов",
+      "immutable_traits_en": "45yo stocky slightly stooped artillery theorist with heavy-lidded unmoving stare and broad nose"
+    },
+    "CHAR_15I": {
+      "name_ru": "Генерал К. К. Фези",
+      "immutable_traits_en": "42yo Swiss-born pedantic slender officer with sharp bird-like profile and reddish sideburns"
+    },
+    "CHAR_15J": {
+      "name_ru": "Майор Н. И. Евдокимов («Уч-Гёз»)",
+      "immutable_traits_en": "33yo sturdy Russian frontliner with piercing eyes and deep puckered bullet crater scar on right cheek below cheekbone ('Third Eye' / Uch-Gez)"
+    },
+    "CHAR_15K": {
+      "name_ru": "Император Николай I",
+      "immutable_traits_en": "189cm rigid classical-profiled Russian Tsar with cold pewter-blue eyes, swept temple hair and neat whiskers"
+    },
+    "CHAR_15L": {
+      "name_ru": "Генерал А. П. Пулло",
+      "immutable_traits_en": "Heavy-set stern frontier general with thick sideburns and blunt uncompromising gaze"
+    },
+    "CHAR_16": {
+      "name_ru": "Хирург Абдул-Азиз Унцукульский",
+      "immutable_traits_en": "57yo spare agile-fingered Dagestani bonesetter-surgeon with trimmed white beard and steady calm dark eyes"
+    },
+    "CHAR_17A": {
+      "name_ru": "Осман Хунзахский (старший брат Хаджи-Мурата)",
+      "immutable_traits_en": "24yo 180cm broad-boned Khunzakh warrior with brooding thick joined black brows and short dark mustache",
+      "exit_at": "S1E04_SC06"
+    },
+    "CHAR_17B": {
+      "name_ru": "Абу-Нуцал-хан и Умма-хан Хунзахские",
+      "immutable_traits_en": "22yo & 20yo refined aristocratic Avar khan brothers fighting in Gamzat-bek's green tent",
+      "exit_at": "S1E04_SC01"
+    },
+    "CHAR_18A": {
+      "name_ru": "Кибит-Магома Телетлинский",
+      "immutable_traits_en": "32yo imposing heavy-jawed Gidatl scholar-commander with thick spade-shaped jet-black beard"
+    },
+    "CHAR_18B": {
+      "name_ru": "Ташев-Хаджи Саясановский",
+      "immutable_traits_en": "65-69yo sinewy veteran Chechen-Kumyk commander with pointed white beard and narrow steppe-wise eyes"
+    },
+    "CHAR_18C": {
+      "name_ru": "Али-бек Хунзахский (Сурхай)",
+      "immutable_traits_en": "34-37yo tall lean uncompromising cousin of Shamil with gaunt cheekbones, burning deep eyes, black beard with early silver",
+      "exit_at": "S1E07_SC01"
+    },
+    "CHAR_18D": {
+      "name_ru": "Ахвердил-Мухаммад Хунзахский",
+      "immutable_traits_en": "35yo noble upright Khunzakh cavalry leader with open calm face and neat black beard"
+    },
+    "CHAR_18E": {
+      "name_ru": "Юнус Чиркеевский",
+      "immutable_traits_en": "34yo silent stocky bodyguard-treasurer from Chirkey with an old scar splitting his left eyebrow"
+    },
+    "CHAR_18F": {
+      "name_ru": "Хаджи-Яхья Чиркеевский",
+      "immutable_traits_en": "39yo lean meticulous treasurer with sharp accountant eyes and short greying beard"
+    },
+    "CHAR_18G": {
+      "name_ru": "Алим Саид из Хариколо и Магома Гимринский",
+      "immutable_traits_en": "Venerable white-bearded Dagestani scholar and Gimry veteran holding New Akhulgo casemate doorway",
+      "exit_at": "S1E08_SC03"
+    },
+    "CHAR_19A": {
+      "name_ru": "Шуаиб-мулла Центороевский",
+      "immutable_traits_en": "34yo lean Chechen forest tactician from Tsentoroy with sharp features, lively dark eyes and short dark-reddish beard"
+    }
+  },
+  "wardrobe": {
+    "WARD_SHAMIL_01": "unbleached homespun linen shirt tied at collar, worn inside-out sheepskin vest, barefoot",
+    "WARD_SHAMIL_02": "dark-grey coarse wool beshmet, rawhide belt with wooden-sheathed iron knife, dark cloth trousers in felt leggings, soft leather chuvyaki; brown sheepskin papakha (torn bloodstained left knee from E01 Sc.2)",
+    "WARD_SHAMIL_03": "dark-blue standing-collar beshmet under austere brown-black wool cherkeska without silver; black curly papakha (gains narrow white scholar band in E01 Sc.8 and 8 simple wooden gazyrs + dagger in E01 Sc.9)",
+    "WARD_SHAMIL_04": "dark-brown Andi wool cherkeska with 8 bone gazyrs, black papakha with white murid turban, strictly guardless cleft-pommel Caucasian shashka (ushki) worn edge-up for left-hand draw, black felt burka (bullet tear at left sleeve stitched in E02 Sc.9; pierced at right chest/back & destroyed in E03 Sc.6)",
+    "WARD_SHAMIL_05": "austere dark-grey/black wool cherkeska devoid of silver, wide white Imam turban with tail down nape (from E04 Sc.7), Bazalai iron dagger, strictly guardless cleft-pommel curved Gimry shashka (ushki) worn edge-up for left-hand draw, silver signet ring on right pinky (from E05 Sc.3); scorched & blood-soaked in E08",
+    "WARD_GHAZI1_01": "dark-brown wool beshmet, grey sleeveless vest, brown papakha, leather pen-case over left shoulder",
+    "WARD_GHAZI1_02": "dark-green beshmet, black wool chukha without gazyrs, black papakha with narrow white scholar band",
+    "WARD_GHAZI1_03": "black campaign cherkeska with 8 plain wooden gazyrs, tall papakha with wide white Imam turban, right-draw worn leather shashka",
+    "WARD_DENGAV_01": "dark-brown worn beshmet, sheepskin vest, work dagger, grey papakha",
+    "WARD_DENGAV_02": "sun-faded grey-brown cherkeska with elbow patch, grey papakha",
+    "WARD_BAKHU_01": "dark-blue homespun gorde dress, terracotta-ochre sash, silver temple rings on chukhta, dark shawl",
+    "WARD_BAKHU_02": "dark-burgundy wool dress with blackened silver clasps, black chukhta and black wool shawl",
+    "WARD_SAID_01": "dark-olive fine wool jubba over snow-white beshmet, white scholar turban on lambskin cap",
+    "WARD_SHEIKH_JAMAL_01": "unadorned dark-brown wool jubba over white shirt, white turban, olive beads",
+    "WARD_YARAG_01": "light-grey homespun scholar robe over white beshmet, broad white turban",
+    "WARD_GAMZAT_01": "fine black wool cherkeska with 10 silver-capped gazyr tubes, dark pomegranate beshmet, black papakha with white turban, silver dagger and shashka",
+    "WARD_PAKHUBIKE_01": "heavy dark-blue velvet khan dress with silver clasps and wing sleeves, massive silver carnelian belt, sable-trimmed mantle, brocade chukhta",
+    "WARD_HADJIMURAT_01": "brown wool cherkeska over madder-red beshmet, low curly papakha, twin Khunzakh daggers after E04 Sc.6",
+    "WARD_OSMAN_01": "dark-walnut wool cherkeska with concealed flintlock pistol slung beneath left flap and broad Khunzakh dagger at belt",
+    "WARD_NUTSAL_01": "light-grey cherkeska trimmed with gold braid over pomegranate silk beshmet, gilt khan shashka",
+    "WARD_JAMAL_01": "child-sized plain grey wool cherkeska over white linen shirt, small black papakha",
+    "WARD_JAMAL_PROP_WHITE": "ceremonial spotless white child cherkeska with small dagger & black papakha (put on in E07 Sc.6; road-dusty in E08 Sc.9)",
+    "WARD_GHAZI2_01": "child-sized dark wool beshmet, ragged trousers (right calf bandaged in torn dark-red mother kerchief strip from E08 Sc.5)",
+    "WARD_PATIMAT_WIFE_01": "dark-green/brown Avar gorde dress, black shawl (hem torn for child bandage in E08 Sc.5)",
+    "WARD_JAWARAT_01": "dark-red Avar gorde dress, black k'az shawl, belted with men's leather belt & dagger over dress in E07-E08",
+    "WARD_SISTER_PATIMAT_01": "dark-blue Avar gorde dress, black k'az headscarf, men's leather belt & dagger in E07-E08",
+    "WARD_ERMOLOV_01": "double-breasted dark-green Russian general frock coat WITHOUT epaulets, St. George cross at collar, plain red-band forage cap, black burka or soldier greatcoat over shoulders",
+    "WARD_ROZEN_01": "dark-green Adjutant-General frock coat with silver aiguillettes, neck St. George cross, grey greatcoat",
+    "WARD_VELYAMINOV_01": "weathered dark-green general frock coat with gold epaulets, oilskin-covered forage cap",
+    "WARD_FEZI_01": "dust-and-powder-stained dark-green Russian major-general field coat with epaulets",
+    "WARD_KLUGENAU_01": "Russian general campaign frock coat with gold epaulets, white forage cap, gnarly cornelian stick",
+    "WARD_EVDOKIMOV_01": "plain dark-green Russian major field frock coat, field carbine",
+    "WARD_NICHOLAS1_01": "crisp imperial dark-green general parade tunic with gold epaulets and St. Andrew blue sash",
+    "WARD_GRABBE_01": "dark-green Adjutant-General frock coat with silver aiguillettes and neck St. George cross",
+    "WARD_MILYUTIN_01": "General Staff captain dark-green frock coat with silver trim, leather map-case & brass compass over shoulder (right arm in black silk sling from E07 Sc.3)",
+    "WARD_PULLO_01": "dark-green Russian major-general field coat with thick epaulets and leather map folder",
+    "WARD_ABDULAZIZ_01": "dark-brown wool beshmet with sleeves rolled above elbows, beeswax-and-resin stained linen surgeon apron, low grey papakha",
+    "WARD_KIBIT_01": "fine dark-blue cherkeska with full silver gazyrs, tall papakha with white turban",
+    "WARD_TASHEV_01": "worn brown cherkeska over quilted beshmet, papakha with green-and-white hajji turban",
+    "WARD_ALIBEK_01": "austere black cherkeska without silver, black-and-white death-vow turban, broad Khunzakh dagger",
+    "WARD_AKHVERDIL_01": "tailored dark-blue cherkeska, white turban on grey papakha, silver-hilted sabre",
+    "WARD_YUNUS_01": "weathered brown wool campaign cherkeska, leather cross-strap",
+    "WARD_YAHYA_01": "dark-grey wool cherkeska, narrow white turban, leather coin-pouch on belt",
+    "WARD_KHARI_GIMRY_01": "worn black wool mountain cherkeskas and white elder turbans",
+    "WARD_SHUAIB_01": "soft light-grey Chechen wool cherkeska lined with quiet felt, low curly black papakha, shashka and flintlock rifle",
+    "WARD_MULLA_01": "long dark-grey wool jubba, low papakha with narrow white band, 33-bead wood tasbih",
+    "WARD_ELDER_01": "grey wool village elder cherkeska, tall grey sheepskin papakha, iron-tipped cornelian staff"
+  },
+  "locations": {
+    "LOC_S1_01": "Gimry stone saklya of Dengav-Muhammad (5.5x4.8m upper room, central carved pillar mugh with solar rosette, north hearth tovkhane, 3 niches, west sleeping platform, south door to flat roof-yard)",
+    "LOC_S1_02": "Narrow wet slate ledge & training terrace 400m above Avar Koysu gorge",
+    "LOC_S1_03": "Gimry village godekan paved square under ancient walnut tree and 7-step mosque stairs (buza jug present E01 Sc.3; gone after Sharia reform in E02 Sc.5)",
+    "LOC_S1_04": "Gimry Juma Mosque (12x9m stone hall, 4 carved wooden pillars, mihrab, 4-step walnut minbar)",
+    "LOC_S1_05": "Arakani madrassa stone courtyard (9x7m, diagonal water channel aryk, raised wooden ayvan awning)",
+    "LOC_S1_06": "Sunzha River clearing & Groznaya fortress (fresh 300-pace beech clearing & raw earth rampart in 1818 E01 Sc.5 -> turf-clad bastion with blockhouse & two 6-pounder unicorns in 1825 E02 Sc.1A)",
+    "LOC_S1_07": "Kazikumukh upper lime-washed room of Sheikh Jamaluddin (4.2x3.8m, deep west lattice window, octagonal table with single brass candlestick and closed Quran)",
+    "LOC_S1_08": "Northern limestone promontory overlooking Gimry gorge & distant plains",
+    "LOC_S1_09": "Vini-Yarag warm yellow-sandstone courtyard, carved 2nd-floor gallery and ablution pool hauz",
+    "LOC_S1_10": "Khunzakh 2000m plateau, Tobot canyon edge, 3-story stone khan castle (red khan banner torn down in E04)",
+    "LOC_S1_10B": "Gamzat-bek 6m round green field tent near Tobot stream (rear canvas slashed 1.2m by Abut-Nutsal shashka in E04 Sc.1)",
+    "LOC_S1_11": "Gimry gorge 2-story square watchtower (4.5x4.5m, low east door, roof broken & interior charred Oct 17, 1832 in E03)",
+    "LOC_S1_12": "Khunzakh cathedral mosque (16x12m hall, 12 octagonal stone pillars, north porch pile of confiscated burkas)",
+    "LOC_S1_13": "Burunduk-Kale neutral spring hollow (3 black burkas set in triangle 10 paces from stone spring trough)",
+    "LOC_S1_14A": "Surkhai Tower south conical peak 300m above Akhulgo (standing intact in E06 -> blasted into smoking flat rubble pile with Russian mountain guns on July 4, 1839 in E07 Sc.1!)",
+    "LOC_S1_14B": "New Akhulgo eastern sheer cliff & rock-cut family casemate with timber-earth roof (shattered Aug 21-22 in E08 Sc.3)",
+    "LOC_S1_14C": "1.2m railless hanging pine-plank bridge over 40m Ashilta chasm between Old and New Akhulgo (cut & dropped into abyss Aug 20 in E08 Sc.2!)",
+    "LOC_S1_14D": "Old Akhulgo northwest cliff & Shultz covered sapper water-gallery (mined & captured Aug 17-20 in E08 Sc.2)",
+    "LOC_S1_14E": "Coastal river caves at waterline of roaring Andian Koysu & Grabbe Ashilta heights battery",
+    "LOC_S1_15": "Tarki-Tau slopes beneath Burnaya fortress walls (north powder magazine cratered in E03 Sc.2)",
+    "LOC_S1_16": "Windowless upper surgical chamber of Abdul-Aziz in Untsukul (4.6x3.6m ceiling skylight, sheep-pelt cot, wax-oil pot, cut bloodstained E03 cherkeska on chest)",
+    "LOC_S1_17": "Ashilta log bridge & pebble bank (distant jagged silhouette of Akhulgo visible south)",
+    "LOC_S1_18": "Gotsatl treasury stone tower vault (iron-bound chests & 8yo Bulach-khan's empty blue velvet cherkeska)",
+    "LOC_S1_19": "Stepped stone village of Teletl split down a 2.5m alley barricade",
+    "LOC_S1_20": "Shamil stone study house in Chirkat/Ashilta overlooking Koysu valley",
+    "LOC_S1_21": "300-saklya stone amphitheater fortress of Arguani (gutted by sappers & fire May 30-31 in E06 Sc.2)",
+    "LOC_S1_22": "Emerald beech forest edge of Shuani in Ichkeria, Chechnya (bridge to Season 2)",
+    "LOC_S1_23": "Ruined shepherd stone hut (koshara) in snow gorge under Khunzakh",
+    "LOC_S1_24": "Russian expeditionary pass / command tent (Salatavia pass, Gimry ridge, Tiflis cabinet)",
+    "LOC_S1_25": "Untsukul smithy anvil awning / Gidatl square / burned Ashilta orchard",
+    "LOC_S1_26": "Koysu riverside night picket bushes and two-log crossing bridge",
+    "LOC_S1_27": "Autumn steppe postal highway north of Vladikavkaz (Russian kibitka convoy)"
+  },
+  "state_rules": [
+    {
+      "id": "RULE_SHAMIL_SCAR_E03",
+      "description": "Shamil acquires permanent Gimry chest/back scar in S1E03_SC06; no scene prior to E03 Sc.6 may mention it, all scenes from E03 Sc.6 onward preserve it.",
+      "start_shot": "S1E03_SH06"
+    },
+    {
+      "id": "RULE_SURKHAI_TOWER_RUBBLE_E07",
+      "description": "Surkhai Tower [LOC_S1_14A] is pulverized on July 4, 1839 in S1E07_SH01; every subsequent shot mentioning LOC_S1_14A must reflect rubble/Russian mountain battery, never an intact tower.",
+      "start_shot": "S1E07_SH02"
+    },
+    {
+      "id": "RULE_MILYUTIN_SLING_E07",
+      "description": "Captain D. A. Milyutin is shot in the right shoulder on July 16, 1839 in S1E07_SH02; from S1E07_SH03 through S1E08 his right arm must be in a black silk sling.",
+      "start_shot": "S1E07_SH03"
+    },
+    {
+      "id": "RULE_BRIDGE_CUT_E08",
+      "description": "The hanging bridge [LOC_S1_14C] is cut on Aug 20, 1839 in S1E08_SH02; it cannot appear intact in S1E08_SH03-SH08.",
+      "start_shot": "S1E08_SH03"
+    },
+    {
+      "id": "RULE_SHAMIL_BRUNETTE_S1",
+      "description": "Throughout Season 1 (1797-1839), Shamil [CHAR_01] is a natural Avar brunette with jet-black hair, straight black brows, and dense black beard (zero ginger, reddish, or blond hair/beard; henna is strictly Season 3-4).",
+      "start_shot": "S1E01_SH01"
+    },
+    {
+      "id": "RULE_SINGLE_FRAME_LIVE_ACTION",
+      "description": "Every shot keyframe must be a single continuous 35mm live-action camera frame (no diptychs, split-screens, or multi-location mashups), with open-wick chiragh lamps (no glass chimneys) and guardless cleft-pommel Caucasian shashkas.",
+      "start_shot": "S1E01_SH01"
+    }
+  ]
+}

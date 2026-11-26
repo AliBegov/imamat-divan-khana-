@@ -1,0 +1,44 @@
+TITLE: IMAMAT_DIVAN_KHANA_STEAM_TRAILER_60S
+FCM: NON-DROP FRAME
+
+001  SHOT_01  V     C        01:00:00:00 01:00:10:00 00:00:00:00 00:00:10:00
+* FROM CLIP NAME: LS_SteamTrailer_Shot01_DivanKhanaTable_35mm.exr
+* COMMENT: LENS: 35mm Prime, f/2.0 | AUDIO_CUE: Hearth_And_Vedeno_Watermill_Layer3
+* LOC_TITLE_RU: Кадр 1: Очаг Диван-ханы и карта Кавказа при свечах
+* LOC_TITLE_EN: Shot 1: Divan-Khana Hearth & Candlelit Caucasus Map
+* SUBTITLE_EN: "Vedeno, 1845. Across this oak table there are no abstract hexes — only couriers, gunpowder, and the will of ten Naibs..."
+
+002  SHOT_02  V     C        01:00:10:00 01:00:20:00 00:00:10:00 00:00:20:00
+* FROM CLIP NAME: LS_SteamTrailer_Shot02_ShamilSignetSeal_50mm.exr
+* COMMENT: LENS: 50mm Macro Anamorphic, f/1.4 | AUDIO_CUE: WaxSeal_And_AhkTash_Gorge_Wind_Layer1
+* LOC_TITLE_RU: Кадр 2: Оттиск восьмиугольного перстня Шамиля и выезд чапара
+* LOC_TITLE_EN: Shot 2: Shamil's Octagonal Signet Stamp & Chapar Dispatch
+* SUBTITLE_EN: "Every decree is sealed in silver. Yet will your courier pierce Freytag's cordons — and will a proud Naib obey?"
+
+003  SHOT_03  V     C        01:00:20:00 01:00:32:00 00:00:20:00 00:00:32:00
+* FROM CLIP NAME: LS_SteamTrailer_Shot03_MilyutinCutaway_24mm.exr
+* COMMENT: LENS: 24mm Wide Tilt-Shift, f/2.8 | AUDIO_CUE: Safarov_CopperBasin_Sonar_Layer2
+* LOC_TITLE_RU: Кадр 3: 3D-разрез скалы Милютина и медный таз Сафарова (Салты / Чох)
+* LOC_TITLE_EN: Shot 3: Milyutin 3D Rock Cutaway & Safarov's Copper Basin Sonar
+* SUBTITLE_EN: "Slice the cliffside along Colonel Milyutin's blueprints. Listen to peas trembling on Safarov's copper basin and fire the counter-mine!"
+
+004  SHOT_04  V     C        01:00:32:00 01:00:44:00 00:00:32:00 00:00:44:00
+* FROM CLIP NAME: LS_SteamTrailer_Shot04_IchkeriaAbatis_28mm.exr
+* COMMENT: LENS: 28mm Handheld Combat, f/2.0 | AUDIO_CUE: Gazyr_Volley_And_Shashka_Charge
+* LOC_TITLE_RU: Кадр 4: Буковая засека в Ичкерии и залп 18 нагрудных газырей
+* LOC_TITLE_EN: Shot 4: Ichkeria Beech Abatis Ambush & 18-Gazyr Volley
+* SUBTITLE_EN: "No health bars. Eighteen silver gazyrs across the chest. Drop the beech abatis onto Vorontsov's column and close with Bazalai steel!"
+
+005  SHOT_05  V     C        01:00:44:00 01:00:52:00 00:00:44:00 00:00:52:00
+* FROM CLIP NAME: LS_SteamTrailer_Shot05_NizamCourt_40mm.exr
+* COMMENT: LENS: 40mm Anamorphic, f/2.2 | AUDIO_CUE: Nizam_Decree_And_Artillery_Echo
+* LOC_TITLE_RU: Кадр 5: Кодекс Низамов, суд по Шариату и 3 испытания Ironman
+* LOC_TITLE_EN: Shot 5: Code of Nizams, Sharia Court & 3 Ironman Challenges
+* SUBTITLE_EN: "Judge by the Code of Nizams between Adat and Sharia. Benchmark your campaign against 20,000 simulations in al-Karakhi's Chronograph."
+
+006  SHOT_06  V     C        01:00:52:00 01:01:00:00 00:00:52:00 00:01:00:00
+* FROM CLIP NAME: LS_SteamTrailer_Shot06_GunibPackshot_18mm.exr
+* COMMENT: LENS: 85mm Macro -> 18mm Wide Reveal, f/4.0 | AUDIO_CUE: Full_3Layer_Caucasus_Chord_Crescendo
+* LOC_TITLE_RU: Кадр 6: Сургучная печать 1261 AH и финальный пэкшот Steam
+* LOC_TITLE_EN: Shot 6: 1261 AH Signet Seal & Steam Wishlist Packshot
+* SUBTITLE_EN: "IMAMAT: DIVAN-KHANA. He who ponders the consequences is not brave. Add to your Steam Wishlist today."

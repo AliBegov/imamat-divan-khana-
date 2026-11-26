@@ -1,0 +1,35 @@
+{
+  "appId": "com.imamat.divankhana",
+  "appName": "ИМАМАТ: Диван-Хана",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "backgroundColor": "#0c0e12",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  },
+  "ios": {
+    "contentInset": "never",
+    "preferredContentMode": "mobile",
+    "backgroundColor": "#0c0e12",
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "android": {
+    "backgroundColor": "#0c0e12",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#0c0e12",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0c0e12",
+      "overlaysWebView": true
+    }
+  }
+}

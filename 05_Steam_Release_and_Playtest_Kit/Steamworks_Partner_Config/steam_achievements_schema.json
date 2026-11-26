@@ -1,0 +1,228 @@
+{
+  "appid": 3481840,
+  "playtest_appid": 3481850,
+  "schema_version": "M9-Steamworks-1.0",
+  "supported_languages": [
+    "russian",
+    "english"
+  ],
+  "total_achievements": 12,
+  "achievements": [
+    {
+      "api_name": "ACH_BISCUIT_EXPEDITION_1845",
+      "stat_id": 1,
+      "category": "Tactical",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 68.5,
+      "display_name": {
+        "russian": "Сухарная экспедиция 1845",
+        "english": "The Biscuit Expedition of 1845"
+      },
+      "description": {
+        "russian": "Провести бой в тактической диораме или засаду в Ичкерийском лесу на сплайне.",
+        "english": "Engage in a tactical siege diorama or execute a spline ambush in the Ichkeria forest."
+      },
+      "icon_unlocked": "ach_ach_biscuit_expedition_1845_unlocked.jpg",
+      "icon_locked": "ach_ach_biscuit_expedition_1845_gray.jpg",
+      "historical_archive_reference": "Глава 13: Даргинский поход Воронцова и разгром колонны Клугенау в Ичкерийском лесу (июль 1845 г.)"
+    },
+    {
+      "api_name": "ACH_COPPER_BASIN_SAFAROV",
+      "stat_id": 2,
+      "category": "Tactical",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 44.2,
+      "display_name": {
+        "russian": "Медный таз Хаджи-Юсуфа",
+        "english": "Hajji Yusuf's Copper Basin"
+      },
+      "description": {
+        "russian": "Обнаружить сапёрную галерею акустическим пеленгом и подорвать подземный камуфлет.",
+        "english": "Detect an enemy sap gallery via acoustic copper basin and detonate a subterranean camouflet mine."
+      },
+      "icon_unlocked": "ach_ach_copper_basin_safarov_unlocked.jpg",
+      "icon_locked": "ach_ach_copper_basin_safarov_gray.jpg",
+      "historical_archive_reference": "Глава 15: Война осад 1847–1849 гг. (Гергебиль, Салты, Чох) и инженерное искусство Хаджи-Юсуфа Сафарова"
+    },
+    {
+      "api_name": "ACH_LAST_GAZYR_SURKHAY",
+      "stat_id": 3,
+      "category": "Tactical",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 55.3,
+      "display_name": {
+        "russian": "Последний газырь на Сурхаевой башне",
+        "english": "Last Gazyr on Surkhay's Tower"
+      },
+      "description": {
+        "russian": "Израсходовать все 18 нагрудных газырей (0/18) и перейти в кинжальный прорыв сталью Базалая.",
+        "english": "Deplete all 18 chest gazyrs (0/18) and trigger a fierce Bazalai dagger melee charge."
+      },
+      "icon_unlocked": "ach_ach_last_gazyr_surkhay_unlocked.jpg",
+      "icon_locked": "ach_ach_last_gazyr_surkhay_gray.jpg",
+      "historical_archive_reference": "Глава 11: Осада Ахульго 1839 г. и героическая оборона Сурхаевой башни мюридами Алибека Хунзахского"
+    },
+    {
+      "api_name": "ACH_HEAVY_POWDER_CARAVAN",
+      "stat_id": 4,
+      "category": "Logistics",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 47.0,
+      "display_name": {
+        "russian": "Большой пороховой обоз Ведено",
+        "english": "Great Powder Train of Vedeno"
+      },
+      "description": {
+        "russian": "Снарядить и отправить из арсенала Ведено тяжёлый вьючный караван с 45 пудами пороха.",
+        "english": "Equip and dispatch a heavy 45-pood gunpowder pack train from the Vedeno arsenal."
+      },
+      "icon_unlocked": "ach_ach_heavy_powder_caravan_unlocked.jpg",
+      "icon_locked": "ach_ach_heavy_powder_caravan_gray.jpg",
+      "historical_archive_reference": "Глава 03: Пороховые мельницы Ведено, Телетля и Гуниба и снабжение осаждённых бастионов"
+    },
+    {
+      "api_name": "ACH_SHAMIL_CODEX_REFORMER",
+      "stat_id": 5,
+      "category": "Governance",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 52.0,
+      "display_name": {
+        "russian": "Законодатель Диван-ханы",
+        "english": "Lawgiver of the Divan-Khana"
+      },
+      "description": {
+        "russian": "Принять и ввести в действие не менее 4 государственных Низамов Имама Шамиля.",
+        "english": "Enact at least 4 state Nizam laws in the Divan-Khana council."
+      },
+      "icon_unlocked": "ach_ach_shamil_codex_reformer_unlocked.jpg",
+      "icon_locked": "ach_ach_shamil_codex_reformer_gray.jpg",
+      "historical_archive_reference": "Глава 06: Кодекс Низамов Шамиля — реформа военного, судебного и налогового права"
+    },
+    {
+      "api_name": "ACH_MUHTASIB_PURGE",
+      "stat_id": 6,
+      "category": "Governance",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 38.4,
+      "display_name": {
+        "russian": "Неподкупный Мухтасиб",
+        "english": "Incorruptible Muhtasib"
+      },
+      "description": {
+        "russian": "Направить тайного ревизора-мухтасиба для проверки казны и обуздания алчности наиба.",
+        "english": "Dispatch a secret Muhtasib inspector to audit a Naibate treasury and curb Naib Greed."
+      },
+      "icon_unlocked": "ach_ach_muhtasib_purge_unlocked.jpg",
+      "icon_locked": "ach_ach_muhtasib_purge_gray.jpg",
+      "historical_archive_reference": "Глава 04 и Глава 06: Институт тайных ревизоров-мухтасибов в государстве Имама Шамиля"
+    },
+    {
+      "api_name": "ACH_FIVE_SIEGES_CHOKH",
+      "stat_id": 7,
+      "category": "Tactical",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 49.0,
+      "display_name": {
+        "russian": "Неприступный бастион гор",
+        "english": "Impregnable Mountain Bastion"
+      },
+      "description": {
+        "russian": "Снизить имперский натиск в тактической осаде и вернуть победный FTacticalBattleResult на карту.",
+        "english": "Reduce Imperial siege pressure in the tactical diorama and apply FTacticalBattleResult to the map."
+      },
+      "icon_unlocked": "ach_ach_five_sieges_chokh_unlocked.jpg",
+      "icon_locked": "ach_ach_five_sieges_chokh_gray.jpg",
+      "historical_archive_reference": "Глава 15: Оборона аулов Гергебиль, Салты и Чох (1847–1849 гг.)"
+    },
+    {
+      "api_name": "ACH_SILVER_MEDAL_BORCHALO",
+      "stat_id": 8,
+      "category": "Diplomacy",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 34.8,
+      "display_name": {
+        "russian": "Мастер черни из Борчало",
+        "english": "Niello Silversmith of Borchalo"
+      },
+      "description": {
+        "russian": "Наградить наиба или мюрида серебряным орденом Имамата («Храбрецу как лев») либо отправить посольство в Стамбул.",
+        "english": "Award a nielloed silver medal of the Imamat ('Brave as a Lion') or dispatch an embassy to Istanbul."
+      },
+      "icon_unlocked": "ach_ach_silver_medal_borchalo_unlocked.jpg",
+      "icon_locked": "ach_ach_silver_medal_borchalo_gray.jpg",
+      "historical_archive_reference": "Глава 02 и Глава 09: Орденская система Имамата и дипломатия с Блистательной Портой"
+    },
+    {
+      "api_name": "ACH_AL_QARAKHI_CHRONICLER",
+      "stat_id": 9,
+      "category": "Archive",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 61.2,
+      "display_name": {
+        "russian": "Блеск дагестанских шашек",
+        "english": "Shining of Dagestani Sabers"
+      },
+      "description": {
+        "russian": "Собрать не менее 10 исторических записей в летописи секретаря Мухаммед-Тахира аль-Карахи.",
+        "english": "Record at least 10 historical entries in Secretary Muhammad-Tahir al-Qarakhi's Chronicle."
+      },
+      "icon_unlocked": "ach_ach_al_qarakhi_chronicler_unlocked.jpg",
+      "icon_locked": "ach_ach_al_qarakhi_chronicler_gray.jpg",
+      "historical_archive_reference": "Глава 10: Хроника Мухаммед-Тахира аль-Карахи «Блеск дагестанских шашек в некоторых шамилевских битвах»"
+    },
+    {
+      "api_name": "ACH_NIZAM_WITHOUT_ZULMAT",
+      "stat_id": 10,
+      "category": "Mastery",
+      "hidden": 1,
+      "target_global_unlock_rate_pct": 22.5,
+      "display_name": {
+        "russian": "Правление без Зульмата",
+        "english": "Rule Without Zulmat"
+      },
+      "description": {
+        "russian": "Дойти до 5-го хода кампании без единого мятежа «Зульмат» при запасе пороха в Ведено не менее 100 пудов.",
+        "english": "Reach Turn 5 of a campaign with zero 'Zulmat' revolts and at least 100 poods of powder in Vedeno."
+      },
+      "icon_unlocked": "ach_ach_nizam_without_zulmat_unlocked.jpg",
+      "icon_locked": "ach_ach_nizam_without_zulmat_gray.jpg",
+      "historical_archive_reference": "Математическая модель UImamatStrategicSubsystem и 4 000 прогонов Монте-Карло"
+    },
+    {
+      "api_name": "ACH_ARCHIVAL_SCHOLAR",
+      "stat_id": 11,
+      "category": "Archive",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 78.0,
+      "display_name": {
+        "russian": "Хранитель библиотеки Ведено",
+        "english": "Keeper of the Vedeno Library"
+      },
+      "description": {
+        "russian": "Открыть Толковый словарь Имамата (DT_ImamatGlossary) и изучить исторические термины и формулы.",
+        "english": "Open the Imamat Historical Glossary (DT_ImamatGlossary) and inspect the archival terms and formulas."
+      },
+      "icon_unlocked": "ach_ach_archival_scholar_unlocked.jpg",
+      "icon_locked": "ach_ach_archival_scholar_gray.jpg",
+      "historical_archive_reference": "Глава 08: Судьба казны и уникального собрания арабских рукописей библиотеки Шамиля (1859 г.)"
+    },
+    {
+      "api_name": "ACH_COUNSEL_COMPLETED",
+      "stat_id": 12,
+      "category": "Onboarding",
+      "hidden": 0,
+      "target_global_unlock_rate_pct": 88.0,
+      "display_name": {
+        "russian": "Ученик секретаря аль-Карахи",
+        "english": "Disciple of Secretary al-Qarakhi"
+      },
+      "description": {
+        "russian": "Выполнить все 3 шага интерактивного наставления секретаря аль-Карахи (Низам, Караван 30 пуд., Диорама).",
+        "english": "Complete all 3 steps of Secretary al-Qarakhi's Onboarding Counsel (Nizam, 30-Pood Convoy, Siege Diorama)."
+      },
+      "icon_unlocked": "ach_ach_counsel_completed_unlocked.jpg",
+      "icon_locked": "ach_ach_counsel_completed_gray.jpg",
+      "historical_archive_reference": "Онбординг M4: Первые 3 шага в Диван-хане (KPI 88.0% по когорте плейтеста)"
+    }
+  ]
+}

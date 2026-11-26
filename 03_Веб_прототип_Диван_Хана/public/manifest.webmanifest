@@ -1,0 +1,32 @@
+{
+  "name": "ИМАМАТ: Диван-Хана (1839–1859)",
+  "short_name": "ИМАМАТ",
+  "description": "Военно-историческая 3D-стратегия Кавказской войны (1839–1859): Диван-хана, живой 3D-рельеф Кавказа, осады аулов и лесные засеки Ичкерии.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0c0e12",
+  "theme_color": "#0c0e12",
+  "categories": ["games", "strategy", "education"],
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

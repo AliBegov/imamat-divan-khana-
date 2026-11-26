@@ -1,0 +1,286 @@
+{
+  "schema_version": "2.0",
+  "series_title": "Шамиль: свод неба и кремень",
+  "pipeline_standard": "Reference-First 35mm Live-Action Cinema Pipeline (benchmark: shared_refs casting portraits in Starshiy Dom)",
+  "recommended_engine": "Google Flow — Nano Banana 2.1 (16:9) -> Omni 1.2 Flash / Veo Ingredients",
+  "global_camera_lock_en": "Raw unretouched 35mm live-action motion picture still shot on ARRI Alexa 35 / Kodak Vision3 500T with 85mm Cooke Panchro prime lens at f/2.0, natural motivated daylight or single practical flame, authentic Caucasian skin pores and bone asymmetry, natural fabric weave, subtle photochemical grain, strictly zero CGI, zero painterly illustration, zero plastic skin smoothing, zero text or watermarks.",
+  "stage_1_shamil_identity_spine": [
+    {
+      "ref_id": "CHAR_01_A1_shamil_6yo",
+      "output_path": "shared_refs/characters/CHAR_01_A1_shamil_6yo.jpg",
+      "character_id": "CHAR_01",
+      "phase_code": "CHAR_01_A1",
+      "title_ru": "Али / Шамиль — 6 лет (1803, Гимры)",
+      "age": 6,
+      "era": "1803",
+      "wardrobe_code": "WARD_SHAMIL_01",
+      "historical_note_ru": "Природный кавказский брюнет: густые чёрно-каштановые коротко остриженные волосы, прямые тёмные бровки, серо-карие глаза.",
+      "prompt_en": "Raw unretouched 35mm live-action close-up casting portrait (16:9 horizontal cinema frame), 85mm Cooke Panchro lens f/2.0. A frail, thin 6-year-old Dagestani Avar mountain boy in 1803 with high straight forehead, pronounced young cheekbones, refined straight nose, deep-set large grey-hazel eyes with dark shadows beneath straight dark eyebrows, and short knife-trimmed dense jet-black hair. Fever-dry lips, pale mountain skin. Wearing an unbleached homespun coarse linen shirt tied with a cord at the collar under a worn sheepskin vest turned fleece-inward. Soft dim warm hearthlight against an out-of-focus dark stone saklya wall. Kodak Vision3 500T film grain, hyper-authentic human skin texture, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_01_A2_shamil_14yo",
+      "output_path": "shared_refs/characters/CHAR_01_A2_shamil_14yo.jpg",
+      "character_id": "CHAR_01",
+      "phase_code": "CHAR_01_A2",
+      "title_ru": "Шамиль — 14 лет (1811, юность в Гимрах)",
+      "age": 14,
+      "era": "1811",
+      "wardrobe_code": "WARD_SHAMIL_02",
+      "condition_from_ref": "CHAR_01_A1_shamil_6yo",
+      "historical_note_ru": "Тот же костный череп и прищур; резко вытянувшийся жилистый подросток-брюнет с короткими чёрными волосами без бороды.",
+      "prompt_en": "Raw unretouched 35mm live-action medium close-up casting portrait (16:9 horizontal cinema frame), 85mm Cooke Panchro lens f/2.0. Exact same Dagestani Avar boy grown into a wiry, sinewy 14-year-old adolescent (~172cm) in 1811: high straight forehead slightly sloping at temples, sharp wide Avar cheekbones, firm rectangular jaw, direct stubborn slightly narrowed grey-hazel eyes beneath thick straight black eyebrows, chiseled straight mountain nose, fair wind-weathered skin, short cropped dense jet-black hair (natural brunette), no beard, faintest dark shadow above upper lip. Bareheaded, wearing a sweat-damp dark-grey coarse homespun wool beshmet with narrow standing collar. Cold overcast misty Caucasian gorge background softly out of focus. Kodak Vision3 250D, real skin pores, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_01_A3_shamil_25yo",
+      "output_path": "shared_refs/characters/CHAR_01_A3_shamil_25yo.jpg",
+      "character_id": "CHAR_01",
+      "phase_code": "CHAR_01_A3",
+      "title_ru": "Шамиль — 25 лет (1822–1823, молодой алим-муталим)",
+      "age": 25,
+      "era": "1817_1823",
+      "wardrobe_code": "WARD_SHAMIL_03",
+      "condition_from_ref": "CHAR_01_A2_shamil_14yo",
+      "historical_note_ru": "Полный рост 189 см, широкие плечи, короткая густая угольно-чёрная борода без рыжины.",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9 horizontal cinema frame), 85mm Cooke Panchro lens f/2.0. Exact same Dagestani Avar man at age 25 in 1822, towering 189cm athletic build with broad shoulders and upright horseman posture: high straight forehead, sculpted wide cheekbones, strong rectangular jaw, signature narrowed piercing grey-hazel eyes under thick straight black eyebrows, straight chiseled mountain nose, fair sun-weathered skin, and a short neatly trimmed dense jet-black beard with sunnah-trimmed dark mustache. Wearing a dark-blue standing-collar beshmet under an austere unadorned brown-black wool cherkeska without silver, and a black curly sheepskin papakha wrapped with a narrow white cotton scholar band. Natural diffused mountain courtyard daylight, Kodak Vision3 250D, authentic skin pores and wool texture, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_01_A4_shamil_35yo",
+      "output_path": "shared_refs/characters/CHAR_01_A4_shamil_35yo.jpg",
+      "character_id": "CHAR_01",
+      "phase_code": "CHAR_01_A4",
+      "title_ru": "Шамиль — 35–37 лет (1832–1834, Гимры и избрание Третьим имамом)",
+      "age": 35,
+      "era": "1831_1833",
+      "wardrobe_code": "WARD_SHAMIL_04",
+      "condition_from_ref": "CHAR_01_A3_shamil_25yo",
+      "historical_note_ru": "Густая чёрная борода до середины шеи, две вертикальные складки меж чёрных бровей, совершенно без рыжины и хны.",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9 horizontal cinema frame), 85mm Cooke Panchro lens f/2.0. Exact same 189cm Dagestani Avar man at age 35 in 1832: hardened masculine face, two vertical creases between thick straight black eyebrows, intense narrowed grey-hazel eyes, straight chiseled mountain nose, fair wind-burned skin, and a full dense jet-black beard reaching mid-neck with sunnah-trimmed dark mustache. Wearing a rugged dark-brown Andi wool cherkeska with 8 plain bone gazyr tubes, dark beshmet, and a tall black sheepskin papakha wrapped in a clean white murid turban; leather shoulder strap of a left-hand-draw shashka crossing chest. Cold overcast Dagestan mountain light, Kodak Vision3 500T, unretouched pores and weathered wool, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_01_A5_shamil_42yo",
+      "output_path": "shared_refs/characters/CHAR_01_A5_shamil_42yo.jpg",
+      "character_id": "CHAR_01",
+      "phase_code": "CHAR_01_A5",
+      "title_ru": "Имам Шамиль — 42 года (лето 1839, осада Ахульго)",
+      "age": 42,
+      "era": "1839_summer",
+      "wardrobe_code": "WARD_SHAMIL_05",
+      "condition_from_ref": "CHAR_01_A4_shamil_35yo",
+      "historical_note_ru": "Осунувшееся от осады лицо вождя, густая чёрная борода с единичными первыми серебряными нитями у висков (строго без хны!).",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9 horizontal cinema frame), 85mm Cooke Panchro lens f/2.0. Exact same 189cm Dagestani Avar man as Third Imam Shamil at age 42 during the 1839 siege of Akhulgo: gaunt, hollow-cheeked austere face with fine sun-squint lines around piercing narrowed grey-hazel eyes, thick straight black eyebrows, straight chiseled nose, dry cracked lips, and a thick wedge-shaped dense black beard showing only two or three faint early silver threads at the temples. Wearing an austere silver-free charcoal-black wool cherkeska lightly dusted with white limestone powder, black beshmet, and a tall black papakha wrapped in a wide snow-white Imam muslin turban with its tail hanging down the nape. Harsh high-altitude Caucasian daylight against pale limestone blur, Kodak Vision3 250D, raw photorealism, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_01_A7_shamil_60yo_henna_reference",
+      "output_path": "shared_refs/characters/CHAR_01_A7_shamil_60yo_henna_reference.jpg",
+      "character_id": "CHAR_01",
+      "phase_code": "CHAR_01_A7",
+      "title_ru": "Имам Шамиль — 60–62 года (1857–1859, Сезоны 3–4: седая борода, окрашенная хной)",
+      "age": 61,
+      "era": "1857_1859_reference_only",
+      "wardrobe_code": "WARD_SHAMIL_07",
+      "condition_from_ref": "CHAR_01_A5_shamil_42yo",
+      "historical_note_ru": "Контрольный эталон поздних сезонов (сверка с фото А. И. Деньера 1859 г.): показывает, что медно-рыжеватый тон появляется ТОЛЬКО в пожилом возрасте поверх седой бороды от окрашивания хной, при сохранённых тёмных с сединой бровях.",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9 horizontal cinema frame), 85mm Cooke Panchro lens f/2.0, matching the 1859 A. Denier studio photograph. Exact same 189cm Dagestani Avar man aged to 61 years old (1858-1859): deep wisdom lines, weathered forehead, heavy-lidded piercing grey-hazel squint under thick dark grey-streaked eyebrows, straight chiseled nose, and a broad palm-wide patriarchal wedge beard whose greyed hair is dyed with traditional henna into a noble muted copper-auburn tone streaked with newly grown silver-white strands along the jaw and chin. Wearing a dignified cream-white wool cherkeska with nielloed silver-capped gazyrs over a dark beshmet and a tall black Astrakhan papakha wrapped in a voluminous white muslin turban. Soft directional north window light, Kodak Vision3 500T, museum-grade live-action realism, zero CGI."
+    }
+  ],
+  "stage_1_core_s1_cast": [
+    {
+      "ref_id": "CHAR_02_ghazi_muhammad",
+      "output_path": "shared_refs/characters/CHAR_02_ghazi_muhammad.jpg",
+      "character_id": "CHAR_02",
+      "title_ru": "Гази-Мухаммад Гимринский (Первый имам, 34 года)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Stocky broad-shouldered 34-year-old Dagestani Avar scholar-imam (~175cm) in 1830: broad intellectual forehead, olive-weathered skin, thick black eyebrows meeting slightly at bridge, intense perceptive dark brown eyes, straight slightly broad nose, dense framed black beard with earliest single silver thread at temple. Wearing austere black wool cherkeska with 8 plain wooden gazyrs and tall black papakha wrapped in wide white Imam turban. Overcast mountain light, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_03_dengav_muhammad",
+      "output_path": "shared_refs/characters/CHAR_03_dengav_muhammad.jpg",
+      "character_id": "CHAR_03",
+      "title_ru": "Денгав-Мухаммад (отец Шамиля, 35 лет)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Tall sinewy 35-year-old Dagestani Avar freeman-blacksmith (~184cm) in 1803: stark sculpted cheekbones, wind-burned mountain skin, deep forehead creases, narrowed grey eyes (exact paternal squint of Shamil), strong straight nose, dense jet-black mountain beard. Wearing worn dark-brown wool beshmet, fleece-lined sheepskin vest and weathered grey sheepskin papakha. Warm dim hearth-and-daylight contrast, Kodak Vision3 500T, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_04_bakhu_mesedu",
+      "output_path": "shared_refs/characters/CHAR_04_bakhu_mesedu.jpg",
+      "character_id": "CHAR_04",
+      "title_ru": "Баху-Меседу (мать Шамиля, 30 лет)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Dignified fine-boned 30-year-old Dagestani Avar noblewoman (~168cm) in 1803: upright carriage, elongated oval face, high cheekbones, large expressive dark-hazel eyes, thin straight nose, composed proud lips, dark braids tucked inside an authentic Avar chukhta cap with two modest blackened-silver temple rings beneath a dark homespun k'az headscarf, wearing a dark-blue wool gorde dress. Soft natural window light inside stone room, Kodak Vision3 500T, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_05_said_arakansky",
+      "output_path": "shared_refs/characters/CHAR_05_said_arakansky.jpg",
+      "character_id": "CHAR_05",
+      "title_ru": "Саид Араканский (53 года, учёный-правовед)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Refined slender 53-year-old Dagestani encyclopedic jurist in 1817: high open forehead, shrewd lively dark eyes with subtle ironic intelligence, thin aquiline nose, neatly trimmed pointed salt-and-pepper beard. Wearing a spacious dark-olive fine wool scholar jubba over a crisp white standing-collar beshmet and lambskin cap wrapped with a neat white scholar turban. Sun-dappled stone courtyard blur, Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_06_sheikh_jamaluddin",
+      "output_path": "shared_refs/characters/CHAR_06_sheikh_jamaluddin.jpg",
+      "character_id": "CHAR_06",
+      "title_ru": "Шейх Джамалуддин Казикумухский (40 лет, наставник)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Ascetic calm 40-year-old Lak theologian from Kazikumukh in 1828: luminous serene fair mountain face, deep gentle brown eyes full of moral stillness, straight nose, neat rounded dark-brown beard with faint silver threads at temples. Wearing an unadorned dark-brown wool jubba over white linen shirt and white turban around a low felt cap, holding dark olive-wood prayer beads in left hand. Warm single beeswax candle and twilight window light, Kodak Vision3 500T, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_07_muhammad_yaragsky",
+      "output_path": "shared_refs/characters/CHAR_07_muhammad_yaragsky.jpg",
+      "character_id": "CHAR_07",
+      "title_ru": "Мухаммад Ярагский (56 лет)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Tall gaunt 56-year-old Southern Dagestani (Lezgin/Kura) jurist-elder in 1827: sharp aquiline profile, radiant deep dark eyes, long snow-white beard flowing below collarbones. Wearing a light-grey homespun wool robe over white beshmet and broad white scholar turban against warm yellow sandstone blur. Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_08_gamzat_bek",
+      "output_path": "shared_refs/characters/CHAR_08_gamzat_bek.jpg",
+      "character_id": "CHAR_08",
+      "title_ru": "Гамзат-бек Гоцатлинский (Второй имам, 43 года)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Tall broad-shouldered 43-year-old Avar noble warrior (183cm) in 1833: heavy commanding jaw, cold dark eyes, shaved upper cheeks framing a dense clipped black beard, shaved head beneath a lush black papakha wrapped in white turban. Wearing fine black wool cherkeska with silver-niello gazyr caps over dark-pomegranate beshmet. Cold mountain daylight, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_09_hadji_murat_18yo",
+      "output_path": "shared_refs/characters/CHAR_09_hadji_murat_18yo.jpg",
+      "character_id": "CHAR_09",
+      "title_ru": "Хаджи-Мурат Хунзахский (18 лет, 1834)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens, faithful to Prince Gagarin's life drawing de-aged to 18 in 1834. Compact extraordinarily broad-shouldered muscular Avar youth (171cm): shaven round head under low brown curly papakha, wide-set gleaming black eyes with a fearless calm half-smile, sharp aquiline nose, earliest short dark wedge beard, Wearing brown wool cherkeska over madder-red beshmet. Natural Khunzakh plateau light, Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_10_jamaluddin_8yo",
+      "output_path": "shared_refs/characters/CHAR_10_jamaluddin_8yo.jpg",
+      "character_id": "CHAR_10",
+      "title_ru": "Джемалуддин Шамилев (8 лет, аманат Ахульго, 1839)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Thin, serious 8-year-old Dagestani Avar brunette boy in August 1839 inheriting Shamil's high forehead, straight chiseled nose, straight black eyebrows and grey-hazel eyes, softened by a delicate oval jaw and thoughtful melancholy gaze; closely shorn dark hair. Wearing a spotless ceremonial white child-sized wool cherkeska with tiny gazyrs and small black papakha. High-altitude daylight, Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_11_ghazi_son_6yo",
+      "output_path": "shared_refs/characters/CHAR_11_ghazi_son_6yo.jpg",
+      "character_id": "CHAR_11",
+      "title_ru": "Гази-Мухаммад младший (6 лет, второй сын Шамиля, 1839)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Sturdy 6-year-old Dagestani Avar brunette boy in 1839 with broad forehead, thick dark brows, direct dark-brown eyes and cropped black hair, dust-streaked sunburned cheeks, wearing a child-sized dark wool beshmet. Natural mountain light, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_12A_patimat_wife",
+      "output_path": "shared_refs/characters/CHAR_12A_patimat_wife.jpg",
+      "character_id": "CHAR_12A",
+      "title_ru": "Патимат (первая жена Шамиля, мать Джемалуддина, 29 лет)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Modest dignified 29-year-old Dagestani Avar woman in 1836 with gentle oval face, warm maternal hazel-brown eyes, dark braids concealed under traditional Avar chukhta and black wool headscarf, wearing a dark-green homespun gorde dress. Soft interior daylight, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_12B_jawarat",
+      "output_path": "shared_refs/characters/CHAR_12B_jawarat.jpg",
+      "character_id": "CHAR_12B",
+      "title_ru": "Джаварат (жена Шамиля на Ахульго, 25 лет)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Striking 25-year-old Kumyk-mountain woman from Tarki in 1839: warm olive skin, arched black brows, fearless almond-shaped black eyes, resolute jaw, wearing a dark-crimson wool gorde dress and black k'az headscarf. Natural rocky shade light, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_13_pakhu_bike",
+      "output_path": "shared_refs/characters/CHAR_13_pakhu_bike.jpg",
+      "character_id": "CHAR_13",
+      "title_ru": "Ханша Паху-Бике Хунзахская (50 лет)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Stern aristocratic 50-year-old Avar ruler of Khunzakh: high severe cheekbones, unblinking steel-dark eyes, greying dark braids under silver-brocade chukhta and sable-edged dark-blue velvet khan dress with blackened silver clasps. Cold plateau daylight, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_18C_alibek_surkhai",
+      "output_path": "shared_refs/characters/CHAR_18C_alibek_surkhai.jpg",
+      "character_id": "CHAR_18C",
+      "title_ru": "Али-бек Хунзахский (Сурхай, защитник башни, 37 лет)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Tall gaunt uncompromising 37-year-old Avar warrior-cousin of Shamil in 1839: hollow cheekbones, fierce deep-set dark eyes, black beard with early silver threads, wearing silver-free black wool cherkeska and black papakha wrapped in a black-and-white death-vow turban. High mountain wind, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_14_ermolov",
+      "output_path": "shared_refs/characters/CHAR_14_ermolov.jpg",
+      "character_id": "CHAR_14",
+      "title_ru": "Генерал А. П. Ермолов (41 год, 1818)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens, faithful to George Dawe's historical portrait. Massive heavy-boned 41-year-old Russian General Alexey Ermolov (188cm) in 1818: leonine head of unruly greying ash-brown curls beneath a plain forage cap with red band, low overhanging brow with deep transverse furrow, fierce pale-grey eyes, clean-shaven heavy jaw. Wearing a plain double-breasted dark-green campaign frock coat WITHOUT epaulets and white enamel St. George cross at collar, grey soldier greatcoat draped over shoulders. Overcast Sunzha clearing dusk, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_15A_klugenau",
+      "output_path": "shared_refs/characters/CHAR_15A_klugenau.jpg",
+      "character_id": "CHAR_15A",
+      "title_ru": "Генерал Ф. К. Клюки фон Клюгенау (46 лет, 1837)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Broad-shouldered 46-year-old Austrian-born Russian Major-General Franz Klugenau (186cm) in 1837: weathered ruddy soldierly face, thick greying walrus mustache, direct frank blue-grey eyes, wearing dark-green Russian general campaign frock coat with gold epaulets and white peak cap, resting hands on a gnarled cornelian walking stick. Mountain daylight, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_15B_grabbe",
+      "output_path": "shared_refs/characters/CHAR_15B_grabbe.jpg",
+      "character_id": "CHAR_15B",
+      "title_ru": "Генерал П. Х. Граббе (49 лет, Ахульго 1839)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Tall lean 49-year-old Baltic-German Russian Lieutenant-General Pavel Grabbe in 1839: high receding forehead, neat greying sideburns, thin tightly compressed lips, cold calculating grey eyes, wearing dark-green Adjutant-General frock coat with silver aiguillettes and St. George cross at neck. Crisp high-altitude siege light, Kodak Vision3, zero CGI."
+    },
+    {
+      "ref_id": "CHAR_15C_milyutin_23yo",
+      "output_path": "shared_refs/characters/CHAR_15C_milyutin_23yo.jpg",
+      "character_id": "CHAR_15C",
+      "title_ru": "Капитан Генштаба Д. А. Милютин (23 года, Ахульго 1839)",
+      "prompt_en": "Raw unretouched 35mm live-action chest-up casting portrait (16:9), 85mm Cooke lens. Slender 23-year-old Russian General Staff scholar-captain Dmitry Milyutin in June 1839: high clear forehead, observant reflective grey eyes, clean-shaven youthful face, neat dark-brown hair under peaked officer cap, wearing dark-green General Staff frock coat with silver collar embroidery and leather map-case strap across chest. Natural mountain daylight, Kodak Vision3, zero CGI."
+    }
+  ],
+  "stage_2_master_location_plates": [
+    {
+      "ref_id": "LOC_S1_01",
+      "output_path": "shared_refs/locations/LOC_S1_01.jpg",
+      "location_id": "LOC_S1_01",
+      "title_ru": "Сакля Денгав-Мухаммада в Гимрах (интерьер с резным столбом мугъ)",
+      "prompt_en": "Uninhabited 35mm live-action architectural location plate (16:9), 28mm Cooke anamorphic lens. Authentic 1803 Dagestani stone mountain saklya upper room (5.5x4.8m) in Gimry: rough-hewn limestone walls, blackened pine roof beams, iconic central hand-carved square pine pillar (mugh) bearing a traditional Avar solar rosette and hanging bunch of dried thyme, north stone hearth (tovkhane) with glowing embers and a tiny open-wick clay saucer lamp (chiragh, no glass chimney) on its ledge, woven geometric Tabasaran rug with cased flintlock on west wall above low felt sleeping platform, tinned Gotsatl copper water jug in niche. Empty of people, Kodak Vision3 500T, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_03",
+      "output_path": "shared_refs/locations/LOC_S1_03.jpg",
+      "location_id": "LOC_S1_03",
+      "title_ru": "Годекан аула Гимры под старым орехом и 7 ступеней мечети",
+      "prompt_en": "Uninhabited 35mm live-action architectural location plate (16:9), 28mm Cooke anamorphic lens. Authentic 19th-century Dagestani paved stone village square (godekan) in Gimry: flat worn slate paving stones, massive ancient gnarled walnut tree with stone bench in its roots, dry-laid terraced stone houses climbing steep gorge cliffs behind, and a seven-step rough stone staircase on the west side leading up to carved mosque doors. Empty of people, natural overcast mountain daylight, Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_04",
+      "output_path": "shared_refs/locations/LOC_S1_04.jpg",
+      "location_id": "LOC_S1_04",
+      "title_ru": "Джума-мечеть в Гимрах (четыре деревянных столба и минбар)",
+      "prompt_en": "Uninhabited 35mm live-action architectural location plate (16:9), 28mm Cooke anamorphic lens. Interior of 19th-century stone Juma Mosque in Gimry (12x9m): four hand-adzed carved wooden columns supporting dark timber ceiling, arched mihrab niche with closed leather Quran on wooden stand, plain four-step walnut minbar on right, floor covered in striped homespun Dagestani wool rugs, oblique noon sunbeams piercing dust from two south arched windows. Empty of people, Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_05",
+      "output_path": "shared_refs/locations/LOC_S1_05.jpg",
+      "location_id": "LOC_S1_05",
+      "title_ru": "Двор медресе Саида Араканского с проточным арыком",
+      "prompt_en": "Uninhabited 35mm live-action architectural location plate (16:9), 28mm Cooke anamorphic lens. Sun-dappled 1817 stone madrassa courtyard in Arakani, Dagestan (9x7m): grey flagstone paving bisected diagonally by a narrow stone channel (aryk) carrying crystal-clear mountain water, raised wooden-pillared ayvan veranda with woven rugs and low walnut scholar desk holding brass inkwell and reed pens. Empty of people, Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_07",
+      "output_path": "shared_refs/locations/LOC_S1_07.jpg",
+      "location_id": "LOC_S1_07",
+      "title_ru": "Верхняя комната шейха Джамалуддина в Казикумухе",
+      "prompt_en": "Uninhabited 35mm live-action architectural location plate (16:9), 28mm Cooke anamorphic lens. Ascetic lime-washed stone upper room in Kazikumukh (4.2x3.8m): deep splayed west embrasure with carved unglazed wooden lattice shutter letting in twilight blue air, dark-blue flat-weave rug, 25cm-tall octagonal walnut table in center holding a single forged brass candlestick with lit beeswax candle and closed leather-bound Quran, wooden wall niches stacked with Arabic manuscripts. Empty of people, Kodak Vision3 500T, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_11",
+      "output_path": "shared_refs/locations/LOC_S1_11.jpg",
+      "location_id": "LOC_S1_11",
+      "title_ru": "Квадратная сторожевая башня в Гимринской теснине",
+      "prompt_en": "Uninhabited 35mm live-action architectural location plate (16:9), 28mm Cooke anamorphic lens. Solitary two-story dry-laid grey limestone watchtower (4.5x4.5m) perched on a narrow wet stone ledge with an 80cm stone parapet overlooking a precipitous misty orchard ravine in Gimry, Dagestan, Oct 1832: low heavy oak door (1.35x0.75m) in east wall, narrow rifle loopholes, sheer fog-shrouded cliffs towering behind. Empty of people, cold autumn sleet light, Kodak Vision3 500T, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_12",
+      "output_path": "shared_refs/locations/LOC_S1_12.jpg",
+      "location_id": "LOC_S1_12",
+      "title_ru": "Соборная мечеть Хунзаха (12 каменных восьмигранных столбов)",
+      "prompt_en": "Uninhabited 35mm live-action architectural location plate (16:9), 28mm Cooke anamorphic lens. Austere monumental interior of 1834 Khunzakh Cathedral Mosque: twelve massive octagonal grey-stone pillars supporting heavy beams, dramatic shafts of noon sunlight cutting dim dusty air, woven prayer rugs with a crimson Shiraz rug in the front row before the stone mihrab. Empty of people, Kodak Vision3 500T, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_14A_surkhai_tower_intact",
+      "output_path": "shared_refs/locations/LOC_S1_14A_surkhai_tower_intact.jpg",
+      "location_id": "LOC_S1_14A",
+      "title_ru": "Сурхаева башня на южном пике Ахульго — ЦЕЛАЯ (до 4 июля 1839)",
+      "prompt_en": "Uninhabited 35mm live-action landscape & fortress plate (16:9), 28mm Cooke anamorphic lens. Steep 60-degree conical limestone summit soaring 300 meters above the twin cliffs of Akhulgo ringed by the foaming horseshoe bend of Andian Koysu river in June 1839: crowned by the intact two-story thick-walled stone fortress of Surkhai Tower with stacked boulder logs bound along its parapet. Empty of people, crisp high-altitude Caucasian daylight, Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_14A_surkhai_tower_rubble",
+      "output_path": "shared_refs/locations/LOC_S1_14A_surkhai_tower_rubble.jpg",
+      "location_id": "LOC_S1_14A",
+      "title_ru": "Сурхаева башня — РАЗРУШЕННАЯ В ЩЕБЕНЬ (после 4 июля 1839)",
+      "prompt_en": "Uninhabited 35mm live-action landscape & fortress plate (16:9), 28mm Cooke anamorphic lens. Exact same 60-degree conical limestone summit above Akhulgo after July 4, 1839 bombardment: the two-story stone tower is pulverized completely flat into a jagged smoking waist-high heap of white limestone rubble and splintered oak beams. Empty of people, late afternoon dusk smoke, Kodak Vision3 250D, zero CGI."
+    },
+    {
+      "ref_id": "LOC_S1_14B",
+      "output_path": "shared_refs/locations/LOC_S1_14B.jpg",
+      "location_id": "LOC_S1_14B",
+      "title_ru": "Семейный скальный каземат Нового Ахульго",
+      "prompt_en": "Uninhabited 35mm live-action architectural location plate (16:9), 28mm Cooke anamorphic lens. Cramped rock-hewn shelter casemate carved into pale limestone cliff on New Akhulgo (1839) roofed with heavy pine logs and tamped earth: low stone doorway looking out to blinding canyon sky, carved rock wall niche, small open-wick clay saucer lamp (chiragh, no glass chimney) flickering on stone ledge, woven felt mat on dusty rock floor. Empty of people, Kodak Vision3 500T, zero CGI."
+    }
+  ]
+}

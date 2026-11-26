@@ -1,0 +1,50 @@
+{
+  "cohortSize": 25,
+  "cohortDirectory": "/Users/alibegov/Downloads/Кавказская война/05_Steam_Release_and_Playtest_Kit/Playtest_Sample_Cohort",
+  "summaryMetrics": {
+    "onboardingCompletionRatePercent": 88.0,
+    "turn10SurvivalRatePercent": 76.0,
+    "heavyConvoySharePercent": 47.0,
+    "avgZulmatPerSession": 1.16,
+    "gazyrMeleeTransitionRatePercent": 55.3,
+    "totalEnvoysAnalyzed": 511,
+    "totalTacticalDioramasAnalyzed": 85
+  },
+  "kpiEvaluation": [
+    {
+      "kpi_id": "KPI_1_Onboarding_Completion",
+      "name": "Завершение 3 шагов Онбординга аль-Карахи",
+      "measured_value": "88.0%",
+      "target_corridor": ">= 82.0%",
+      "status": "PASS"
+    },
+    {
+      "kpi_id": "KPI_2_Turn10_Survival",
+      "name": "Выживаемость на 10-м ходу (Кампания 1845 г.)",
+      "measured_value": "76.0%",
+      "target_corridor": "55.0% - 85.0%",
+      "status": "PASS"
+    },
+    {
+      "kpi_id": "KPI_3_Heavy_Convoys_Share",
+      "name": "Доля использования караванов 30 и 45 пудов",
+      "measured_value": "47.0%",
+      "target_corridor": "40.0% - 65.0%",
+      "status": "PASS"
+    },
+    {
+      "kpi_id": "KPI_4_Zulmat_Frequency",
+      "name": "Средняя частота «Зульмата» за сессию",
+      "measured_value": "1.16",
+      "target_corridor": "0.50 - 1.50",
+      "status": "PASS"
+    },
+    {
+      "kpi_id": "KPI_5_Gazyr_Melee_Transition",
+      "name": "Переход в кинжальную рукопашную при 0/18 газырей",
+      "measured_value": "55.3%",
+      "target_corridor": ">= 50.0%",
+      "status": "PASS"
+    }
+  ]
+}

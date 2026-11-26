@@ -1,0 +1,291 @@
+[
+  {
+    "Name": "khunzakh",
+    "NaibateID": "khunzakh",
+    "RegionName": "Авария и Хунзах",
+    "GeographicSubregion": "Нагорный Дагестан (Хунзахское плато)",
+    "NaibName": "Хаджи-Мурат Хунзахский",
+    "NaibTitle": "Наиб Аварский, предводитель конных рейдов",
+    "HistoricalBio": "Отчаянный кавалерийский вождь из Хунзаха. Способен за одну ночь пройти сквозь кордоны до Дженгутая и Шуры, но крайне самолюбив и враждует с Даниял-беком.",
+    "WorldCoordinates": "(X=41000.0,Y=24500.0,Z=1800.0)",
+    "BaseTravelTurns": 2,
+    "SlopeDegrees": 72.0,
+    "TerraceYieldPercent": 65.0,
+    "bPastureAccessOpen": true,
+    "GarrisonInfantry": 1450,
+    "MurtazekCavalry": 480,
+    "GunpowderPoods": 42,
+    "ProvisionsMeasures": 380,
+    "ImperialPressure": 58.0,
+    "bUnderSiege": false,
+    "Traits": {
+      "Iman": 74.0,
+      "Courage": 99.0,
+      "Greed": 46.0,
+      "Pride": 94.0
+    },
+    "OrdersAwarded": [
+      "Лев Газавата"
+    ]
+  },
+  {
+    "Name": "benoy",
+    "NaibateID": "benoy",
+    "RegionName": "Ичкерия и Беной",
+    "GeographicSubregion": "Горная лесистая Чечня (Даргинский округ)",
+    "NaibName": "Байсунгур Беноевский",
+    "NaibTitle": "Наиб Беноя, железный страж Ичкерии",
+    "HistoricalBio": "Несгибаемый воин из Беноя, потерявший в боях глаз, руку и ногу, но привязываемый мюридами к седлу. Никогда не отступает без приказа Имама.",
+    "WorldCoordinates": "(X=25500.0,Y=15500.0,Z=1450.0)",
+    "BaseTravelTurns": 1,
+    "SlopeDegrees": 58.0,
+    "TerraceYieldPercent": 78.0,
+    "bPastureAccessOpen": true,
+    "GarrisonInfantry": 1200,
+    "MurtazekCavalry": 390,
+    "GunpowderPoods": 36,
+    "ProvisionsMeasures": 440,
+    "ImperialPressure": 67.0,
+    "bUnderSiege": false,
+    "Traits": {
+      "Iman": 97.0,
+      "Courage": 100.0,
+      "Greed": 8.0,
+      "Pride": 45.0
+    },
+    "OrdersAwarded": [
+      "Звезда Шамиля I ст."
+    ]
+  },
+  {
+    "Name": "shali",
+    "NaibateID": "shali",
+    "RegionName": "Большая Чечня (Шали)",
+    "GeographicSubregion": "Предгорная Чеченская равнина и лесные засеки",
+    "NaibName": "Талгик Шалинский",
+    "NaibTitle": "Наиб Шали и начальник конной артиллерии",
+    "HistoricalBio": "Держит житницу Имамата под ударами отрядов генерала Фрейтага. Отрезан кордонной линией от зимних пастбищ и остро нуждается в порохе.",
+    "WorldCoordinates": "(X=14500.0,Y=12500.0,Z=850.0)",
+    "BaseTravelTurns": 1,
+    "SlopeDegrees": 34.0,
+    "TerraceYieldPercent": 95.0,
+    "bPastureAccessOpen": false,
+    "GarrisonInfantry": 1650,
+    "MurtazekCavalry": 520,
+    "GunpowderPoods": 30,
+    "ProvisionsMeasures": 590,
+    "ImperialPressure": 79.0,
+    "bUnderSiege": true,
+    "Traits": {
+      "Iman": 80.0,
+      "Courage": 86.0,
+      "Greed": 38.0,
+      "Pride": 52.0
+    },
+    "OrdersAwarded": []
+  },
+  {
+    "Name": "karata",
+    "NaibateID": "karata",
+    "RegionName": "Карата и Андия",
+    "GeographicSubregion": "Западный Дагестан (Андийский хребет)",
+    "NaibName": "Гази-Мухаммад (сын Шамиля)",
+    "NaibTitle": "Наиб Карата и наследник Имамата",
+    "HistoricalBio": "Старший действующий сын Имама, прикрывающий перевалы Буцрах и Речель на пути из Чечни в долину Андийского Койсу.",
+    "WorldCoordinates": "(X=32500.0,Y=22500.0,Z=1900.0)",
+    "BaseTravelTurns": 1,
+    "SlopeDegrees": 76.0,
+    "TerraceYieldPercent": 55.0,
+    "bPastureAccessOpen": true,
+    "GarrisonInfantry": 1550,
+    "MurtazekCavalry": 510,
+    "GunpowderPoods": 54,
+    "ProvisionsMeasures": 410,
+    "ImperialPressure": 52.0,
+    "bUnderSiege": false,
+    "Traits": {
+      "Iman": 94.0,
+      "Courage": 90.0,
+      "Greed": 12.0,
+      "Pride": 64.0
+    },
+    "OrdersAwarded": [
+      "Шашка Чести"
+    ]
+  },
+  {
+    "Name": "gergebil",
+    "NaibateID": "gergebil",
+    "RegionName": "Гергебиль и Салты",
+    "GeographicSubregion": "Андалал и долина Кара-Койсу",
+    "NaibName": "Идрис Гергебильский и Хаджи-Юсуф",
+    "NaibTitle": "Наиб-фортификатор и главный инженер",
+    "HistoricalBio": "Ключевой бастион садов и подземных блиндажей, запирающий вход в Нагорный Дагестан со стороны Темир-Хан-Шуры и Дженгутая.",
+    "WorldCoordinates": "(X=49500.0,Y=21500.0,Z=2025.0)",
+    "BaseTravelTurns": 2,
+    "SlopeDegrees": 81.0,
+    "TerraceYieldPercent": 72.0,
+    "bPastureAccessOpen": true,
+    "GarrisonInfantry": 1380,
+    "MurtazekCavalry": 410,
+    "GunpowderPoods": 48,
+    "ProvisionsMeasures": 360,
+    "ImperialPressure": 74.0,
+    "bUnderSiege": true,
+    "Traits": {
+      "Iman": 91.0,
+      "Courage": 93.0,
+      "Greed": 18.0,
+      "Pride": 40.0
+    },
+    "OrdersAwarded": [
+      "Печать Мудира"
+    ]
+  },
+  {
+    "Name": "teletl",
+    "NaibateID": "teletl",
+    "RegionName": "Гидатль и Телетль",
+    "GeographicSubregion": "Средний Дагестан (хребет Турчидаг)",
+    "NaibName": "Кибит-Магома Телетлинский",
+    "NaibTitle": "Мудир Телетля, хранитель пороховых мельниц",
+    "HistoricalBio": "Авторитетный алим и расчетливый правитель Телетля. Располагает лучшими селитренными варницами и собственным арсеналом.",
+    "WorldCoordinates": "(X=42500.0,Y=33000.0,Z=1975.0)",
+    "BaseTravelTurns": 2,
+    "SlopeDegrees": 79.0,
+    "TerraceYieldPercent": 60.0,
+    "bPastureAccessOpen": true,
+    "GarrisonInfantry": 1700,
+    "MurtazekCavalry": 560,
+    "GunpowderPoods": 68,
+    "ProvisionsMeasures": 470,
+    "ImperialPressure": 44.0,
+    "bUnderSiege": false,
+    "Traits": {
+      "Iman": 88.0,
+      "Courage": 82.0,
+      "Greed": 55.0,
+      "Pride": 78.0
+    },
+    "OrdersAwarded": [
+      "Печать Мудира"
+    ]
+  },
+  {
+    "Name": "irib",
+    "NaibateID": "irib",
+    "RegionName": "Южный Дагестан (Ириб)",
+    "GeographicSubregion": "Тленсерух, Казикумух и Самурский рубеж",
+    "NaibName": "Султан Даниял-бек Илисуйский",
+    "NaibTitle": "Мудир Южного Дагестана (бывш. ген.-майор)",
+    "HistoricalBio": "Владетельный султан Илису и сват Шамиля. Опытный стратег европейской школы, но привык к ханскому почету и субсидиям из казны.",
+    "WorldCoordinates": "(X=54500.0,Y=35500.0,Z=2100.0)",
+    "BaseTravelTurns": 3,
+    "SlopeDegrees": 84.0,
+    "TerraceYieldPercent": 58.0,
+    "bPastureAccessOpen": false,
+    "GarrisonInfantry": 1850,
+    "MurtazekCavalry": 600,
+    "GunpowderPoods": 45,
+    "ProvisionsMeasures": 430,
+    "ImperialPressure": 63.0,
+    "bUnderSiege": false,
+    "Traits": {
+      "Iman": 68.0,
+      "Courage": 79.0,
+      "Greed": 64.0,
+      "Pride": 92.0
+    },
+    "OrdersAwarded": [
+      "Знамя Мудира"
+    ]
+  },
+  {
+    "Name": "vedeno",
+    "NaibateID": "vedeno",
+    "RegionName": "Дарго-Ведено (Столица)",
+    "GeographicSubregion": "Столичный округ Имамата и Арсенал (Малая Чечня)",
+    "NaibName": "Дуба Вашендароевский и устаз Джабраил",
+    "NaibTitle": "Наиб Малой Чечни и начальник пушечного двора Ведено",
+    "HistoricalBio": "Сердце государственного управления, пороховых мельниц и литейного двора Имамата. Наиб Дуба Вашендароевский прикрывает Аргунское ущелье и подступы к резиденции Диван-ханы.",
+    "WorldCoordinates": "(X=21500.0,Y=24500.0,Z=1550.0)",
+    "BaseTravelTurns": 1,
+    "SlopeDegrees": 62.0,
+    "TerraceYieldPercent": 74.0,
+    "bPastureAccessOpen": true,
+    "GarrisonInfantry": 1600,
+    "MurtazekCavalry": 540,
+    "GunpowderPoods": 62,
+    "ProvisionsMeasures": 510,
+    "ImperialPressure": 64.0,
+    "bUnderSiege": false,
+    "Traits": {
+      "Iman": 93.0,
+      "Courage": 92.0,
+      "Greed": 16.0,
+      "Pride": 48.0
+    },
+    "OrdersAwarded": [
+      "Звезда Шамиля I ст.",
+      "Лев Газавата"
+    ]
+  },
+  {
+    "Name": "gunib",
+    "NaibateID": "gunib",
+    "RegionName": "Гуниб и Койсубу",
+    "GeographicSubregion": "Андалалское плато и природная цитадель Верхний Гуниб",
+    "NaibName": "Абдурахман Каратинский и Хаджияв",
+    "NaibTitle": "Комендант Верхнего Гуниба и хранитель казны Имамата",
+    "HistoricalBio": "Неприступная горная крепость с отвесными известняковыми обрывами (до 88°), альпийскими лугами на плато, берёзовой рощей и главными селитренными пещерами Дагестана.",
+    "WorldCoordinates": "(X=49500.0,Y=28500.0,Z=2200.0)",
+    "BaseTravelTurns": 2,
+    "SlopeDegrees": 88.0,
+    "TerraceYieldPercent": 64.0,
+    "bPastureAccessOpen": true,
+    "GarrisonInfantry": 1350,
+    "MurtazekCavalry": 420,
+    "GunpowderPoods": 60,
+    "ProvisionsMeasures": 490,
+    "ImperialPressure": 48.0,
+    "bUnderSiege": false,
+    "Traits": {
+      "Iman": 95.0,
+      "Courage": 91.0,
+      "Greed": 10.0,
+      "Pride": 36.0
+    },
+    "OrdersAwarded": [
+      "Печать Мудира"
+    ]
+  },
+  {
+    "Name": "chokh",
+    "NaibateID": "chokh",
+    "RegionName": "Чох и Согратль",
+    "GeographicSubregion": "Верхний Андалал и ущелье Кара-Койсу",
+    "NaibName": "Инквачилав Чохский и Мухаммад-Амин",
+    "NaibTitle": "Наиб Чоха и защитник многоярусных каменных бастионов",
+    "HistoricalBio": "Духовный оплот учёных-алимов Согратля и неприступная многоярусная крепость Чох, выдержавшая многодневную бомбардировку осадных батарей князя Аргутинского-Долгорукова.",
+    "WorldCoordinates": "(X=58500.0,Y=25500.0,Z=2075.0)",
+    "BaseTravelTurns": 3,
+    "SlopeDegrees": 83.0,
+    "TerraceYieldPercent": 68.0,
+    "bPastureAccessOpen": true,
+    "GarrisonInfantry": 1520,
+    "MurtazekCavalry": 460,
+    "GunpowderPoods": 50,
+    "ProvisionsMeasures": 420,
+    "ImperialPressure": 69.0,
+    "bUnderSiege": false,
+    "Traits": {
+      "Iman": 92.0,
+      "Courage": 94.0,
+      "Greed": 22.0,
+      "Pride": 58.0
+    },
+    "OrdersAwarded": [
+      "Шашка Чести"
+    ]
+  }
+]

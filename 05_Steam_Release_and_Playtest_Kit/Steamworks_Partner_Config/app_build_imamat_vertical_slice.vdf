@@ -1,0 +1,38 @@
+"AppBuild"
+{
+	"AppID" "3481840"
+	"Desc" "THE IMAMAT: DIVAN-KHANA (1845) — Vertical Slice v0.9 (UE 5.5 DX12/Metal)"
+	"BuildOutput" "..\\BuildOutput\\SteamPipe"
+	"ContentRoot" "..\\StagedBuilds"
+	"SetLive" "playtest_beta"
+	"Preview" "0"
+	"Local" ""
+
+	"Depots"
+	{
+		// Windows 64-bit DirectX 12 (SM6: Lumen + Nanite + 16-bit SRTM)
+		"3481841"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "Windows\\*"
+				"DepotPath" "."
+				"recursive" "1"
+			}
+			"FileExclusion" "*.pdb"
+			"FileExclusion" "ImamatWargame\\Saved\\*"
+		}
+
+		// macOS Apple Silicon (M1/M2/M3/M4 Universal Binary, Metal SM6)
+		"3481842"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "Mac\\*"
+				"DepotPath" "."
+				"recursive" "1"
+			}
+			"FileExclusion" "*.dSYM"
+		}
+	}
+}

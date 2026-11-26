@@ -1,0 +1,50 @@
+[
+  {
+    "Name": "salty_1847",
+    "TerrainID": "salty_1847",
+    "Title": "Аул Салты и Салтинская теснина (1847 г.)",
+    "Subtitle": "Трёхъярусный бастион Андалала: подземные блиндажи Хаджи-Юсуфа Сафарова и минная война",
+    "BattleMode": "MountainSiegeCutaway",
+    "CliffSteepness": 1.35,
+    "GorgeDepth": 1.15,
+    "TerraceSteps": 3,
+    "ElevationLabel": "1290 м над ур. м.",
+    "DeadZoneAngleDegrees": 39.0
+  },
+  {
+    "Name": "akhulgo_1839",
+    "TerrainID": "akhulgo_1839",
+    "Title": "Скала Ахульго и Сурхаева башня (1839 г.)",
+    "Subtitle": "Двойной скальный полуостров в излучине Андийского Койсу и крытый бревенчатый ход к воде",
+    "BattleMode": "MountainSiegeCutaway",
+    "CliffSteepness": 1.68,
+    "GorgeDepth": 1.45,
+    "TerraceSteps": 4,
+    "ElevationLabel": "620 м (обрыв 430 м)",
+    "DeadZoneAngleDegrees": 47.0
+  },
+  {
+    "Name": "gunib_1859",
+    "TerrainID": "gunib_1859",
+    "Title": "Плато Верхний Гуниб и гора Маяк (1859 г.)",
+    "Subtitle": "Природная цитадель с отвесными известняковыми стенами (78°–88°) и каменными завалами",
+    "BattleMode": "MountainSiegeCutaway",
+    "CliffSteepness": 1.82,
+    "GorgeDepth": 1.3,
+    "TerraceSteps": 4,
+    "ElevationLabel": "1520–2352 м над ур. м.",
+    "DeadZoneAngleDegrees": 52.0
+  },
+  {
+    "Name": "dargo_1845",
+    "TerrainID": "dargo_1845",
+    "Title": "Хребет Речель и лесной коридор Дарго (1845 г.)",
+    "Subtitle": "Сплайновая дорога «Сухарной экспедиции» в буковом лесу с поваленными засеками",
+    "BattleMode": "ForestSplineAmbush",
+    "CliffSteepness": 0.95,
+    "GorgeDepth": 0.85,
+    "TerraceSteps": 2,
+    "ElevationLabel": "1180–2100 м над ур. м.",
+    "DeadZoneAngleDegrees": 28.0
+  }
+]

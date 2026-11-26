@@ -1,0 +1,55 @@
+// ============================================================================
+// IMAMAT: DIVAN-KHANA — Unreal Engine 5.5 Custom HLSL Material Function (.ush)
+// Shader: MF_MountainVerticalFog_Imamat.ush
+// Purpose:
+//   1. Computes elevation-stratified volumetric gorge fog for Dagestan & Ichkeria
+//      canyons (Andi Koisu, Kara-Koisu, Saltinka Gorge).
+//   2. Evaluates Col. D. A. Milyutin's ballistic dead-zone shadow mask on sheer
+//      limestone precipices (65–75 deg slope vs 15 deg flat-fire unicorn guns).
+// ============================================================================
+
+#pragma once
+
+struct FImamatMountainFogResult
+{
+    float3 FogInscatteringColor;
+    float  FogOpacity;
+    float  MilyutinDeadZoneMask;
+    float  CutawayClipMask;
+};
+
+FImamatMountainFogResult EvaluateImamatMountainVerticalFog(
+    float3 WorldPositionCm,
+    float3 WorldNormal,
+    float  CutawayPlaneYCm,
+    float  CanyonFloorElevationCm,
+    float  PlateauCrestElevationCm,
+    float  ArtilleryElevationDeg)
+{
+    FImamatMountainFogResult Out;
+
+    // 1. Geodesic Cutaway Plane (Col. D. A. Milyutin Cross-Section A-B)
+    Out.CutawayClipMask = (WorldPositionCm.y > CutawayPlaneYCm) ? -1.0f : 1.0f;
+
+    // 2. Stratified Canyon Mist & Gunpowder Smoke Density
+    float NormalizedHeight = saturate(
+        (WorldPositionCm.z - CanyonFloorElevationCm) /
+        max(100.0f, PlateauCrestElevationCm - CanyonFloorElevationCm)
+    );
+    float GorgeMistBand = exp(-NormalizedHeight * 3.2f);
+    float CrestCloudBand = smoothstep(0.72f, 0.98f, NormalizedHeight) * 0.35f;
+
+    Out.FogOpacity = saturate(GorgeMistBand * 0.68f + CrestCloudBand);
+    Out.FogInscatteringColor = lerp(
+        float3(0.11f, 0.16f, 0.21f), // Cold Koisu river gorge mist
+        float3(0.42f, 0.38f, 0.31f), // Warm plateau gunpowder haze
+        NormalizedHeight
+    );
+
+    // 3. Milyutin Direct-Fire Dead-Zone Mask (Slope deg > ArtilleryElevationDeg)
+    float SlopeCos = saturate(dot(normalize(WorldNormal), float3(0.0f, 0.0f, 1.0f)));
+    float SlopeDeg = acos(SlopeCos) * (180.0f / 3.14159265f);
+    Out.MilyutinDeadZoneMask = (SlopeDeg > ArtilleryElevationDeg + 18.0f) ? 1.0f : 0.0f;
+
+    return Out;
+}

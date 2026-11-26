@@ -1,0 +1,96 @@
+"Action Manifest"
+{
+	"version" "1"
+	"revision" "9"
+	"configuration"
+	{
+		"controller_type" "controller_neptune" // Steam Deck Verified Profile
+	}
+	"actions"
+	{
+		"StrategicDivanTable"
+		{
+			"title" "#ActionSet_StrategicDivanTable"
+			"StickPadGyro"
+			{
+				"MoveTableCursor"
+				{
+					"title" "#Action_MoveTableCursor"
+					"input_mode" "absolute_mouse"
+				}
+				"PanRotateCamera"
+				{
+					"title" "#Action_PanRotateCamera"
+					"input_mode" "joystick_move"
+				}
+			}
+			"Button"
+			{
+				"SelectNaibateNode" "#Action_SelectNaibateNode"
+				"DispatchMountedEnvoy" "#Action_DispatchMountedEnvoy"
+				"CyclePowderConvoyTier" "#Action_CyclePowderConvoyTier"
+				"OpenShamilNizamCodex" "#Action_OpenShamilNizamCodex"
+				"OpenImamatGlossary" "#Action_OpenImamatGlossary"
+				"ToggleLanguageRU_EN" "#Action_ToggleLanguageRU_EN"
+				"EndStrategicTurn" "#Action_EndStrategicTurn"
+			}
+		}
+		"TacticalSiegeDiorama"
+		{
+			"title" "#ActionSet_TacticalSiegeDiorama"
+			"StickPadGyro"
+			{
+				"OrbitCutawayCamera"
+				{
+					"title" "#Action_OrbitCutawayCamera"
+					"input_mode" "joystick_camera"
+				}
+			}
+			"Button"
+			{
+				"ToggleMilyutinCliffCutaway" "#Action_ToggleMilyutinCliffCutaway"
+				"FireGazyrVolley_18" "#Action_FireGazyrVolley_18"
+				"DetonateSubterraneanCamouflet" "#Action_DetonateSubterraneanCamouflet"
+				"TriggerBazalaiDaggerCharge" "#Action_TriggerBazalaiDaggerCharge"
+				"ReturnBattleResultToDivan" "#Action_ReturnBattleResultToDivan"
+			}
+		}
+	}
+	"localization"
+	{
+		"russian"
+		{
+			"ActionSet_StrategicDivanTable" "Командный стол Диван-ханы (Стратегия)"
+			"Action_SelectNaibateNode" "Выбрать наибство на карте Кавказа"
+			"Action_DispatchMountedEnvoy" "Отправить конного гонца и пороховой обоз"
+			"Action_CyclePowderConvoyTier" "Сменить эшелон порохового каравана (0/15/30/45 пуд.)"
+			"Action_OpenShamilNizamCodex" "Открыть Кодекс Низамов Шамиля"
+			"Action_OpenImamatGlossary" "Открыть Толковый словарь Имамата"
+			"Action_ToggleLanguageRU_EN" "Переключить язык интерфейса RU / EN"
+			"Action_EndStrategicTurn" "Завершить ход кампании"
+			"ActionSet_TacticalSiegeDiorama" "Тактическая диорама осады и Разрез скалы"
+			"Action_ToggleMilyutinCliffCutaway" "Геодезический разрез скалы барона Милютина"
+			"Action_FireGazyrVolley_18" "Дать залп из 18 нагрудных газырей"
+			"Action_DetonateSubterraneanCamouflet" "Подорвать подземный камуфлет (Медный таз Сафарова)"
+			"Action_TriggerBazalaiDaggerCharge" "Кинжальный прорыв сталью Базалая (при 0/18 газырей)"
+			"Action_ReturnBattleResultToDivan" "Передать FTacticalBattleResult в Диван-хану"
+		}
+		"english"
+		{
+			"ActionSet_StrategicDivanTable" "Divan-Khana Command Table (Strategy)"
+			"Action_SelectNaibateNode" "Select Naibate Node on Caucasus Map"
+			"Action_DispatchMountedEnvoy" "Dispatch Mounted Courier & Gunpowder Convoy"
+			"Action_CyclePowderConvoyTier" "Cycle Gunpowder Convoy Tier (0/15/30/45 poods)"
+			"Action_OpenShamilNizamCodex" "Open Shamil's Nizam Code"
+			"Action_OpenImamatGlossary" "Open Imamat Historical Glossary"
+			"Action_ToggleLanguageRU_EN" "Switch UI Language RU / EN"
+			"Action_EndStrategicTurn" "End Campaign Turn"
+			"ActionSet_TacticalSiegeDiorama" "Tactical Siege Diorama & Cliff Cutaway"
+			"Action_ToggleMilyutinCliffCutaway" "Toggle Baron Milyutin Geodesic Cliff Cutaway"
+			"Action_FireGazyrVolley_18" "Fire 18-Gazyr Chest Bandolier Volley"
+			"Action_DetonateSubterraneanCamouflet" "Detonate Subterranean Camouflet (Safarov's Copper Basin)"
+			"Action_TriggerBazalaiDaggerCharge" "Trigger Bazalai Dagger Melee Charge (at 0/18 Gazyrs)"
+			"Action_ReturnBattleResultToDivan" "Return FTacticalBattleResult to Divan-Khana"
+		}
+	}
+}

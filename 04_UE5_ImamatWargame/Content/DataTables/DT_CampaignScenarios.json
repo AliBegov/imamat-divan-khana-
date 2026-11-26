@@ -1,0 +1,58 @@
+[
+  {
+    "Name": "camp_1839",
+    "ScenarioID": "camp_1839",
+    "YearLabel": "1839 г. — Эпопея Ахульго",
+    "Subtitle": "80-дневная оборона скалы Ахульго и Сурхаевой башни против корпуса ген. П. Х. Граббе",
+    "GoalDescription": "Удержать скальные бастионы Койсубу, сбить натиск осадных батарей и вывести ядро мюридов в Чечню.",
+    "InitialGunpowderPoods": 110,
+    "InitialProvisionsMeasures": 680,
+    "InitialSilverRubles": 310,
+    "InitialAuthorityPercent": 78.0,
+    "InitialOttomanSupportPercent": 25.0,
+    "PressureModifier": 16.0,
+    "StartingGeneralDoctrine": "ArgutinskySiegeRam"
+  },
+  {
+    "Name": "camp_1843",
+    "ScenarioID": "camp_1843",
+    "YearLabel": "1843 г. — Сверкающий Газават",
+    "Subtitle": "Осенний блицкриг Шамиля, Хаджи-Мурата и Кибит-Магомы: штурм 12 крепостей в Аварии за 75 дней",
+    "GoalDescription": "Освободить Хунзахское плато, Гергебиль и Гоцатль, захватив артиллерийские парки царских гарнизонов.",
+    "InitialGunpowderPoods": 260,
+    "InitialProvisionsMeasures": 1650,
+    "InitialSilverRubles": 890,
+    "InitialAuthorityPercent": 94.0,
+    "InitialOttomanSupportPercent": 55.0,
+    "PressureModifier": -12.0,
+    "StartingGeneralDoctrine": "FreytagFlyingColumns"
+  },
+  {
+    "Name": "camp_1845",
+    "ScenarioID": "camp_1845",
+    "YearLabel": "1845 г. — Даргинский поход",
+    "Subtitle": "Прорыв 20-тысячной армии наместника графа М. С. Воронцова в Ичкерию и «Сухарная экспедиция»",
+    "GoalDescription": "Заманить колонну Воронцова в лесной мешок Дарго, перерезать подвоз сухарей на хребте Речель и перенести столицу в Ведено.",
+    "InitialGunpowderPoods": 195,
+    "InitialProvisionsMeasures": 1420,
+    "InitialSilverRubles": 680,
+    "InitialAuthorityPercent": 86.0,
+    "InitialOttomanSupportPercent": 48.0,
+    "PressureModifier": 0.0,
+    "StartingGeneralDoctrine": "VorontsovDeepThrust"
+  },
+  {
+    "Name": "camp_1859",
+    "ScenarioID": "camp_1859",
+    "YearLabel": "1859 г. — Последний оплот: Гуниб",
+    "Subtitle": "Сжатие кольца 200-тысячной армии фельдмаршала А. И. Барятинского и ген. Н. И. Евдокимова",
+    "GoalDescription": "Отразить штурмы сходящихся колонн в условиях вырубки чеченских просек и сохранить достоинство Имамата на Гунибе.",
+    "InitialGunpowderPoods": 95,
+    "InitialProvisionsMeasures": 540,
+    "InitialSilverRubles": 240,
+    "InitialAuthorityPercent": 72.0,
+    "InitialOttomanSupportPercent": 20.0,
+    "PressureModifier": 22.0,
+    "StartingGeneralDoctrine": "EvdokimovForestAxe"
+  }
+]

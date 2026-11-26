@@ -1,0 +1,46 @@
+{
+  "sessionId": "imamat-pt-cohort-04",
+  "buildVersion": "0.5.0-M5-PlaytestReady",
+  "platform": "Web_Vite_React_Companion",
+  "scenarioId": "camp_1845",
+  "turnsSurvived": 14,
+  "campaignOutcome": "InProgress_ActiveSession",
+  "onboardingStepsCompleted": {
+    "step1_NizamEnacted": true,
+    "step2_PowderConvoySent": true,
+    "step3_TacticalDioramaResolved": true,
+    "glossaryOpenedCount": 3
+  },
+  "economyTimeline": {
+    "minVedenoPowderPoods": 164,
+    "finalVedenoPowderPoods": 182,
+    "finalAvgRegionalPowderPoods": 43.2,
+    "finalSilverRubles": 732,
+    "zulmatTriggeredCount": 2,
+    "khalwatPerformedCount": 2
+  },
+  "ordersSummary": {
+    "totalEnvoysDispatched": 22,
+    "convoysByTier": {
+      "tier0_NoPowder": 3,
+      "tier15_LightPack": 8,
+      "tier30_Reinforced": 8,
+      "tier45_HeavyTrain": 3
+    },
+    "envoysInterceptedCount": 4,
+    "naibOrdersObeyedCount": 16,
+    "naibOrdersRefusedCount": 3
+  },
+  "tacticalBattlesSummary": {
+    "dioramasEntered": 3,
+    "camoufletsDetonated": 1,
+    "gazyrDepletionMeleeTriggered": 1,
+    "totalPowderCapturedInTactics": 84
+  },
+  "crisesAndCourtSummary": {
+    "historicalCrisesResolved": 5,
+    "totalHistoricalCrises": 6,
+    "shariaCourtCasesResolved": 6,
+    "totalShariaCourtCases": 6
+  }
+}

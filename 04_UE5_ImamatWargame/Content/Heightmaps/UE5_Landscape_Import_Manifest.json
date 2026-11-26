@@ -1,0 +1,233 @@
+{
+  "engineTarget": "Unreal Engine 5.5 Landscape (World Partition / Diorama Actor)",
+  "tacticalGridResolution": [
+    2017,
+    2017
+  ],
+  "ue5ComponentLayout": {
+    "sectionSizeQuads": 63,
+    "sectionsPerComponent": "1x1",
+    "numberOfComponents": "32x32",
+    "overallResolution": "2017x2017"
+  },
+  "strategicMasterSpec": {
+    "boundingBoxWGS84": [
+      45.75,
+      42.2,
+      47.15,
+      43.15
+    ],
+    "strategicGridResolution": [
+      8129,
+      8129
+    ],
+    "minElevationMeters": 180.0,
+    "maxElevationMeters": 4151.0,
+    "historicalNodesCount": 13,
+    "historicalNodes": {
+      "vedeno": {
+        "lat": 42.9694,
+        "lon": 46.0961,
+        "title": "Столица Дарго-Ведено"
+      },
+      "dargo": {
+        "lat": 42.9522,
+        "lon": 46.2361,
+        "title": "Старое Дарго и хребет Речель"
+      },
+      "benoy": {
+        "lat": 42.9981,
+        "lon": 46.3214,
+        "title": "Ичкерия и Беной"
+      },
+      "shali": {
+        "lat": 43.1481,
+        "lon": 45.9019,
+        "title": "Большая Чечня (Шали)"
+      },
+      "karata": {
+        "lat": 42.5892,
+        "lon": 46.3411,
+        "title": "Карата и Андия"
+      },
+      "khunzakh": {
+        "lat": 42.5436,
+        "lon": 46.7058,
+        "title": "Авария и Хунзах"
+      },
+      "akhulgo": {
+        "lat": 42.6786,
+        "lon": 46.855,
+        "title": "Скала Ахульго"
+      },
+      "gergebil": {
+        "lat": 42.5083,
+        "lon": 47.0625,
+        "title": "Гергебиль"
+      },
+      "salty": {
+        "lat": 42.3931,
+        "lon": 47.0658,
+        "title": "Аул Салты"
+      },
+      "gunib": {
+        "lat": 42.3867,
+        "lon": 46.9317,
+        "title": "Плато Верхний Гуниб"
+      },
+      "chokh": {
+        "lat": 42.3208,
+        "lon": 47.0319,
+        "title": "Чох и Согратль"
+      },
+      "teletl": {
+        "lat": 42.3519,
+        "lon": 46.6972,
+        "title": "Гидатль и Телетль"
+      },
+      "irib": {
+        "lat": 42.2611,
+        "lon": 46.8492,
+        "title": "Ириб и Карах"
+      }
+    }
+  },
+  "generatedTacticalArenas": [
+    {
+      "arenaID": "tactical_dargo_ichkeria",
+      "assetName": "T_Heightmap_Dargo_Ichkeria_1845",
+      "title": "Ичкерийский лес: Засада на сплайне у Дарго (1845)",
+      "centerWGS84": [
+        42.9522,
+        46.2361
+      ],
+      "resolution": [
+        2017,
+        2017
+      ],
+      "minElevationMeters": 620.0,
+      "maxElevationMeters": 1840.0,
+      "meanElevationMeters": 1313.9,
+      "maxSlopeDegrees": 63.6,
+      "ue5LandscapeScale": {
+        "ScaleX": 200.0,
+        "ScaleY": 200.0,
+        "ScaleZ": 238.2812
+      },
+      "milyutinCutawayShader": {
+        "enabledByDefault": false,
+        "defaultPlaneYaw": 35.0,
+        "hlslInclude": "Shaders/MF_MilyutinCutawaySection.hlsl"
+      },
+      "files": {
+        "heightmap16BitPNG": "Content/Heightmaps/T_Heightmap_Dargo_Ichkeria_1845.png",
+        "heightmap16BitRAW": "Content/Heightmaps/T_Heightmap_Dargo_Ichkeria_1845.r16",
+        "weightmapCliff8Bit": "Content/Heightmaps/T_Heightmap_Dargo_Ichkeria_1845_Weight_Cliff.png",
+        "weightmapTerraces8Bit": "Content/Heightmaps/T_Heightmap_Dargo_Ichkeria_1845_Weight_Terraces.png",
+        "weightmapForest8Bit": "Content/Heightmaps/T_Heightmap_Dargo_Ichkeria_1845_Weight_Forest.png"
+      }
+    },
+    {
+      "arenaID": "tactical_salti_siege",
+      "assetName": "T_Heightmap_Salti_1847",
+      "title": "Осада аула Салты: Подземные блиндажи Сафарова (1847)",
+      "centerWGS84": [
+        42.3931,
+        47.0658
+      ],
+      "resolution": [
+        2017,
+        2017
+      ],
+      "minElevationMeters": 1120.0,
+      "maxElevationMeters": 1980.0,
+      "meanElevationMeters": 1680.6,
+      "maxSlopeDegrees": 86.6,
+      "ue5LandscapeScale": {
+        "ScaleX": 150.0,
+        "ScaleY": 150.0,
+        "ScaleZ": 167.9688
+      },
+      "milyutinCutawayShader": {
+        "enabledByDefault": true,
+        "defaultPlaneYaw": 45.0,
+        "hlslInclude": "Shaders/MF_MilyutinCutawaySection.hlsl"
+      },
+      "files": {
+        "heightmap16BitPNG": "Content/Heightmaps/T_Heightmap_Salti_1847.png",
+        "heightmap16BitRAW": "Content/Heightmaps/T_Heightmap_Salti_1847.r16",
+        "weightmapCliff8Bit": "Content/Heightmaps/T_Heightmap_Salti_1847_Weight_Cliff.png",
+        "weightmapTerraces8Bit": "Content/Heightmaps/T_Heightmap_Salti_1847_Weight_Terraces.png",
+        "weightmapForest8Bit": "Content/Heightmaps/T_Heightmap_Salti_1847_Weight_Forest.png"
+      }
+    },
+    {
+      "arenaID": "tactical_gergebil_bastion",
+      "assetName": "T_Heightmap_Gergebil_1848",
+      "title": "Штурм Гергебиля: Бастионы над слиянием двух Койсу (1848)",
+      "centerWGS84": [
+        42.5083,
+        47.0625
+      ],
+      "resolution": [
+        2017,
+        2017
+      ],
+      "minElevationMeters": 680.0,
+      "maxElevationMeters": 1760.0,
+      "meanElevationMeters": 1023.1,
+      "maxSlopeDegrees": 64.7,
+      "ue5LandscapeScale": {
+        "ScaleX": 175.0,
+        "ScaleY": 175.0,
+        "ScaleZ": 210.9375
+      },
+      "milyutinCutawayShader": {
+        "enabledByDefault": true,
+        "defaultPlaneYaw": 60.0,
+        "hlslInclude": "Shaders/MF_MilyutinCutawaySection.hlsl"
+      },
+      "files": {
+        "heightmap16BitPNG": "Content/Heightmaps/T_Heightmap_Gergebil_1848.png",
+        "heightmap16BitRAW": "Content/Heightmaps/T_Heightmap_Gergebil_1848.r16",
+        "weightmapCliff8Bit": "Content/Heightmaps/T_Heightmap_Gergebil_1848_Weight_Cliff.png",
+        "weightmapTerraces8Bit": "Content/Heightmaps/T_Heightmap_Gergebil_1848_Weight_Terraces.png",
+        "weightmapForest8Bit": "Content/Heightmaps/T_Heightmap_Gergebil_1848_Weight_Forest.png"
+      }
+    },
+    {
+      "arenaID": "tactical_ahulgo_citadel",
+      "assetName": "T_Heightmap_Ahulgo_1839",
+      "title": "Осада Ахульго и Сурхаевой башни в излучине Андийского Койсу (1839)",
+      "centerWGS84": [
+        42.6786,
+        46.855
+      ],
+      "resolution": [
+        2017,
+        2017
+      ],
+      "minElevationMeters": 490.0,
+      "maxElevationMeters": 1410.0,
+      "meanElevationMeters": 938.6,
+      "maxSlopeDegrees": 89.6,
+      "ue5LandscapeScale": {
+        "ScaleX": 150.0,
+        "ScaleY": 150.0,
+        "ScaleZ": 179.6875
+      },
+      "milyutinCutawayShader": {
+        "enabledByDefault": true,
+        "defaultPlaneYaw": 120.0,
+        "hlslInclude": "Shaders/MF_MilyutinCutawaySection.hlsl"
+      },
+      "files": {
+        "heightmap16BitPNG": "Content/Heightmaps/T_Heightmap_Ahulgo_1839.png",
+        "heightmap16BitRAW": "Content/Heightmaps/T_Heightmap_Ahulgo_1839.r16",
+        "weightmapCliff8Bit": "Content/Heightmaps/T_Heightmap_Ahulgo_1839_Weight_Cliff.png",
+        "weightmapTerraces8Bit": "Content/Heightmaps/T_Heightmap_Ahulgo_1839_Weight_Terraces.png",
+        "weightmapForest8Bit": "Content/Heightmaps/T_Heightmap_Ahulgo_1839_Weight_Forest.png"
+      }
+    }
+  ]
+}

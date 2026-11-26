@@ -1,0 +1,698 @@
+{
+  "1_Passive_Adat_Baseline": {
+    "campaignsSimulated": 1000,
+    "turnsPerCampaign": 20,
+    "survivalRatePercent": 0.0,
+    "zulmatCrisisProbabilityPercent": 100.0,
+    "avgZulmatTurnsPerCampaign": 13.82,
+    "envoyInterceptionRatePercent": 11.0,
+    "naibObedienceRatePercent": 66.4,
+    "avgFinalBesiegedNaibatesOf10": 6.86,
+    "avgFinalStressPercent": 98.0,
+    "centralArsenalPowderCurvePoods": {
+      "1": 195.0,
+      "5": 281.3,
+      "10": 318.8,
+      "15": 318.4,
+      "20": 304.5
+    },
+    "avgRegionalPowderCurvePoods": {
+      "1": 49.5,
+      "5": 32.2,
+      "10": 19.3,
+      "15": 12.1,
+      "20": 9.7
+    },
+    "leaderStressCurvePercent": {
+      "1": 29.0,
+      "5": 66.9,
+      "10": 97.5,
+      "15": 98.0,
+      "20": 98.0
+    },
+    "doctrineMatrix": {
+      "Grabbe_Argutinsky_SiegeRam": {
+        "doctrineIndex": 0,
+        "nameRu": "Граббе / Аргутинский (1839/49): Таранный штурм и мины",
+        "nameEn": "Grabbe / Argutinsky (1839/49): Siege Ram & Mine Galleries",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 0.0,
+        "zulmatCrisisProbabilityPercent": 100.0,
+        "avgZulmatTurnsPerCampaign": 13.99,
+        "envoyInterceptionRatePercent": 11.9,
+        "naibObedienceRatePercent": 68.0,
+        "avgFinalBesiegedNaibatesOf10": 8.43,
+        "avgFinalStressPercent": 98.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 274.4,
+          "10": 308.1,
+          "15": 308.0,
+          "20": 294.7
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 32.4,
+          "10": 19.1,
+          "15": 11.6,
+          "20": 8.6
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 72.1,
+          "10": 97.8,
+          "15": 98.0,
+          "20": 98.0
+        }
+      },
+      "Freytag_FlyingCordons": {
+        "doctrineIndex": 1,
+        "nameRu": "Р. К. Фрейтаг (1844): Летучие кордоны и перехват чапаров",
+        "nameEn": "R. K. Freitag (1844): Flying Cordons & Envoy Interception",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 0.0,
+        "zulmatCrisisProbabilityPercent": 100.0,
+        "avgZulmatTurnsPerCampaign": 14.23,
+        "envoyInterceptionRatePercent": 19.6,
+        "naibObedienceRatePercent": 64.6,
+        "avgFinalBesiegedNaibatesOf10": 7.54,
+        "avgFinalStressPercent": 98.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 276.7,
+          "10": 311.0,
+          "15": 308.6,
+          "20": 293.9
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 32.7,
+          "10": 18.8,
+          "15": 11.8,
+          "20": 9.4
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 72.9,
+          "10": 97.8,
+          "15": 98.0,
+          "20": 98.0
+        }
+      },
+      "Vorontsov_DeepColumn": {
+        "doctrineIndex": 2,
+        "nameRu": "Кн. М. С. Воронцов (1845): Глубокий клин на Дарго",
+        "nameEn": "Prince M. S. Vorontsov (1845): Deep Column to Dargo",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 0.0,
+        "zulmatCrisisProbabilityPercent": 100.0,
+        "avgZulmatTurnsPerCampaign": 15.68,
+        "envoyInterceptionRatePercent": 14.5,
+        "naibObedienceRatePercent": 67.3,
+        "avgFinalBesiegedNaibatesOf10": 8.16,
+        "avgFinalStressPercent": 98.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 279.6,
+          "10": 302.1,
+          "15": 300.4,
+          "20": 286.4
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 31.4,
+          "10": 17.0,
+          "15": 10.5,
+          "20": 8.7
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 77.6,
+          "10": 98.0,
+          "15": 98.0,
+          "20": 98.0
+        }
+      },
+      "Baryatinsky_ForestCut": {
+        "doctrineIndex": 3,
+        "nameRu": "Кн. А. И. Барятинский (1857): Вырубка просек и зимняя блокада",
+        "nameEn": "Prince A. I. Baryatinsky (1857): Forest Clearing & Blockade",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 0.0,
+        "zulmatCrisisProbabilityPercent": 100.0,
+        "avgZulmatTurnsPerCampaign": 15.29,
+        "envoyInterceptionRatePercent": 16.8,
+        "naibObedienceRatePercent": 64.5,
+        "avgFinalBesiegedNaibatesOf10": 9.42,
+        "avgFinalStressPercent": 98.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 278.4,
+          "10": 305.0,
+          "15": 303.3,
+          "20": 285.9
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 31.1,
+          "10": 16.3,
+          "15": 10.3,
+          "20": 7.4
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 73.5,
+          "10": 98.0,
+          "15": 98.0,
+          "20": 98.0
+        }
+      }
+    }
+  },
+  "2_Greedy_Zakat_No_Muhtasibs": {
+    "campaignsSimulated": 1000,
+    "turnsPerCampaign": 20,
+    "survivalRatePercent": 0.0,
+    "zulmatCrisisProbabilityPercent": 100.0,
+    "avgZulmatTurnsPerCampaign": 14.47,
+    "envoyInterceptionRatePercent": 29.1,
+    "naibObedienceRatePercent": 55.9,
+    "avgFinalBesiegedNaibatesOf10": 7.33,
+    "avgFinalStressPercent": 98.0,
+    "centralArsenalPowderCurvePoods": {
+      "1": 195.0,
+      "5": 284.0,
+      "10": 324.6,
+      "15": 328.4,
+      "20": 322.9
+    },
+    "avgRegionalPowderCurvePoods": {
+      "1": 49.5,
+      "5": 32.4,
+      "10": 19.9,
+      "15": 13.4,
+      "20": 10.6
+    },
+    "leaderStressCurvePercent": {
+      "1": 29.0,
+      "5": 71.2,
+      "10": 92.7,
+      "15": 98.0,
+      "20": 98.0
+    },
+    "doctrineMatrix": {
+      "Grabbe_Argutinsky_SiegeRam": {
+        "doctrineIndex": 0,
+        "nameRu": "Граббе / Аргутинский (1839/49): Таранный штурм и мины",
+        "nameEn": "Grabbe / Argutinsky (1839/49): Siege Ram & Mine Galleries",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 0.0,
+        "zulmatCrisisProbabilityPercent": 100.0,
+        "avgZulmatTurnsPerCampaign": 14.0,
+        "envoyInterceptionRatePercent": 32.3,
+        "naibObedienceRatePercent": 56.1,
+        "avgFinalBesiegedNaibatesOf10": 8.8,
+        "avgFinalStressPercent": 98.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 274.1,
+          "10": 316.7,
+          "15": 322.7,
+          "20": 315.6
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 31.8,
+          "10": 20.5,
+          "15": 12.8,
+          "20": 9.1
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 73.2,
+          "10": 91.8,
+          "15": 98.0,
+          "20": 98.0
+        }
+      },
+      "Freytag_FlyingCordons": {
+        "doctrineIndex": 1,
+        "nameRu": "Р. К. Фрейтаг (1844): Летучие кордоны и перехват чапаров",
+        "nameEn": "R. K. Freitag (1844): Flying Cordons & Envoy Interception",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 0.0,
+        "zulmatCrisisProbabilityPercent": 100.0,
+        "avgZulmatTurnsPerCampaign": 14.43,
+        "envoyInterceptionRatePercent": 40.5,
+        "naibObedienceRatePercent": 55.4,
+        "avgFinalBesiegedNaibatesOf10": 7.99,
+        "avgFinalStressPercent": 98.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 279.5,
+          "10": 318.1,
+          "15": 318.3,
+          "20": 308.8
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 32.7,
+          "10": 19.4,
+          "15": 12.6,
+          "20": 9.8
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 68.4,
+          "10": 93.7,
+          "15": 98.0,
+          "20": 98.0
+        }
+      },
+      "Vorontsov_DeepColumn": {
+        "doctrineIndex": 2,
+        "nameRu": "Кн. М. С. Воронцов (1845): Глубокий клин на Дарго",
+        "nameEn": "Prince M. S. Vorontsov (1845): Deep Column to Dargo",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 0.0,
+        "zulmatCrisisProbabilityPercent": 100.0,
+        "avgZulmatTurnsPerCampaign": 16.59,
+        "envoyInterceptionRatePercent": 35.4,
+        "naibObedienceRatePercent": 55.0,
+        "avgFinalBesiegedNaibatesOf10": 8.68,
+        "avgFinalStressPercent": 98.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 279.8,
+          "10": 305.5,
+          "15": 305.9,
+          "20": 297.5
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 30.6,
+          "10": 17.2,
+          "15": 11.0,
+          "20": 8.8
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 82.2,
+          "10": 94.6,
+          "15": 98.0,
+          "20": 98.0
+        }
+      },
+      "Baryatinsky_ForestCut": {
+        "doctrineIndex": 3,
+        "nameRu": "Кн. А. И. Барятинский (1857): Вырубка просек и зимняя блокада",
+        "nameEn": "Prince A. I. Baryatinsky (1857): Forest Clearing & Blockade",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 0.0,
+        "zulmatCrisisProbabilityPercent": 100.0,
+        "avgZulmatTurnsPerCampaign": 15.53,
+        "envoyInterceptionRatePercent": 39.0,
+        "naibObedienceRatePercent": 55.1,
+        "avgFinalBesiegedNaibatesOf10": 9.67,
+        "avgFinalStressPercent": 98.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 280.0,
+          "10": 312.2,
+          "15": 312.4,
+          "20": 301.5
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 31.4,
+          "10": 18.0,
+          "15": 10.9,
+          "20": 7.6
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 77.5,
+          "10": 94.9,
+          "15": 98.0,
+          "20": 98.0
+        }
+      }
+    }
+  },
+  "3_Military_Powder_And_Fortify": {
+    "campaignsSimulated": 1000,
+    "turnsPerCampaign": 20,
+    "survivalRatePercent": 88.5,
+    "zulmatCrisisProbabilityPercent": 4.6,
+    "avgZulmatTurnsPerCampaign": 0.09,
+    "envoyInterceptionRatePercent": 23.0,
+    "naibObedienceRatePercent": 92.5,
+    "avgFinalBesiegedNaibatesOf10": 2.82,
+    "avgFinalStressPercent": 50.5,
+    "centralArsenalPowderCurvePoods": {
+      "1": 195.0,
+      "5": 276.9,
+      "10": 279.1,
+      "15": 264.9,
+      "20": 258.4
+    },
+    "avgRegionalPowderCurvePoods": {
+      "1": 49.5,
+      "5": 42.0,
+      "10": 41.0,
+      "15": 42.0,
+      "20": 44.0
+    },
+    "leaderStressCurvePercent": {
+      "1": 29.0,
+      "5": 38.6,
+      "10": 52.3,
+      "15": 52.8,
+      "20": 50.5
+    },
+    "doctrineMatrix": {
+      "Grabbe_Argutinsky_SiegeRam": {
+        "doctrineIndex": 0,
+        "nameRu": "Граббе / Аргутинский (1839/49): Таранный штурм и мины",
+        "nameEn": "Grabbe / Argutinsky (1839/49): Siege Ram & Mine Galleries",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 38.3,
+        "zulmatCrisisProbabilityPercent": 28.7,
+        "avgZulmatTurnsPerCampaign": 1.0,
+        "envoyInterceptionRatePercent": 24.1,
+        "naibObedienceRatePercent": 92.5,
+        "avgFinalBesiegedNaibatesOf10": 4.95,
+        "avgFinalStressPercent": 63.2,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 271.7,
+          "10": 275.7,
+          "15": 262.2,
+          "20": 255.0
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 39.7,
+          "10": 37.7,
+          "15": 35.7,
+          "20": 34.2
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 43.8,
+          "10": 64.5,
+          "15": 61.8,
+          "20": 63.2
+        }
+      },
+      "Freytag_FlyingCordons": {
+        "doctrineIndex": 1,
+        "nameRu": "Р. К. Фрейтаг (1844): Летучие кордоны и перехват чапаров",
+        "nameEn": "R. K. Freitag (1844): Flying Cordons & Envoy Interception",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 61.7,
+        "zulmatCrisisProbabilityPercent": 18.1,
+        "avgZulmatTurnsPerCampaign": 0.57,
+        "envoyInterceptionRatePercent": 30.6,
+        "naibObedienceRatePercent": 92.0,
+        "avgFinalBesiegedNaibatesOf10": 4.06,
+        "avgFinalStressPercent": 60.6,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 276.8,
+          "10": 275.3,
+          "15": 263.7,
+          "20": 255.7
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 43.0,
+          "10": 39.2,
+          "15": 37.8,
+          "20": 36.7
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 41.6,
+          "10": 54.0,
+          "15": 60.6,
+          "20": 60.6
+        }
+      },
+      "Vorontsov_DeepColumn": {
+        "doctrineIndex": 2,
+        "nameRu": "Кн. М. С. Воронцов (1845): Глубокий клин на Дарго",
+        "nameEn": "Prince M. S. Vorontsov (1845): Deep Column to Dargo",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 44.3,
+        "zulmatCrisisProbabilityPercent": 30.1,
+        "avgZulmatTurnsPerCampaign": 0.96,
+        "envoyInterceptionRatePercent": 26.5,
+        "naibObedienceRatePercent": 93.2,
+        "avgFinalBesiegedNaibatesOf10": 4.67,
+        "avgFinalStressPercent": 65.6,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 275.5,
+          "10": 275.1,
+          "15": 265.3,
+          "20": 255.6
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 42.0,
+          "10": 38.2,
+          "15": 38.1,
+          "20": 37.0
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 43.9,
+          "10": 56.6,
+          "15": 63.1,
+          "20": 65.6
+        }
+      },
+      "Baryatinsky_ForestCut": {
+        "doctrineIndex": 3,
+        "nameRu": "Кн. А. И. Барятинский (1857): Вырубка просек и зимняя блокада",
+        "nameEn": "Prince A. I. Baryatinsky (1857): Forest Clearing & Blockade",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 1.4,
+        "zulmatCrisisProbabilityPercent": 54.0,
+        "avgZulmatTurnsPerCampaign": 2.25,
+        "envoyInterceptionRatePercent": 29.2,
+        "naibObedienceRatePercent": 91.8,
+        "avgFinalBesiegedNaibatesOf10": 7.36,
+        "avgFinalStressPercent": 73.6,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 275.9,
+          "10": 273.7,
+          "15": 263.1,
+          "20": 253.7
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 41.1,
+          "10": 35.4,
+          "15": 33.7,
+          "20": 29.8
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 46.8,
+          "10": 60.2,
+          "15": 71.3,
+          "20": 73.6
+        }
+      }
+    }
+  },
+  "4_Divan_Khana_Master_Strategy": {
+    "campaignsSimulated": 1000,
+    "turnsPerCampaign": 20,
+    "survivalRatePercent": 100.0,
+    "zulmatCrisisProbabilityPercent": 0.0,
+    "avgZulmatTurnsPerCampaign": 0.0,
+    "envoyInterceptionRatePercent": 15.1,
+    "naibObedienceRatePercent": 86.8,
+    "avgFinalBesiegedNaibatesOf10": 0.17,
+    "avgFinalStressPercent": 12.3,
+    "centralArsenalPowderCurvePoods": {
+      "1": 195.0,
+      "5": 235.6,
+      "10": 258.1,
+      "15": 275.9,
+      "20": 305.5
+    },
+    "avgRegionalPowderCurvePoods": {
+      "1": 49.5,
+      "5": 48.0,
+      "10": 52.4,
+      "15": 58.0,
+      "20": 61.2
+    },
+    "leaderStressCurvePercent": {
+      "1": 29.0,
+      "5": 14.4,
+      "10": 16.7,
+      "15": 13.2,
+      "20": 12.3
+    },
+    "doctrineMatrix": {
+      "Grabbe_Argutinsky_SiegeRam": {
+        "doctrineIndex": 0,
+        "nameRu": "Граббе / Аргутинский (1839/49): Таранный штурм и мины",
+        "nameEn": "Grabbe / Argutinsky (1839/49): Siege Ram & Mine Galleries",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 100.0,
+        "zulmatCrisisProbabilityPercent": 0.0,
+        "avgZulmatTurnsPerCampaign": 0.0,
+        "envoyInterceptionRatePercent": 16.3,
+        "naibObedienceRatePercent": 86.5,
+        "avgFinalBesiegedNaibatesOf10": 0.73,
+        "avgFinalStressPercent": 15.0,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 203.5,
+          "10": 216.1,
+          "15": 239.6,
+          "20": 249.9
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 47.5,
+          "10": 49.0,
+          "15": 55.2,
+          "20": 57.9
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 24.7,
+          "10": 25.3,
+          "15": 17.9,
+          "20": 15.0
+        }
+      },
+      "Freytag_FlyingCordons": {
+        "doctrineIndex": 1,
+        "nameRu": "Р. К. Фрейтаг (1844): Летучие кордоны и перехват чапаров",
+        "nameEn": "R. K. Freitag (1844): Flying Cordons & Envoy Interception",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 100.0,
+        "zulmatCrisisProbabilityPercent": 0.0,
+        "avgZulmatTurnsPerCampaign": 0.0,
+        "envoyInterceptionRatePercent": 22.2,
+        "naibObedienceRatePercent": 86.2,
+        "avgFinalBesiegedNaibatesOf10": 0.58,
+        "avgFinalStressPercent": 14.7,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 233.9,
+          "10": 248.6,
+          "15": 263.5,
+          "20": 269.1
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 47.7,
+          "10": 48.6,
+          "15": 53.0,
+          "20": 54.9
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 16.8,
+          "10": 18.6,
+          "15": 17.0,
+          "20": 14.7
+        }
+      },
+      "Vorontsov_DeepColumn": {
+        "doctrineIndex": 2,
+        "nameRu": "Кн. М. С. Воронцов (1845): Глубокий клин на Дарго",
+        "nameEn": "Prince M. S. Vorontsov (1845): Deep Column to Dargo",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 100.0,
+        "zulmatCrisisProbabilityPercent": 0.0,
+        "avgZulmatTurnsPerCampaign": 0.0,
+        "envoyInterceptionRatePercent": 17.9,
+        "naibObedienceRatePercent": 86.7,
+        "avgFinalBesiegedNaibatesOf10": 0.59,
+        "avgFinalStressPercent": 13.5,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 232.2,
+          "10": 234.9,
+          "15": 256.3,
+          "20": 266.4
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 50.5,
+          "10": 48.8,
+          "15": 55.1,
+          "20": 57.1
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 15.8,
+          "10": 20.9,
+          "15": 16.1,
+          "20": 13.5
+        }
+      },
+      "Baryatinsky_ForestCut": {
+        "doctrineIndex": 3,
+        "nameRu": "Кн. А. И. Барятинский (1857): Вырубка просек и зимняя блокада",
+        "nameEn": "Prince A. I. Baryatinsky (1857): Forest Clearing & Blockade",
+        "campaignsSimulated": 1000,
+        "turnsPerCampaign": 20,
+        "survivalRatePercent": 98.4,
+        "zulmatCrisisProbabilityPercent": 0.0,
+        "avgZulmatTurnsPerCampaign": 0.0,
+        "envoyInterceptionRatePercent": 20.8,
+        "naibObedienceRatePercent": 86.6,
+        "avgFinalBesiegedNaibatesOf10": 1.61,
+        "avgFinalStressPercent": 17.9,
+        "centralArsenalPowderCurvePoods": {
+          "1": 195.0,
+          "5": 225.5,
+          "10": 237.4,
+          "15": 241.6,
+          "20": 243.3
+        },
+        "avgRegionalPowderCurvePoods": {
+          "1": 49.5,
+          "5": 47.0,
+          "10": 46.5,
+          "15": 51.3,
+          "20": 52.7
+        },
+        "leaderStressCurvePercent": {
+          "1": 29.0,
+          "5": 19.1,
+          "10": 26.6,
+          "15": 20.7,
+          "20": 17.9
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "imamat-web-qa-gate",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Release QA gate for IMAMAT: Divan-Khana web build — ESLint, static route checks and headless-browser smoke test",
+  "type": "commonjs",
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^15.0.0",
+    "puppeteer-core": "^23.0.0"
+  }
+}

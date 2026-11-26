@@ -1,0 +1,71 @@
+{
+  "projectTitle": "ИМАМАТ: ДИВАН-ХАНА / IMAMAT: DIVAN-KHANA (Gold Master Release v2.4 — Milestones M1–M24 Complete)",
+  "milestone": "M24 — Realistic 3D SRTM Physical Relief Map of the Eastern Caucasus + 60 FPS Real-Time Terrain-Aware Unit Command & Movement Engine (PASS 7/7)",
+  "generatedAtUtc": "2026-11-24T16:36:27.151829+00:00",
+  "overallIntegrityStatus": "PASS",
+  "totalChecksRun": 7,
+  "totalChecksPassed": 7,
+  "checks": [
+    {
+      "category": "01_Historical_Archive",
+      "name": "30 Thematic Chapters + Master Encyclopedia (31 .md files)",
+      "status": "PASS",
+      "details": "32 Markdown files verified (2,236,684 bytes total)"
+    },
+    {
+      "category": "02_GDD_and_Math_Models",
+      "name": "11 Game Design, Math Model & UE5 Architecture Docs",
+      "status": "PASS",
+      "details": "14 GDD Markdown files verified (236,647 bytes total)"
+    },
+    {
+      "category": "03_Web_Vertical_Slice",
+      "name": "React 18 + Vite 6 Bilingual (11/11 RU/EN Tabs + Pitch Auto-Tour + WebAudio 2.0 + Mod Builder + Replay Chronograph + 4 AI Doctrines + Field Manual + Ironman & Seal + 60s Trailer Previz + SRT/EDL + Steam Announcement + Archive Museum + Diplomatic Chancellery + Release Hub v2.0) + Web QA Gate",
+      "status": "PASS",
+      "details": "58 source modules (66,522 lines total; App.jsx 13,035 lines), 122/122 core architecture tokens present; QA gate PASS (ESLint errors=0, JS errors=0, tabs player/studio=8/11, report matches current sources)"
+    },
+    {
+      "category": "04_UE5_Engineering_Package",
+      "name": "ImamatWargame.uproject + C++20 Modules + HLSL Shaders",
+      "status": "PASS",
+      "details": "uproject verified, 17 C++/CS source files, 2 HLSL/USH shaders"
+    },
+    {
+      "category": "04_UE5_DataTables_and_MonteCarlo",
+      "name": "15 DataTables/StringTables (.json/.csv) & 20,000-Campaign Monte Carlo Suite (4,000 Base + 16,000 4x4 Doctrine Matrix)",
+      "status": "PASS",
+      "details": "10 Naibates, 12 Nizams, 6 Court Cases, 6 Crises, 12 Glossary Terms, 74 Master RU/EN String Table rows, 12 Steam Achievements, 4,000 Base + 16,000 (4x4) Doctrine Matrix campaigns"
+    },
+    {
+      "category": "04_UE5_SRTM_Heightmaps_and_3D_Actors_Manifest",
+      "name": "20 NASA SRTM Landscape Files (4x 16-bit .r16 + 16x 2017x2017 .png) + UE5 3D Actors & Spline Manifest + 4K MRQ Preset (32x AA, 16 CVars)",
+      "status": "PASS",
+      "details": "4 .r16 files (8,136,578 bytes each) + 16 .png files (2017x2017) + UE5_Level_Actors_Spawn_Manifest.json (4 arenas, 48 spline points, 6 camera shots) + MRQ_ImamatTrailer_4K_Preset.json (32x AA, 16 CVars, 6 Shot Overrides)"
+    },
+    {
+      "category": "05_Steam_and_Publisher_Kit",
+      "name": "Store Page, 13-Slide Interactive Pitch Deck ($240k ROI + Steam Next Fest Funnel), Press Kit, Tactician's Field Manual, Creator/Curator Kit, Master Release Manifest, Trailer SRT/EDL Post-Prod Kit, Telemetry KPIs, Steamworks VDFs, 3 Workshop Mods, 10 Key Art/Portrait/3D Relief Assets & Native macOS (.app) / Windows Desktop Bundles",
+      "status": "PASS",
+      "details": "7 Pitch/Store/Manual/Creator docs + Master Manifest (15,185 bytes), 10 KeyArt/Portrait/3D SRTM Relief Assets, Native macOS App (87,728B arm64 Mach-O + 100,740B .icns, ZIP 34,667,155B), Windows Launcher, Standalone HTML (6,937,927B), Playtest v1.0 ZIP (34,660,512B)"
+    }
+  ],
+  "summaryMetrics": {
+    "historicalArchiveChapters": 32,
+    "gddDocuments": 14,
+    "webPrototypeLinesOfCode": 66522,
+    "bilingualTabsCovered": "11/11 (RU/EN)",
+    "publisherAutoTourStops": 5,
+    "steamTrailerPrevizShots": 6,
+    "historicalMuseumExhibits": 11,
+    "imperialAiCommanderDoctrines": 4,
+    "historicalIronmanChallenges": 3,
+    "workshopReferenceMods": 3,
+    "ue5SourceAndShaderFiles": 19,
+    "ue5DataTablesCount": 29,
+    "srtmHeightmapFiles2017x2017": 20,
+    "ue5SplineControlPoints3D": 48,
+    "monteCarloSimulatedCampaigns": 20000,
+    "steamAchievementsCount": 12,
+    "localizationRowsCount": 49
+  }
+}

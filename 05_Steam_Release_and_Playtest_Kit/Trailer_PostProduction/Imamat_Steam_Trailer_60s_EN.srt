@@ -1,0 +1,29 @@
+1
+00:00:00,000 --> 00:00:10,000
+"Vedeno, 1845. Across this oak table there are no abstract hexes — only couriers, gunpowder, and the will of ten Naibs..."
+[DIEGETIC COMMAND TABLE (UE 5.5 • ZERO ARTIFICIAL HUD)]
+
+2
+00:00:10,000 --> 00:00:20,000
+"Every decree is sealed in silver. Yet will your courier pierce Freytag's cordons — and will a proud Naib obey?"
+[INDIRECT COMMAND • NAIB OBEDIENCE MATHEMATICS P(exec)]
+
+3
+00:00:20,000 --> 00:00:32,000
+"Slice the cliffside along Colonel Milyutin's blueprints. Listen to peas trembling on Safarov's copper basin and fire the counter-mine!"
+[3D SIEGE GEODESY • SAFAROV'S COPPER-BASIN COUNTER-MINE SONAR]
+
+4
+00:00:32,000 --> 00:00:44,000
+"No health bars. Eighteen silver gazyrs across the chest. Drop the beech abatis onto Vorontsov's column and close with Bazalai steel!"
+[18 CHEST GAZYRS • SPLINE FOREST AMBUSHES IN ICHKERIA]
+
+5
+00:00:44,000 --> 00:00:52,000
+"Judge by the Code of Nizams between Adat and Sharia. Benchmark your campaign against 20,000 simulations in al-Karakhi's Chronograph."
+[20,000 MONTE CARLO SIMULATIONS • STEAM WORKSHOP MODDING • IRONMAN]
+
+6
+00:00:52,000 --> 00:01:00,000
+"IMAMAT: DIVAN-KHANA. He who ponders the consequences is not brave. Add to your Steam Wishlist today."
+[IMAMAT: DIVAN-KHANA — ADD TO YOUR STEAM WISHLIST NOW]

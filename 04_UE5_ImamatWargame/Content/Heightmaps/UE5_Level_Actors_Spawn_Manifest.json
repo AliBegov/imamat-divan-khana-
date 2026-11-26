@@ -1,0 +1,2552 @@
+{
+  "schemaVersion": "ImamatUE5_LevelActorsManifest_v1.6",
+  "generatedAtUtc": "2026-11-24T16:35:05.219405+00:00",
+  "engineTarget": "Unreal Engine 5.5 (C++20 Native Actors + LevelSequence)",
+  "arenasCount": 4,
+  "totalSampledSplinePoints": 48,
+  "sequencerTrailerShotsCount": 6,
+  "sequencerTrailerShots": [
+    {
+      "shotIndex": 1,
+      "timecode": "00:00 - 00:10",
+      "titleRu": "Кадр 1: Очаг Диван-ханы и карта Кавказа при свечах",
+      "titleEn": "Shot 1: Divan-Khana Hearth & Candlelit Caucasus Map",
+      "targetArenaID": "tactical_dargo_ichkeria",
+      "focalLengthMm": 35.0,
+      "apertureFStop": 2.0,
+      "audioLayerCue": "Hearth_And_Vedeno_Watermill_Layer3"
+    },
+    {
+      "shotIndex": 2,
+      "timecode": "00:10 - 00:20",
+      "titleRu": "Кадр 2: Оттиск восьмиугольного перстня Шамиля и выезд чапара",
+      "titleEn": "Shot 2: Shamil's Octagonal Signet Stamp & Chapar Dispatch",
+      "targetArenaID": "tactical_ahulgo_citadel",
+      "focalLengthMm": 50.0,
+      "apertureFStop": 2.4,
+      "audioLayerCue": "WaxSeal_And_AhkTash_Gorge_Wind_Layer1"
+    },
+    {
+      "shotIndex": 3,
+      "timecode": "00:20 - 00:32",
+      "titleRu": "Кадр 3: 3D-разрез скалы Милютина и медный таз Сафарова (Салты/Чох)",
+      "titleEn": "Shot 3: Milyutin 3D Rock Cutaway & Safarov's Copper Basin Sonar",
+      "targetArenaID": "tactical_salti_siege",
+      "focalLengthMm": 28.0,
+      "apertureFStop": 2.8,
+      "audioLayerCue": "Safarov_CopperBasin_Sonar_Layer2"
+    },
+    {
+      "shotIndex": 4,
+      "timecode": "00:32 - 00:44",
+      "titleRu": "Кадр 4: Буковая засека в Ичкерии и залп 18 нагрудных газырей",
+      "titleEn": "Shot 4: Ichkeria Beech Abatis Ambush & 18-Gazyr Volley",
+      "targetArenaID": "tactical_dargo_ichkeria",
+      "focalLengthMm": 24.0,
+      "apertureFStop": 2.8,
+      "audioLayerCue": "Gazyr_Volley_And_Shashka_Charge"
+    },
+    {
+      "shotIndex": 5,
+      "timecode": "00:44 - 00:52",
+      "titleRu": "Кадр 5: Кодекс Низамов, суд по Шариату и бастионы Гергебиля",
+      "titleEn": "Shot 5: Code of Nizams, Sharia Court & Gergebil Bastions",
+      "targetArenaID": "tactical_gergebil_bastion",
+      "focalLengthMm": 40.0,
+      "apertureFStop": 2.2,
+      "audioLayerCue": "Nizam_Decree_And_Artillery_Echo"
+    },
+    {
+      "shotIndex": 6,
+      "timecode": "00:52 - 01:00",
+      "titleRu": "Кадр 6: Цитадель Верхнего Гуниба и призыв Добавить в Желаемое в Steam",
+      "titleEn": "Shot 6: Upper Gunib Citadel Reveal & Steam Wishlist Call-to-Action",
+      "targetArenaID": "tactical_ahulgo_citadel",
+      "focalLengthMm": 18.0,
+      "apertureFStop": 4.0,
+      "audioLayerCue": "Full_3Layer_Caucasus_Chord_Crescendo"
+    }
+  ],
+  "tacticalArenas": [
+    {
+      "arenaID": "tactical_dargo_ichkeria",
+      "assetName": "T_Heightmap_Dargo_Ichkeria_1845",
+      "title": "Ичкерийский лес: Засада на сплайне у Дарго (1845)",
+      "divanKhanaCommandPawn": {
+        "actorClass": "/Script/ImamatWargame.DivanKhanaTablePawn",
+        "actorLabel": "BP_DivanKhanaTable_tactical_dargo_ichkeria",
+        "transform": {
+          "gridUV": [
+            0.52,
+            0.22
+          ],
+          "locationCm": {
+            "X": 8064.0,
+            "Y": -112896.0,
+            "Z": -13182.9
+          },
+          "rotationDeg": {
+            "Pitch": -14.0,
+            "Yaw": 90.0,
+            "Roll": 0.0
+          },
+          "rawHeightU16": 25587
+        },
+        "components": {
+          "CandlePointLightIntensityLumens": 420.0,
+          "MapParchmentMesh": "SM_DivanMapTable_Oak_1845",
+          "SilverSignetStampSocket": "Socket_ShamilRing_Octagonal"
+        }
+      },
+      "tacticalSiegeManager": {
+        "actorClass": "/Script/ImamatWargame.TacticalSiegeManager",
+        "actorLabel": "BP_TacticalSiegeManager_tactical_dargo_ichkeria",
+        "citadelCenterTransform": {
+          "gridUV": [
+            0.5,
+            0.48
+          ],
+          "locationCm": {
+            "X": 0.0,
+            "Y": -8064.0,
+            "Z": -16976.7
+          },
+          "rotationDeg": {
+            "Pitch": 0.0,
+            "Yaw": 35.0,
+            "Roll": 0.0
+          },
+          "rawHeightU16": 23584
+        },
+        "milyutinCutawayPlane": {
+          "enabledByDefault": false,
+          "planeOriginCm": {
+            "X": 0.0,
+            "Y": -8064.0,
+            "Z": -17096.7
+          },
+          "planeNormal": [
+            0.8192,
+            0.5736,
+            0.0
+          ],
+          "hlslShaderPath": "Shaders/MF_MilyutinCutawaySection.hlsl"
+        },
+        "safarovBastionSectors": [
+          {
+            "sectorId": "Bastion_North_Gabion",
+            "transform": {
+              "gridUV": [
+                0.46,
+                0.42
+              ],
+              "locationCm": {
+                "X": -16128.0,
+                "Y": -32256.0,
+                "Z": -20866.4
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -45.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 21516
+            },
+            "gabionIntegrityPct": 100.0
+          },
+          {
+            "sectorId": "Bastion_East_LogBlindage",
+            "transform": {
+              "gridUV": [
+                0.55,
+                0.47
+              ],
+              "locationCm": {
+                "X": 20160.0,
+                "Y": -12096.0,
+                "Z": -18656.2
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 15.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 22714
+            },
+            "gabionIntegrityPct": 100.0
+          },
+          {
+            "sectorId": "Bastion_South_SurkhayTower",
+            "transform": {
+              "gridUV": [
+                0.49,
+                0.56
+              ],
+              "locationCm": {
+                "X": -4032.0,
+                "Y": 24192.0,
+                "Z": -8155.2
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 110.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 28312
+            },
+            "gabionIntegrityPct": 100.0
+          }
+        ],
+        "safarovCopperBasinSonarNodes": [
+          {
+            "nodeId": "Sonar_Gallery_Alpha",
+            "transform": {
+              "gridUV": [
+                0.48,
+                0.44
+              ],
+              "locationCm": {
+                "X": -8064.0,
+                "Y": -24192.0,
+                "Z": -20279.8
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 22046
+            },
+            "optimalCamoufletRadiusMeters": 18.5
+          },
+          {
+            "nodeId": "Sonar_Gallery_Beta",
+            "transform": {
+              "gridUV": [
+                0.53,
+                0.51
+              ],
+              "locationCm": {
+                "X": 12096.0,
+                "Y": 4032.0,
+                "Z": -16366.5
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 24132
+            },
+            "optimalCamoufletRadiusMeters": 16.0
+          }
+        ],
+        "imperialSiegeBatteries": [
+          {
+            "batteryId": "Battery_12Pdr_Grabbe_Left",
+            "transform": {
+              "gridUV": [
+                0.28,
+                0.3
+              ],
+              "locationCm": {
+                "X": -88704.0,
+                "Y": -80640.0,
+                "Z": -11390.6
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 42.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 26625
+            },
+            "gunsCount": 4
+          },
+          {
+            "batteryId": "Battery_Mortar_Argutinsky_Center",
+            "transform": {
+              "gridUV": [
+                0.31,
+                0.52
+              ],
+              "locationCm": {
+                "X": -76608.0,
+                "Y": 8064.0,
+                "Z": 15769.1
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 8.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 41212
+            },
+            "gunsCount": 6
+          },
+          {
+            "batteryId": "Battery_MountainUnicorn_Right",
+            "transform": {
+              "gridUV": [
+                0.35,
+                0.72
+              ],
+              "locationCm": {
+                "X": -60480.0,
+                "Y": 88704.0,
+                "Z": 37180.2
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -36.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 52719
+            },
+            "gunsCount": 4
+          }
+        ]
+      },
+      "forestSplineAmbushController": {
+        "actorClass": "/Script/ImamatWargame.ForestSplineAmbushController",
+        "actorLabel": "BP_ForestSplineAmbush_tactical_dargo_ichkeria",
+        "splineControlPointsCount": 12,
+        "splineControlPoints": [
+          {
+            "gridUV": [
+              0.14,
+              0.5
+            ],
+            "locationCm": {
+              "X": -145152.0,
+              "Y": 0.0,
+              "Z": -3247.6
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 54.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 31010,
+            "splinePointIndex": 0,
+            "normalizedDistance": 0.0
+          },
+          {
+            "gridUV": [
+              0.2055,
+              0.5865
+            ],
+            "locationCm": {
+              "X": -118760.7,
+              "Y": 34877.8,
+              "Z": 21096.1
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 49.6,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 44087,
+            "splinePointIndex": 1,
+            "normalizedDistance": 0.091
+          },
+          {
+            "gridUV": [
+              0.2709,
+              0.6455
+            ],
+            "locationCm": {
+              "X": -92369.5,
+              "Y": 58682.2,
+              "Z": 41582.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 30.1,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 55092,
+            "splinePointIndex": 2,
+            "normalizedDistance": 0.182
+          },
+          {
+            "gridUV": [
+              0.3364,
+              0.6584
+            ],
+            "locationCm": {
+              "X": -65978.2,
+              "Y": 63855.4,
+              "Z": 28347.0
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -11.2,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 47982,
+            "splinePointIndex": 3,
+            "normalizedDistance": 0.273
+          },
+          {
+            "gridUV": [
+              0.4018,
+              0.6209
+            ],
+            "locationCm": {
+              "X": -39586.9,
+              "Y": 48754.9,
+              "Z": 25180.4
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -42.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 46281,
+            "splinePointIndex": 4,
+            "normalizedDistance": 0.364
+          },
+          {
+            "gridUV": [
+              0.4673,
+              0.5451
+            ],
+            "locationCm": {
+              "X": -13195.6,
+              "Y": 18175.1,
+              "Z": -6328.5
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -53.3,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 29355,
+            "splinePointIndex": 5,
+            "normalizedDistance": 0.455
+          },
+          {
+            "gridUV": [
+              0.5327,
+              0.4549
+            ],
+            "locationCm": {
+              "X": 13195.6,
+              "Y": -18175.1,
+              "Z": -19411.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -53.3,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 22327,
+            "splinePointIndex": 6,
+            "normalizedDistance": 0.545
+          },
+          {
+            "gridUV": [
+              0.5982,
+              0.3791
+            ],
+            "locationCm": {
+              "X": 39586.9,
+              "Y": -48754.9,
+              "Z": -17831.2
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -42.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 23176,
+            "splinePointIndex": 7,
+            "normalizedDistance": 0.636
+          },
+          {
+            "gridUV": [
+              0.6636,
+              0.3416
+            ],
+            "locationCm": {
+              "X": 65978.2,
+              "Y": -63855.4,
+              "Z": -6594.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -11.2,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 29212,
+            "splinePointIndex": 8,
+            "normalizedDistance": 0.727
+          },
+          {
+            "gridUV": [
+              0.7291,
+              0.3545
+            ],
+            "locationCm": {
+              "X": 92369.5,
+              "Y": -58682.2,
+              "Z": -7657.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 30.1,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 28641,
+            "splinePointIndex": 9,
+            "normalizedDistance": 0.818
+          },
+          {
+            "gridUV": [
+              0.7945,
+              0.4135
+            ],
+            "locationCm": {
+              "X": 118760.7,
+              "Y": -34877.8,
+              "Z": -12391.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 49.6,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 26098,
+            "splinePointIndex": 10,
+            "normalizedDistance": 0.909
+          },
+          {
+            "gridUV": [
+              0.86,
+              0.5
+            ],
+            "locationCm": {
+              "X": 145152.0,
+              "Y": -0.0,
+              "Z": -362.2
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 54.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 32560,
+            "splinePointIndex": 11,
+            "normalizedDistance": 1.0
+          }
+        ],
+        "abatisFelledBeechBarricades": [
+          {
+            "abatisId": "Abatis_Chokepoint_1",
+            "splineNormalizedRange": [
+              0.24,
+              0.31
+            ],
+            "transform": {
+              "gridUV": [
+                0.3364,
+                0.6584
+              ],
+              "locationCm": {
+                "X": -65978.2,
+                "Y": 63855.4,
+                "Z": 28347.0
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -11.2,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 47982,
+              "splinePointIndex": 3,
+              "normalizedDistance": 0.273
+            }
+          },
+          {
+            "abatisId": "Abatis_Chokepoint_2",
+            "splineNormalizedRange": [
+              0.52,
+              0.6
+            ],
+            "transform": {
+              "gridUV": [
+                0.5327,
+                0.4549
+              ],
+              "locationCm": {
+                "X": 13195.6,
+                "Y": -18175.1,
+                "Z": -19411.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -53.3,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 22327,
+              "splinePointIndex": 6,
+              "normalizedDistance": 0.545
+            }
+          },
+          {
+            "abatisId": "Abatis_Chokepoint_3",
+            "splineNormalizedRange": [
+              0.76,
+              0.84
+            ],
+            "transform": {
+              "gridUV": [
+                0.7291,
+                0.3545
+              ],
+              "locationCm": {
+                "X": 92369.5,
+                "Y": -58682.2,
+                "Z": -7657.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 30.1,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 28641,
+              "splinePointIndex": 9,
+              "normalizedDistance": 0.818
+            }
+          }
+        ],
+        "murtazekFlankAmbushZones": [
+          {
+            "zoneId": "Ambush_HighSlope_North",
+            "transform": {
+              "gridUV": [
+                0.38,
+                0.34
+              ],
+              "locationCm": {
+                "X": -48384.0,
+                "Y": -64512.0,
+                "Z": -24354.8
+              },
+              "rotationDeg": {
+                "Pitch": -18.0,
+                "Yaw": 82.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 19626
+            },
+            "gazyrVolleySlots": 18
+          },
+          {
+            "zoneId": "Ambush_GorgeLedge_Center",
+            "transform": {
+              "gridUV": [
+                0.56,
+                0.64
+              ],
+              "locationCm": {
+                "X": 24192.0,
+                "Y": 56448.0,
+                "Z": -10614.6
+              },
+              "rotationDeg": {
+                "Pitch": -15.0,
+                "Yaw": -78.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 27015
+            },
+            "gazyrVolleySlots": 18
+          },
+          {
+            "zoneId": "Ambush_RearGuard_East",
+            "transform": {
+              "gridUV": [
+                0.74,
+                0.41
+              ],
+              "locationCm": {
+                "X": 96768.0,
+                "Y": -36288.0,
+                "Z": 1012.4
+              },
+              "rotationDeg": {
+                "Pitch": -21.0,
+                "Yaw": 105.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 33242
+            },
+            "gazyrVolleySlots": 18
+          }
+        ]
+      }
+    },
+    {
+      "arenaID": "tactical_salti_siege",
+      "assetName": "T_Heightmap_Salti_1847",
+      "title": "Осада аула Салты: Подземные блиндажи Сафарова (1847)",
+      "divanKhanaCommandPawn": {
+        "actorClass": "/Script/ImamatWargame.DivanKhanaTablePawn",
+        "actorLabel": "BP_DivanKhanaTable_tactical_salti_siege",
+        "transform": {
+          "gridUV": [
+            0.52,
+            0.22
+          ],
+          "locationCm": {
+            "X": 6048.0,
+            "Y": -84672.0,
+            "Z": 26798.9
+          },
+          "rotationDeg": {
+            "Pitch": -14.0,
+            "Yaw": 90.0,
+            "Roll": 0.0
+          },
+          "rawHeightU16": 53049
+        },
+        "components": {
+          "CandlePointLightIntensityLumens": 420.0,
+          "MapParchmentMesh": "SM_DivanMapTable_Oak_1845",
+          "SilverSignetStampSocket": "Socket_ShamilRing_Octagonal"
+        }
+      },
+      "tacticalSiegeManager": {
+        "actorClass": "/Script/ImamatWargame.TacticalSiegeManager",
+        "actorLabel": "BP_TacticalSiegeManager_tactical_salti_siege",
+        "citadelCenterTransform": {
+          "gridUV": [
+            0.5,
+            0.48
+          ],
+          "locationCm": {
+            "X": 0.0,
+            "Y": -6048.0,
+            "Z": 43118.7
+          },
+          "rotationDeg": {
+            "Pitch": 0.0,
+            "Yaw": 45.0,
+            "Roll": 0.0
+          },
+          "rawHeightU16": 65535
+        },
+        "milyutinCutawayPlane": {
+          "enabledByDefault": true,
+          "planeOriginCm": {
+            "X": 0.0,
+            "Y": -6048.0,
+            "Z": 42998.7
+          },
+          "planeNormal": [
+            0.7071,
+            0.7071,
+            0.0
+          ],
+          "hlslShaderPath": "Shaders/MF_MilyutinCutawaySection.hlsl"
+        },
+        "safarovBastionSectors": [
+          {
+            "sectorId": "Bastion_North_Gabion",
+            "transform": {
+              "gridUV": [
+                0.46,
+                0.42
+              ],
+              "locationCm": {
+                "X": -12096.0,
+                "Y": -24192.0,
+                "Z": 43078.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -45.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 65535
+            },
+            "gabionIntegrityPct": 100.0
+          },
+          {
+            "sectorId": "Bastion_East_LogBlindage",
+            "transform": {
+              "gridUV": [
+                0.55,
+                0.47
+              ],
+              "locationCm": {
+                "X": 15120.0,
+                "Y": -9072.0,
+                "Z": 43058.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 15.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 65535
+            },
+            "gabionIntegrityPct": 100.0
+          },
+          {
+            "sectorId": "Bastion_South_SurkhayTower",
+            "transform": {
+              "gridUV": [
+                0.49,
+                0.56
+              ],
+              "locationCm": {
+                "X": -3024.0,
+                "Y": 18144.0,
+                "Z": 43138.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 110.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 65535
+            },
+            "gabionIntegrityPct": 100.0
+          }
+        ],
+        "safarovCopperBasinSonarNodes": [
+          {
+            "nodeId": "Sonar_Gallery_Alpha",
+            "transform": {
+              "gridUV": [
+                0.48,
+                0.44
+              ],
+              "locationCm": {
+                "X": -6048.0,
+                "Y": -18144.0,
+                "Z": 42678.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 65535
+            },
+            "optimalCamoufletRadiusMeters": 18.5
+          },
+          {
+            "nodeId": "Sonar_Gallery_Beta",
+            "transform": {
+              "gridUV": [
+                0.53,
+                0.51
+              ],
+              "locationCm": {
+                "X": 9072.0,
+                "Y": 3024.0,
+                "Z": 42708.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 65535
+            },
+            "optimalCamoufletRadiusMeters": 16.0
+          }
+        ],
+        "imperialSiegeBatteries": [
+          {
+            "batteryId": "Battery_12Pdr_Grabbe_Left",
+            "transform": {
+              "gridUV": [
+                0.28,
+                0.3
+              ],
+              "locationCm": {
+                "X": -66528.0,
+                "Y": -60480.0,
+                "Z": 27237.6
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 42.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 53490
+            },
+            "gunsCount": 4
+          },
+          {
+            "batteryId": "Battery_Mortar_Argutinsky_Center",
+            "transform": {
+              "gridUV": [
+                0.31,
+                0.52
+              ],
+              "locationCm": {
+                "X": -57456.0,
+                "Y": 6048.0,
+                "Z": 38975.5
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 8.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 62431
+            },
+            "gunsCount": 6
+          },
+          {
+            "batteryId": "Battery_MountainUnicorn_Right",
+            "transform": {
+              "gridUV": [
+                0.35,
+                0.72
+              ],
+              "locationCm": {
+                "X": -45360.0,
+                "Y": 66528.0,
+                "Z": 27495.0
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -36.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 53690
+            },
+            "gunsCount": 4
+          }
+        ]
+      },
+      "forestSplineAmbushController": {
+        "actorClass": "/Script/ImamatWargame.ForestSplineAmbushController",
+        "actorLabel": "BP_ForestSplineAmbush_tactical_salti_siege",
+        "splineControlPointsCount": 12,
+        "splineControlPoints": [
+          {
+            "gridUV": [
+              0.14,
+              0.5
+            ],
+            "locationCm": {
+              "X": -108864.0,
+              "Y": 0.0,
+              "Z": 18789.0
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 54.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 47067,
+            "splinePointIndex": 0,
+            "normalizedDistance": 0.0
+          },
+          {
+            "gridUV": [
+              0.2055,
+              0.5865
+            ],
+            "locationCm": {
+              "X": -89070.5,
+              "Y": 26158.4,
+              "Z": 23213.9
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 49.6,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 50439,
+            "splinePointIndex": 1,
+            "normalizedDistance": 0.091
+          },
+          {
+            "gridUV": [
+              0.2709,
+              0.6455
+            ],
+            "locationCm": {
+              "X": -69277.1,
+              "Y": 44011.6,
+              "Z": 27444.6
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 30.1,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 53663,
+            "splinePointIndex": 2,
+            "normalizedDistance": 0.182
+          },
+          {
+            "gridUV": [
+              0.3364,
+              0.6584
+            ],
+            "locationCm": {
+              "X": -49483.6,
+              "Y": 47891.5,
+              "Z": 32008.6
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -11.2,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 57141,
+            "splinePointIndex": 3,
+            "normalizedDistance": 0.273
+          },
+          {
+            "gridUV": [
+              0.4018,
+              0.6209
+            ],
+            "locationCm": {
+              "X": -29690.2,
+              "Y": 36566.2,
+              "Z": 41022.5
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -42.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 64010,
+            "splinePointIndex": 4,
+            "normalizedDistance": 0.364
+          },
+          {
+            "gridUV": [
+              0.4673,
+              0.5451
+            ],
+            "locationCm": {
+              "X": -9896.7,
+              "Y": 13631.3,
+              "Z": 43023.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -53.3,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 65535,
+            "splinePointIndex": 5,
+            "normalizedDistance": 0.455
+          },
+          {
+            "gridUV": [
+              0.5327,
+              0.4549
+            ],
+            "locationCm": {
+              "X": 9896.7,
+              "Y": -13631.3,
+              "Z": 43023.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -53.3,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 65535,
+            "splinePointIndex": 6,
+            "normalizedDistance": 0.545
+          },
+          {
+            "gridUV": [
+              0.5982,
+              0.3791
+            ],
+            "locationCm": {
+              "X": 29690.2,
+              "Y": -36566.2,
+              "Z": 25173.1
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -42.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 51932,
+            "splinePointIndex": 7,
+            "normalizedDistance": 0.636
+          },
+          {
+            "gridUV": [
+              0.6636,
+              0.3416
+            ],
+            "locationCm": {
+              "X": 49483.6,
+              "Y": -47891.5,
+              "Z": 29783.0
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -11.2,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 55445,
+            "splinePointIndex": 8,
+            "normalizedDistance": 0.727
+          },
+          {
+            "gridUV": [
+              0.7291,
+              0.3545
+            ],
+            "locationCm": {
+              "X": 69277.1,
+              "Y": -44011.6,
+              "Z": 41370.3
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 30.1,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 64275,
+            "splinePointIndex": 9,
+            "normalizedDistance": 0.818
+          },
+          {
+            "gridUV": [
+              0.7945,
+              0.4135
+            ],
+            "locationCm": {
+              "X": 89070.5,
+              "Y": -26158.4,
+              "Z": 30175.4
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 49.6,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 55744,
+            "splinePointIndex": 10,
+            "normalizedDistance": 0.909
+          },
+          {
+            "gridUV": [
+              0.86,
+              0.5
+            ],
+            "locationCm": {
+              "X": 108864.0,
+              "Y": -0.0,
+              "Z": 18764.0
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 54.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 47048,
+            "splinePointIndex": 11,
+            "normalizedDistance": 1.0
+          }
+        ],
+        "abatisFelledBeechBarricades": [
+          {
+            "abatisId": "Abatis_Chokepoint_1",
+            "splineNormalizedRange": [
+              0.24,
+              0.31
+            ],
+            "transform": {
+              "gridUV": [
+                0.3364,
+                0.6584
+              ],
+              "locationCm": {
+                "X": -49483.6,
+                "Y": 47891.5,
+                "Z": 32008.6
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -11.2,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 57141,
+              "splinePointIndex": 3,
+              "normalizedDistance": 0.273
+            }
+          },
+          {
+            "abatisId": "Abatis_Chokepoint_2",
+            "splineNormalizedRange": [
+              0.52,
+              0.6
+            ],
+            "transform": {
+              "gridUV": [
+                0.5327,
+                0.4549
+              ],
+              "locationCm": {
+                "X": 9896.7,
+                "Y": -13631.3,
+                "Z": 43023.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -53.3,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 65535,
+              "splinePointIndex": 6,
+              "normalizedDistance": 0.545
+            }
+          },
+          {
+            "abatisId": "Abatis_Chokepoint_3",
+            "splineNormalizedRange": [
+              0.76,
+              0.84
+            ],
+            "transform": {
+              "gridUV": [
+                0.7291,
+                0.3545
+              ],
+              "locationCm": {
+                "X": 69277.1,
+                "Y": -44011.6,
+                "Z": 41370.3
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 30.1,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 64275,
+              "splinePointIndex": 9,
+              "normalizedDistance": 0.818
+            }
+          }
+        ],
+        "murtazekFlankAmbushZones": [
+          {
+            "zoneId": "Ambush_HighSlope_North",
+            "transform": {
+              "gridUV": [
+                0.38,
+                0.34
+              ],
+              "locationCm": {
+                "X": -36288.0,
+                "Y": -48384.0,
+                "Z": 39135.2
+              },
+              "rotationDeg": {
+                "Pitch": -18.0,
+                "Yaw": 82.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 62507
+            },
+            "gazyrVolleySlots": 18
+          },
+          {
+            "zoneId": "Ambush_GorgeLedge_Center",
+            "transform": {
+              "gridUV": [
+                0.56,
+                0.64
+              ],
+              "locationCm": {
+                "X": 18144.0,
+                "Y": 42336.0,
+                "Z": 35889.4
+              },
+              "rotationDeg": {
+                "Pitch": -15.0,
+                "Yaw": -78.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 60045
+            },
+            "gazyrVolleySlots": 18
+          },
+          {
+            "zoneId": "Ambush_RearGuard_East",
+            "transform": {
+              "gridUV": [
+                0.74,
+                0.41
+              ],
+              "locationCm": {
+                "X": 72576.0,
+                "Y": -27216.0,
+                "Z": 38365.2
+              },
+              "rotationDeg": {
+                "Pitch": -21.0,
+                "Yaw": 105.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 61905
+            },
+            "gazyrVolleySlots": 18
+          }
+        ]
+      }
+    },
+    {
+      "arenaID": "tactical_gergebil_bastion",
+      "assetName": "T_Heightmap_Gergebil_1848",
+      "title": "Штурм Гергебиля: Бастионы над слиянием двух Койсу (1848)",
+      "divanKhanaCommandPawn": {
+        "actorClass": "/Script/ImamatWargame.DivanKhanaTablePawn",
+        "actorLabel": "BP_DivanKhanaTable_tactical_gergebil_bastion",
+        "transform": {
+          "gridUV": [
+            0.52,
+            0.22
+          ],
+          "locationCm": {
+            "X": 7056.0,
+            "Y": -98784.0,
+            "Z": -39738.2
+          },
+          "rotationDeg": {
+            "Pitch": -14.0,
+            "Yaw": 90.0,
+            "Roll": 0.0
+          },
+          "rawHeightU16": 8542
+        },
+        "components": {
+          "CandlePointLightIntensityLumens": 420.0,
+          "MapParchmentMesh": "SM_DivanMapTable_Oak_1845",
+          "SilverSignetStampSocket": "Socket_ShamilRing_Octagonal"
+        }
+      },
+      "tacticalSiegeManager": {
+        "actorClass": "/Script/ImamatWargame.TacticalSiegeManager",
+        "actorLabel": "BP_TacticalSiegeManager_tactical_gergebil_bastion",
+        "citadelCenterTransform": {
+          "gridUV": [
+            0.5,
+            0.48
+          ],
+          "locationCm": {
+            "X": 0.0,
+            "Y": -7056.0,
+            "Z": -27316.7
+          },
+          "rotationDeg": {
+            "Pitch": 0.0,
+            "Yaw": 60.0,
+            "Roll": 0.0
+          },
+          "rawHeightU16": 16119
+        },
+        "milyutinCutawayPlane": {
+          "enabledByDefault": true,
+          "planeOriginCm": {
+            "X": 0.0,
+            "Y": -7056.0,
+            "Z": -27436.7
+          },
+          "planeNormal": [
+            0.5,
+            0.866,
+            0.0
+          ],
+          "hlslShaderPath": "Shaders/MF_MilyutinCutawaySection.hlsl"
+        },
+        "safarovBastionSectors": [
+          {
+            "sectorId": "Bastion_North_Gabion",
+            "transform": {
+              "gridUV": [
+                0.46,
+                0.42
+              ],
+              "locationCm": {
+                "X": -14112.0,
+                "Y": -28224.0,
+                "Z": -31021.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -45.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 13895
+            },
+            "gabionIntegrityPct": 100.0
+          },
+          {
+            "sectorId": "Bastion_East_LogBlindage",
+            "transform": {
+              "gridUV": [
+                0.55,
+                0.47
+              ],
+              "locationCm": {
+                "X": 17640.0,
+                "Y": -10584.0,
+                "Z": -21813.2
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 15.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 19495
+            },
+            "gabionIntegrityPct": 100.0
+          },
+          {
+            "sectorId": "Bastion_South_SurkhayTower",
+            "transform": {
+              "gridUV": [
+                0.49,
+                0.56
+              ],
+              "locationCm": {
+                "X": -3528.0,
+                "Y": 21168.0,
+                "Z": -12188.3
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 110.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 25287
+            },
+            "gabionIntegrityPct": 100.0
+          }
+        ],
+        "safarovCopperBasinSonarNodes": [
+          {
+            "nodeId": "Sonar_Gallery_Alpha",
+            "transform": {
+              "gridUV": [
+                0.48,
+                0.44
+              ],
+              "locationCm": {
+                "X": -7056.0,
+                "Y": -21168.0,
+                "Z": -32672.5
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 13136
+            },
+            "optimalCamoufletRadiusMeters": 18.5
+          },
+          {
+            "nodeId": "Sonar_Gallery_Beta",
+            "transform": {
+              "gridUV": [
+                0.53,
+                0.51
+              ],
+              "locationCm": {
+                "X": 10584.0,
+                "Y": 3528.0,
+                "Z": -20960.2
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 20225
+            },
+            "optimalCamoufletRadiusMeters": 16.0
+          }
+        ],
+        "imperialSiegeBatteries": [
+          {
+            "batteryId": "Battery_12Pdr_Grabbe_Left",
+            "transform": {
+              "gridUV": [
+                0.28,
+                0.3
+              ],
+              "locationCm": {
+                "X": -77616.0,
+                "Y": -70560.0,
+                "Z": -29316.5
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 42.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 14951
+            },
+            "gunsCount": 4
+          },
+          {
+            "batteryId": "Battery_Mortar_Argutinsky_Center",
+            "transform": {
+              "gridUV": [
+                0.31,
+                0.52
+              ],
+              "locationCm": {
+                "X": -67032.0,
+                "Y": 7056.0,
+                "Z": 8181.0
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 8.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 37702
+            },
+            "gunsCount": 6
+          },
+          {
+            "batteryId": "Battery_MountainUnicorn_Right",
+            "transform": {
+              "gridUV": [
+                0.35,
+                0.72
+              ],
+              "locationCm": {
+                "X": -52920.0,
+                "Y": 77616.0,
+                "Z": -23248.8
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -36.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 18636
+            },
+            "gunsCount": 4
+          }
+        ]
+      },
+      "forestSplineAmbushController": {
+        "actorClass": "/Script/ImamatWargame.ForestSplineAmbushController",
+        "actorLabel": "BP_ForestSplineAmbush_tactical_gergebil_bastion",
+        "splineControlPointsCount": 12,
+        "splineControlPoints": [
+          {
+            "gridUV": [
+              0.14,
+              0.5
+            ],
+            "locationCm": {
+              "X": -127008.0,
+              "Y": 0.0,
+              "Z": -4315.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 54.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 30134,
+            "splinePointIndex": 0,
+            "normalizedDistance": 0.0
+          },
+          {
+            "gridUV": [
+              0.2055,
+              0.5865
+            ],
+            "locationCm": {
+              "X": -103915.6,
+              "Y": 30518.1,
+              "Z": -5881.2
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 49.6,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 29184,
+            "splinePointIndex": 1,
+            "normalizedDistance": 0.091
+          },
+          {
+            "gridUV": [
+              0.2709,
+              0.6455
+            ],
+            "locationCm": {
+              "X": -80823.3,
+              "Y": 51346.9,
+              "Z": -10421.4
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 30.1,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 26429,
+            "splinePointIndex": 2,
+            "normalizedDistance": 0.182
+          },
+          {
+            "gridUV": [
+              0.3364,
+              0.6584
+            ],
+            "locationCm": {
+              "X": -57730.9,
+              "Y": 55873.4,
+              "Z": -17491.1
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -11.2,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 22139,
+            "splinePointIndex": 3,
+            "normalizedDistance": 0.273
+          },
+          {
+            "gridUV": [
+              0.4018,
+              0.6209
+            ],
+            "locationCm": {
+              "X": -34638.5,
+              "Y": 42660.6,
+              "Z": -14226.5
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -42.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 24120,
+            "splinePointIndex": 4,
+            "normalizedDistance": 0.364
+          },
+          {
+            "gridUV": [
+              0.4673,
+              0.5451
+            ],
+            "locationCm": {
+              "X": -11546.2,
+              "Y": 15903.2,
+              "Z": -15444.3
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -53.3,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 23381,
+            "splinePointIndex": 5,
+            "normalizedDistance": 0.455
+          },
+          {
+            "gridUV": [
+              0.5327,
+              0.4549
+            ],
+            "locationCm": {
+              "X": 11546.2,
+              "Y": -15903.2,
+              "Z": -28182.9
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -53.3,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 15651,
+            "splinePointIndex": 6,
+            "normalizedDistance": 0.545
+          },
+          {
+            "gridUV": [
+              0.5982,
+              0.3791
+            ],
+            "locationCm": {
+              "X": 34638.5,
+              "Y": -42660.6,
+              "Z": -15625.6
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -42.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 23271,
+            "splinePointIndex": 7,
+            "normalizedDistance": 0.636
+          },
+          {
+            "gridUV": [
+              0.6636,
+              0.3416
+            ],
+            "locationCm": {
+              "X": 57730.9,
+              "Y": -55873.4,
+              "Z": -528.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -11.2,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 32432,
+            "splinePointIndex": 8,
+            "normalizedDistance": 0.727
+          },
+          {
+            "gridUV": [
+              0.7291,
+              0.3545
+            ],
+            "locationCm": {
+              "X": 80823.3,
+              "Y": -51346.9,
+              "Z": -3102.8
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 30.1,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 30870,
+            "splinePointIndex": 9,
+            "normalizedDistance": 0.818
+          },
+          {
+            "gridUV": [
+              0.7945,
+              0.4135
+            ],
+            "locationCm": {
+              "X": 103915.6,
+              "Y": -30518.1,
+              "Z": -4772.2
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 49.6,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 29857,
+            "splinePointIndex": 10,
+            "normalizedDistance": 0.909
+          },
+          {
+            "gridUV": [
+              0.86,
+              0.5
+            ],
+            "locationCm": {
+              "X": 127008.0,
+              "Y": -0.0,
+              "Z": -16492.4
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 54.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 22745,
+            "splinePointIndex": 11,
+            "normalizedDistance": 1.0
+          }
+        ],
+        "abatisFelledBeechBarricades": [
+          {
+            "abatisId": "Abatis_Chokepoint_1",
+            "splineNormalizedRange": [
+              0.24,
+              0.31
+            ],
+            "transform": {
+              "gridUV": [
+                0.3364,
+                0.6584
+              ],
+              "locationCm": {
+                "X": -57730.9,
+                "Y": 55873.4,
+                "Z": -17491.1
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -11.2,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 22139,
+              "splinePointIndex": 3,
+              "normalizedDistance": 0.273
+            }
+          },
+          {
+            "abatisId": "Abatis_Chokepoint_2",
+            "splineNormalizedRange": [
+              0.52,
+              0.6
+            ],
+            "transform": {
+              "gridUV": [
+                0.5327,
+                0.4549
+              ],
+              "locationCm": {
+                "X": 11546.2,
+                "Y": -15903.2,
+                "Z": -28182.9
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -53.3,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 15651,
+              "splinePointIndex": 6,
+              "normalizedDistance": 0.545
+            }
+          },
+          {
+            "abatisId": "Abatis_Chokepoint_3",
+            "splineNormalizedRange": [
+              0.76,
+              0.84
+            ],
+            "transform": {
+              "gridUV": [
+                0.7291,
+                0.3545
+              ],
+              "locationCm": {
+                "X": 80823.3,
+                "Y": -51346.9,
+                "Z": -3102.8
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 30.1,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 30870,
+              "splinePointIndex": 9,
+              "normalizedDistance": 0.818
+            }
+          }
+        ],
+        "murtazekFlankAmbushZones": [
+          {
+            "zoneId": "Ambush_HighSlope_North",
+            "transform": {
+              "gridUV": [
+                0.38,
+                0.34
+              ],
+              "locationCm": {
+                "X": -42336.0,
+                "Y": -56448.0,
+                "Z": -27753.5
+              },
+              "rotationDeg": {
+                "Pitch": -18.0,
+                "Yaw": 82.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 15860
+            },
+            "gazyrVolleySlots": 18
+          },
+          {
+            "zoneId": "Ambush_GorgeLedge_Center",
+            "transform": {
+              "gridUV": [
+                0.56,
+                0.64
+              ],
+              "locationCm": {
+                "X": 21168.0,
+                "Y": 49392.0,
+                "Z": -11221.5
+              },
+              "rotationDeg": {
+                "Pitch": -15.0,
+                "Yaw": -78.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 25901
+            },
+            "gazyrVolleySlots": 18
+          },
+          {
+            "zoneId": "Ambush_RearGuard_East",
+            "transform": {
+              "gridUV": [
+                0.74,
+                0.41
+              ],
+              "locationCm": {
+                "X": 84672.0,
+                "Y": -31752.0,
+                "Z": -9332.5
+              },
+              "rotationDeg": {
+                "Pitch": -21.0,
+                "Yaw": 105.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 27026
+            },
+            "gazyrVolleySlots": 18
+          }
+        ]
+      }
+    },
+    {
+      "arenaID": "tactical_ahulgo_citadel",
+      "assetName": "T_Heightmap_Ahulgo_1839",
+      "title": "Осада Ахульго и Сурхаевой башни в излучине Андийского Койсу (1839)",
+      "divanKhanaCommandPawn": {
+        "actorClass": "/Script/ImamatWargame.DivanKhanaTablePawn",
+        "actorLabel": "BP_DivanKhanaTable_tactical_ahulgo_citadel",
+        "transform": {
+          "gridUV": [
+            0.52,
+            0.22
+          ],
+          "locationCm": {
+            "X": 6048.0,
+            "Y": -84672.0,
+            "Z": -35724.4
+          },
+          "rotationDeg": {
+            "Pitch": -14.0,
+            "Yaw": 90.0,
+            "Roll": 0.0
+          },
+          "rawHeightU16": 7188
+        },
+        "components": {
+          "CandlePointLightIntensityLumens": 420.0,
+          "MapParchmentMesh": "SM_DivanMapTable_Oak_1845",
+          "SilverSignetStampSocket": "Socket_ShamilRing_Octagonal"
+        }
+      },
+      "tacticalSiegeManager": {
+        "actorClass": "/Script/ImamatWargame.TacticalSiegeManager",
+        "actorLabel": "BP_TacticalSiegeManager_tactical_ahulgo_citadel",
+        "citadelCenterTransform": {
+          "gridUV": [
+            0.5,
+            0.48
+          ],
+          "locationCm": {
+            "X": 0.0,
+            "Y": -6048.0,
+            "Z": -770.0
+          },
+          "rotationDeg": {
+            "Pitch": 0.0,
+            "Yaw": 120.0,
+            "Roll": 0.0
+          },
+          "rawHeightU16": 32134
+        },
+        "milyutinCutawayPlane": {
+          "enabledByDefault": true,
+          "planeOriginCm": {
+            "X": 0.0,
+            "Y": -6048.0,
+            "Z": -890.0
+          },
+          "planeNormal": [
+            -0.5,
+            0.866,
+            0.0
+          ],
+          "hlslShaderPath": "Shaders/MF_MilyutinCutawaySection.hlsl"
+        },
+        "safarovBastionSectors": [
+          {
+            "sectorId": "Bastion_North_Gabion",
+            "transform": {
+              "gridUV": [
+                0.46,
+                0.42
+              ],
+              "locationCm": {
+                "X": -12096.0,
+                "Y": -24192.0,
+                "Z": 25358.4
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -45.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 50775
+            },
+            "gabionIntegrityPct": 100.0
+          },
+          {
+            "sectorId": "Bastion_East_LogBlindage",
+            "transform": {
+              "gridUV": [
+                0.55,
+                0.47
+              ],
+              "locationCm": {
+                "X": 15120.0,
+                "Y": -9072.0,
+                "Z": 33474.9
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 15.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 56571
+            },
+            "gabionIntegrityPct": 100.0
+          },
+          {
+            "sectorId": "Bastion_South_SurkhayTower",
+            "transform": {
+              "gridUV": [
+                0.49,
+                0.56
+              ],
+              "locationCm": {
+                "X": -3024.0,
+                "Y": 18144.0,
+                "Z": 2320.1
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 110.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 34321
+            },
+            "gabionIntegrityPct": 100.0
+          }
+        ],
+        "safarovCopperBasinSonarNodes": [
+          {
+            "nodeId": "Sonar_Gallery_Alpha",
+            "transform": {
+              "gridUV": [
+                0.48,
+                0.44
+              ],
+              "locationCm": {
+                "X": -6048.0,
+                "Y": -18144.0,
+                "Z": 8255.9
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 38877
+            },
+            "optimalCamoufletRadiusMeters": 18.5
+          },
+          {
+            "nodeId": "Sonar_Gallery_Beta",
+            "transform": {
+              "gridUV": [
+                0.53,
+                0.51
+              ],
+              "locationCm": {
+                "X": 9072.0,
+                "Y": 3024.0,
+                "Z": 21127.9
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 0.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 48025
+            },
+            "optimalCamoufletRadiusMeters": 16.0
+          }
+        ],
+        "imperialSiegeBatteries": [
+          {
+            "batteryId": "Battery_12Pdr_Grabbe_Left",
+            "transform": {
+              "gridUV": [
+                0.28,
+                0.3
+              ],
+              "locationCm": {
+                "X": -66528.0,
+                "Y": -60480.0,
+                "Z": -36323.5
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 42.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 6861
+            },
+            "gunsCount": 4
+          },
+          {
+            "batteryId": "Battery_Mortar_Argutinsky_Center",
+            "transform": {
+              "gridUV": [
+                0.31,
+                0.52
+              ],
+              "locationCm": {
+                "X": -57456.0,
+                "Y": 6048.0,
+                "Z": 37238.3
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 8.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 59259
+            },
+            "gunsCount": 6
+          },
+          {
+            "batteryId": "Battery_MountainUnicorn_Right",
+            "transform": {
+              "gridUV": [
+                0.35,
+                0.72
+              ],
+              "locationCm": {
+                "X": -45360.0,
+                "Y": 66528.0,
+                "Z": 27238.8
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -36.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 52143
+            },
+            "gunsCount": 4
+          }
+        ]
+      },
+      "forestSplineAmbushController": {
+        "actorClass": "/Script/ImamatWargame.ForestSplineAmbushController",
+        "actorLabel": "BP_ForestSplineAmbush_tactical_ahulgo_citadel",
+        "splineControlPointsCount": 12,
+        "splineControlPoints": [
+          {
+            "gridUV": [
+              0.14,
+              0.5
+            ],
+            "locationCm": {
+              "X": -108864.0,
+              "Y": 0.0,
+              "Z": -45975.0
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 54.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 0,
+            "splinePointIndex": 0,
+            "normalizedDistance": 0.0
+          },
+          {
+            "gridUV": [
+              0.2055,
+              0.5865
+            ],
+            "locationCm": {
+              "X": -89070.5,
+              "Y": 26158.4,
+              "Z": -9046.4
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 49.6,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 26306,
+            "splinePointIndex": 1,
+            "normalizedDistance": 0.091
+          },
+          {
+            "gridUV": [
+              0.2709,
+              0.6455
+            ],
+            "locationCm": {
+              "X": -69277.1,
+              "Y": 44011.6,
+              "Z": 34124.9
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 30.1,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 57059,
+            "splinePointIndex": 2,
+            "normalizedDistance": 0.182
+          },
+          {
+            "gridUV": [
+              0.3364,
+              0.6584
+            ],
+            "locationCm": {
+              "X": -49483.6,
+              "Y": 47891.5,
+              "Z": 33142.2
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -11.2,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 56359,
+            "splinePointIndex": 3,
+            "normalizedDistance": 0.273
+          },
+          {
+            "gridUV": [
+              0.4018,
+              0.6209
+            ],
+            "locationCm": {
+              "X": -29690.2,
+              "Y": 36566.2,
+              "Z": 31331.3
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -42.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 55069,
+            "splinePointIndex": 4,
+            "normalizedDistance": 0.364
+          },
+          {
+            "gridUV": [
+              0.4673,
+              0.5451
+            ],
+            "locationCm": {
+              "X": -9896.7,
+              "Y": 13631.3,
+              "Z": 23996.4
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -53.3,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 49844,
+            "splinePointIndex": 5,
+            "normalizedDistance": 0.455
+          },
+          {
+            "gridUV": [
+              0.5327,
+              0.4549
+            ],
+            "locationCm": {
+              "X": 9896.7,
+              "Y": -13631.3,
+              "Z": 21824.7
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -53.3,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 48297,
+            "splinePointIndex": 6,
+            "normalizedDistance": 0.545
+          },
+          {
+            "gridUV": [
+              0.5982,
+              0.3791
+            ],
+            "locationCm": {
+              "X": 29690.2,
+              "Y": -36566.2,
+              "Z": 29530.2
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -42.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 53786,
+            "splinePointIndex": 7,
+            "normalizedDistance": 0.636
+          },
+          {
+            "gridUV": [
+              0.6636,
+              0.3416
+            ],
+            "locationCm": {
+              "X": 49483.6,
+              "Y": -47891.5,
+              "Z": -22695.6
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": -11.2,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 16583,
+            "splinePointIndex": 8,
+            "normalizedDistance": 0.727
+          },
+          {
+            "gridUV": [
+              0.7291,
+              0.3545
+            ],
+            "locationCm": {
+              "X": 69277.1,
+              "Y": -44011.6,
+              "Z": -21360.6
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 30.1,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 17534,
+            "splinePointIndex": 9,
+            "normalizedDistance": 0.818
+          },
+          {
+            "gridUV": [
+              0.7945,
+              0.4135
+            ],
+            "locationCm": {
+              "X": 89070.5,
+              "Y": -26158.4,
+              "Z": -1367.6
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 49.6,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 31776,
+            "splinePointIndex": 10,
+            "normalizedDistance": 0.909
+          },
+          {
+            "gridUV": [
+              0.86,
+              0.5
+            ],
+            "locationCm": {
+              "X": 108864.0,
+              "Y": -0.0,
+              "Z": 7292.5
+            },
+            "rotationDeg": {
+              "Pitch": 0.0,
+              "Yaw": 54.4,
+              "Roll": 0.0
+            },
+            "rawHeightU16": 37945,
+            "splinePointIndex": 11,
+            "normalizedDistance": 1.0
+          }
+        ],
+        "abatisFelledBeechBarricades": [
+          {
+            "abatisId": "Abatis_Chokepoint_1",
+            "splineNormalizedRange": [
+              0.24,
+              0.31
+            ],
+            "transform": {
+              "gridUV": [
+                0.3364,
+                0.6584
+              ],
+              "locationCm": {
+                "X": -49483.6,
+                "Y": 47891.5,
+                "Z": 33142.2
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -11.2,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 56359,
+              "splinePointIndex": 3,
+              "normalizedDistance": 0.273
+            }
+          },
+          {
+            "abatisId": "Abatis_Chokepoint_2",
+            "splineNormalizedRange": [
+              0.52,
+              0.6
+            ],
+            "transform": {
+              "gridUV": [
+                0.5327,
+                0.4549
+              ],
+              "locationCm": {
+                "X": 9896.7,
+                "Y": -13631.3,
+                "Z": 21824.7
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": -53.3,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 48297,
+              "splinePointIndex": 6,
+              "normalizedDistance": 0.545
+            }
+          },
+          {
+            "abatisId": "Abatis_Chokepoint_3",
+            "splineNormalizedRange": [
+              0.76,
+              0.84
+            ],
+            "transform": {
+              "gridUV": [
+                0.7291,
+                0.3545
+              ],
+              "locationCm": {
+                "X": 69277.1,
+                "Y": -44011.6,
+                "Z": -21360.6
+              },
+              "rotationDeg": {
+                "Pitch": 0.0,
+                "Yaw": 30.1,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 17534,
+              "splinePointIndex": 9,
+              "normalizedDistance": 0.818
+            }
+          }
+        ],
+        "murtazekFlankAmbushZones": [
+          {
+            "zoneId": "Ambush_HighSlope_North",
+            "transform": {
+              "gridUV": [
+                0.38,
+                0.34
+              ],
+              "locationCm": {
+                "X": -36288.0,
+                "Y": -48384.0,
+                "Z": 31823.4
+              },
+              "rotationDeg": {
+                "Pitch": -18.0,
+                "Yaw": 82.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 55359
+            },
+            "gazyrVolleySlots": 18
+          },
+          {
+            "zoneId": "Ambush_GorgeLedge_Center",
+            "transform": {
+              "gridUV": [
+                0.56,
+                0.64
+              ],
+              "locationCm": {
+                "X": 18144.0,
+                "Y": 42336.0,
+                "Z": 24295.3
+              },
+              "rotationDeg": {
+                "Pitch": -15.0,
+                "Yaw": -78.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 50007
+            },
+            "gazyrVolleySlots": 18
+          },
+          {
+            "zoneId": "Ambush_RearGuard_East",
+            "transform": {
+              "gridUV": [
+                0.74,
+                0.41
+              ],
+              "locationCm": {
+                "X": 72576.0,
+                "Y": -27216.0,
+                "Z": -28221.3
+              },
+              "rotationDeg": {
+                "Pitch": -21.0,
+                "Yaw": 105.0,
+                "Roll": 0.0
+              },
+              "rawHeightU16": 12572
+            },
+            "gazyrVolleySlots": 18
+          }
+        ]
+      }
+    }
+  ]
+}
