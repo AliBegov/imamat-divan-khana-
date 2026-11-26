@@ -133,6 +133,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('map');
   const [activeScenarioId, setActiveScenarioId] = useState('camp_1845');
   const [turn, setTurn] = useState(1);
+  const [turnFocusEvent, setTurnFocusEvent] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [statusBanner, setStatusBanner] = useState(null);
   const [showAdvisorPanel, setShowAdvisorPanel] = useState(false);
@@ -7771,6 +7772,28 @@ export default function App() {
     playHistoricalSound('horn', soundEnabled);
     const nextTurnNum = turn + 1;
     setTurn(nextTurnNum);
+    // Определяем главную точку театра нового хода, чтобы 3D-камера мягко показала фронт при смене хода
+    const hotSiege = naibates.find((n) => n.underSiege && n.coords);
+    const hotCol = (liveImperialColumns || []).find(
+      (c) => !c.fogHidden && c.status !== 'routed' && c.status !== 'destroyed' && Number.isFinite(c.x)
+    );
+    if (hotSiege) {
+      setTurnFocusEvent({
+        mx: hotSiege.coords.x,
+        my: hotSiege.coords.y,
+        labelRu: `Осада: ${hotSiege.name}`,
+        labelEn: `Siege: ${hotSiege.nameEn || hotSiege.name}`,
+        seq: nextTurnNum
+      });
+    } else if (hotCol) {
+      setTurnFocusEvent({
+        mx: hotCol.x,
+        my: hotCol.y,
+        labelRu: hotCol.nameRu,
+        labelEn: hotCol.nameEn,
+        seq: nextTurnNum
+      });
+    }
     setTurnActionQuota({
       sealsRemaining: 3,
       maxSeals: 3,
@@ -11805,22 +11828,22 @@ struct FImamatCampaignSnapshot
   const phase4Done = turnActionQuota.tacticalMovesUsed > 0;
 
   const nextPhaseLabelRu = !phase1Done
-    ? '⚡ К Фазе I'
+    ? '⚖️ Решить кризис'
     : !phase2Done
-      ? '⚡ К Фазе II'
+      ? '📜 Издать низам'
       : !phase3Done
-        ? '⚡ К Фазе III'
+        ? '🐎 Отправить гонца'
         : !phase4Done
-          ? '⚡ К Фазе IV'
-          : '⏭ К концу хода';
+          ? '⚔️ К полю боя'
+          : '⏭ Ход готов';
   const nextPhaseLabelEn = !phase1Done
-    ? '⚡ Phase I'
+    ? '⚖️ Resolve Crisis'
     : !phase2Done
-      ? '⚡ Phase II'
+      ? '📜 Enact Nizam'
       : !phase3Done
-        ? '⚡ Phase III'
+        ? '🐎 Dispatch Envoy'
         : !phase4Done
-          ? '⚡ Phase IV'
+          ? '⚔️ Battlefield'
           : '⏭ End Turn';
 
   const handleAdvanceSequentialPhase = () => {
@@ -11972,33 +11995,11 @@ struct FImamatCampaignSnapshot
               </span>
             </span>
 
-            <button
-              onClick={() => {
-                if (spectatorMode.active) {
-                  setSpectatorMode((prev) => ({ ...prev, active: false, autoPlay: false }));
-                } else {
-                  handleStartSpectatorCampaign();
-                }
-              }}
-              className={`px-2 py-1 rounded-lg text-[10.5px] font-serif font-bold flex items-center gap-1 border transition cursor-pointer ${
-                spectatorMode.active
-                  ? 'bg-emerald-500 text-stone-950 border-emerald-300 shadow-lg'
-                  : 'bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border-emerald-500/50'
-              }`}
-              title={t(
-                'Режим Наблюдателя: вы наблюдаете, а ИИ-Полководец делает ходы по 5 актам драмы',
-                'Spectator Mode: watch the AI Commander play through the 5 acts of the drama'
-              )}
-            >
-              <HighlandEagleIcon className="w-3.5 h-3.5 text-emerald-300" />
-              <span className="hidden sm:inline">{t('ИИ-Полководец', 'AI Commander')}</span>
-            </button>
-
-            {/* Единое меню «Архив и настройки» */}
+            {/* Единое меню «Кодекс, Архив и Настройки» (чистый HUD без служебного шума) */}
             <div className="relative">
               <button
                 onClick={() => setShowHeaderArchiveMenu((v) => !v)}
-                className={`px-2 py-1 rounded-lg text-[10.5px] font-serif font-bold transition cursor-pointer border flex items-center gap-1 ${
+                className={`px-2.5 py-1 rounded-lg text-[10.5px] font-serif font-bold transition cursor-pointer border flex items-center gap-1 ${
                   showHeaderArchiveMenu
                     ? 'bg-amber-500/25 text-amber-200 border-amber-400'
                     : 'bg-[#1a1612] text-stone-200 hover:bg-stone-800 border-stone-700'
@@ -12010,10 +12011,10 @@ struct FImamatCampaignSnapshot
               </button>
 
               {showHeaderArchiveMenu && (
-                <div className="absolute right-0 mt-1.5 w-[min(92vw,350px)] sm:w-[400px] bg-[#14110e]/98 backdrop-blur-xl border border-amber-500/50 rounded-xl p-3 shadow-2xl z-50 space-y-2.5 text-xs">
+                <div className="absolute right-0 mt-1.5 w-[min(92vw,360px)] sm:w-[410px] bg-[#14110e]/98 backdrop-blur-xl border border-amber-500/50 rounded-xl p-3 shadow-2xl z-50 space-y-2.5 text-xs">
                   <div className="flex items-center justify-between border-b border-stone-800 pb-1.5">
                     <span className="font-serif font-bold text-amber-300 uppercase text-[11px]">
-                      📚 {t('Канцелярия, Архив и Настройки', 'Chancellery, Archive & Settings')}
+                      📚 {t('Кодекс, Архив и Настройки', 'Codex, Archive & Settings')}
                     </span>
                     <button
                       onClick={() => setShowHeaderArchiveMenu(false)}
@@ -12023,92 +12024,127 @@ struct FImamatCampaignSnapshot
                     </button>
                   </div>
 
-                  {/* Сохранение, язык и звук */}
-                  <div className="grid grid-cols-3 gap-1.5 font-mono text-[11px]">
+                  {/* Сохранение, Советник и Наблюдатель ИИ */}
+                  <div className="space-y-1">
+                    <div className="text-[9.5px] font-serif uppercase tracking-wider text-stone-400 font-bold">
+                      {t('Кампания и управление', 'Campaign & Controls')}
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5 font-mono text-[11px]">
+                      <button
+                        onClick={handleSaveCampaignState}
+                        className="px-2 py-1.5 rounded bg-[#1c1814] hover:bg-stone-800 border border-stone-700 text-stone-200 font-bold cursor-pointer"
+                      >
+                        💾 {t('Сейв', 'Save')}
+                      </button>
+                      <button
+                        onClick={handleLoadCampaignState}
+                        className="px-2 py-1.5 rounded bg-[#1c1814] hover:bg-stone-800 border border-stone-700 text-stone-200 font-bold cursor-pointer"
+                      >
+                        📂 {t('Загрузка', 'Load')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAdvisorPanel((v) => !v);
+                          setShowHeaderArchiveMenu(false);
+                        }}
+                        className="px-2 py-1.5 rounded bg-[#1c1814] hover:bg-stone-800 border border-amber-500/40 text-amber-200 font-bold cursor-pointer"
+                      >
+                        🎓 {t('Советник', 'Advisor')}
+                      </button>
+                    </div>
                     <button
-                      onClick={handleSaveCampaignState}
-                      className="px-2 py-1.5 rounded bg-[#1c1814] hover:bg-stone-800 border border-stone-700 text-stone-200 font-bold cursor-pointer"
+                      onClick={() => {
+                        if (spectatorMode.active) {
+                          setSpectatorMode((prev) => ({ ...prev, active: false, autoPlay: false }));
+                        } else {
+                          handleStartSpectatorCampaign();
+                        }
+                        setShowHeaderArchiveMenu(false);
+                      }}
+                      className={`w-full px-2.5 py-1.5 rounded text-[11px] font-serif font-bold flex items-center justify-center gap-1.5 border transition cursor-pointer ${
+                        spectatorMode.active
+                          ? 'bg-emerald-500 text-stone-950 border-emerald-300 shadow'
+                          : 'bg-emerald-950/60 hover:bg-emerald-900/75 text-emerald-200 border-emerald-500/45'
+                      }`}
                     >
-                      💾 {t('Сейв', 'Save')}
-                    </button>
-                    <button
-                      onClick={handleLoadCampaignState}
-                      className="px-2 py-1.5 rounded bg-[#1c1814] hover:bg-stone-800 border border-stone-700 text-stone-200 font-bold cursor-pointer"
-                    >
-                      📂 {t('Загрузка', 'Load')}
-                    </button>
-                    <button
-                      onClick={() => setShowAdvisorPanel((v) => !v)}
-                      className="px-2 py-1.5 rounded bg-[#1c1814] hover:bg-stone-800 border border-amber-500/40 text-amber-200 font-bold cursor-pointer"
-                    >
-                      🎓 {t('Советник', 'Advisor')}
+                      <HighlandEagleIcon className="w-3.5 h-3.5 shrink-0" />
+                      <span>
+                        {spectatorMode.active
+                          ? t('Остановить режим ИИ-Полководца', 'Stop AI Commander Spectator Mode')
+                          : t('Режим Наблюдателя: ИИ-Полководец', 'Spectator Mode: Watch AI Commander')}
+                      </span>
                     </button>
                   </div>
 
-                  {/* Архив, Музей, Устав, Депеши, Хронограф */}
-                  <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px]">
-                    <button
-                      onClick={() => {
-                        setPlaytestTelemetry((tp) => ({
-                          ...tp,
-                          glossaryOpenedCount: tp.glossaryOpenedCount + 1
-                        }));
-                        setShowGlossaryModal(true);
-                        setShowHeaderArchiveMenu(false);
-                      }}
-                      className="px-2 py-1.5 rounded bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-200 font-bold cursor-pointer text-left"
-                    >
-                      📖 {t('Словарь', 'Glossary')} ({IMAMAT_GLOSSARY_TERMS.length})
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowFieldManualModal(true);
-                        setShowHeaderArchiveMenu(false);
-                      }}
-                      className="px-2 py-1.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/40 text-indigo-200 font-bold cursor-pointer text-left"
-                    >
-                      📘 {t('Устав', 'Manual')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowMuseumCodexModal(true);
-                        setShowHeaderArchiveMenu(false);
-                      }}
-                      className="px-2 py-1.5 rounded bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/40 text-teal-200 font-bold cursor-pointer text-left"
-                    >
-                      🏛️ {t('Музей', 'Museum')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDispatchesModal(true);
-                        setShowHeaderArchiveMenu(false);
-                      }}
-                      className="px-2 py-1.5 rounded bg-lime-500/15 hover:bg-lime-500/25 border border-lime-500/40 text-lime-200 font-bold cursor-pointer text-left"
-                    >
-                      📜 {t('Депеши', 'Dispatches')} ({DIPLOMATIC_DISPATCHES_ARCHIVE.length - executedDispatchesIds.length}/{DIPLOMATIC_DISPATCHES_ARCHIVE.length})
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowAchievementsModal(true);
-                        setShowHeaderArchiveMenu(false);
-                      }}
-                      className="px-2 py-1.5 rounded bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 font-bold cursor-pointer text-left"
-                    >
-                      🏆 {t('Достижения', 'Achievements')} ({unlockedAchievementsCount}/12)
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowReplayModal(true);
-                        setShowHeaderArchiveMenu(false);
-                      }}
-                      className="px-2 py-1.5 rounded bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-200 font-bold cursor-pointer text-left"
-                    >
-                      📈 {t('Хронограф', 'Replay')} ({campaignHistoryLog.length})
-                    </button>
+                  {/* Кодекс: Словарь, Устав, Музей, Депеши, Достижения, Хронограф */}
+                  <div className="space-y-1 pt-1 border-t border-stone-800">
+                    <div className="text-[9.5px] font-serif uppercase tracking-wider text-amber-300/80 font-bold">
+                      {t('Исторический Кодекс и Архив', 'Historical Codex & Archive')}
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px]">
+                      <button
+                        onClick={() => {
+                          setPlaytestTelemetry((tp) => ({
+                            ...tp,
+                            glossaryOpenedCount: tp.glossaryOpenedCount + 1
+                          }));
+                          setShowGlossaryModal(true);
+                          setShowHeaderArchiveMenu(false);
+                        }}
+                        className="px-2 py-1.5 rounded bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-200 font-bold cursor-pointer text-left"
+                      >
+                        📖 {t('Словарь', 'Glossary')} ({IMAMAT_GLOSSARY_TERMS.length})
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowFieldManualModal(true);
+                          setShowHeaderArchiveMenu(false);
+                        }}
+                        className="px-2 py-1.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/40 text-indigo-200 font-bold cursor-pointer text-left"
+                      >
+                        📘 {t('Устав', 'Manual')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowMuseumCodexModal(true);
+                          setShowHeaderArchiveMenu(false);
+                        }}
+                        className="px-2 py-1.5 rounded bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/40 text-teal-200 font-bold cursor-pointer text-left"
+                      >
+                        🏛️ {t('Музей', 'Museum')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDispatchesModal(true);
+                          setShowHeaderArchiveMenu(false);
+                        }}
+                        className="px-2 py-1.5 rounded bg-lime-500/15 hover:bg-lime-500/25 border border-lime-500/40 text-lime-200 font-bold cursor-pointer text-left"
+                      >
+                        📜 {t('Депеши', 'Dispatches')} ({DIPLOMATIC_DISPATCHES_ARCHIVE.length - executedDispatchesIds.length}/{DIPLOMATIC_DISPATCHES_ARCHIVE.length})
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAchievementsModal(true);
+                          setShowHeaderArchiveMenu(false);
+                        }}
+                        className="px-2 py-1.5 rounded bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 font-bold cursor-pointer text-left"
+                      >
+                        🏆 {t('Достижения', 'Achievements')} ({unlockedAchievementsCount}/12)
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowReplayModal(true);
+                          setShowHeaderArchiveMenu(false);
+                        }}
+                        className="px-2 py-1.5 rounded bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-200 font-bold cursor-pointer text-left"
+                      >
+                        📈 {t('Хронограф', 'Replay')} ({campaignHistoryLog.length})
+                      </button>
+                    </div>
                   </div>
 
                   {/* Звук, Язык и Режим Студии */}
-                  <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 border-t border-stone-800 font-mono text-[11px]">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-stone-800 font-mono text-[11px]">
                     <button
                       onClick={() => {
                         setShowAudioMixerModal(true);
@@ -12145,57 +12181,62 @@ struct FImamatCampaignSnapshot
                     </button>
                   </div>
 
-                  {/* Инструменты Студии (если включён режим Студии) */}
+                  {/* Инструменты Студии и Прессы (скрыты в обычной игре) */}
                   {studioMode && (
-                    <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-stone-800 font-mono text-[10.5px]">
-                      <button
-                        onClick={() => {
-                          setShowTelemetryModal(true);
-                          setShowHeaderArchiveMenu(false);
-                        }}
-                        className="px-2 py-1 rounded bg-purple-500/15 border border-purple-500/40 text-purple-200 font-bold cursor-pointer text-left"
-                      >
-                        📊 {t('Телеметрия', 'Telemetry')}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowModBuilderModal(true);
-                          setShowHeaderArchiveMenu(false);
-                        }}
-                        className="px-2 py-1 rounded bg-orange-500/15 border border-orange-500/40 text-orange-200 font-bold cursor-pointer text-left"
-                      >
-                        🛠️ {t('Моддинг', 'Mod Builder')}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowTrailerPrevizModal(true);
-                          setShowHeaderArchiveMenu(false);
-                        }}
-                        className="px-2 py-1 rounded bg-fuchsia-500/15 border border-fuchsia-500/40 text-fuchsia-200 font-bold cursor-pointer text-left"
-                      >
-                        🎬 {t('Трейлер', 'Trailer')}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowReleaseHubModal(true);
-                          setShowHeaderArchiveMenu(false);
-                        }}
-                        className="px-2 py-1 rounded bg-yellow-500/20 border border-yellow-400/60 text-yellow-200 font-bold cursor-pointer text-left"
-                      >
-                        🦅 {t('Релиз v2.0', 'Release v2.0')}
-                      </button>
-                      <button
-                        onClick={handleDownloadUE5SaveJson}
-                        className="px-2 py-1 rounded bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 font-bold cursor-pointer text-left"
-                      >
-                        ⬇️ UE5 JSON
-                      </button>
-                      <button
-                        onClick={handleTogglePitchTour}
-                        className="px-2 py-1 rounded bg-emerald-500/20 border border-emerald-500/50 text-emerald-200 font-bold cursor-pointer text-left"
-                      >
-                        {pitchTour.active ? `⏹ ${t('Стоп-тур', 'Stop Tour')}` : `▶ ${t('Авто-тур', 'Pitch Tour')}`}
-                      </button>
+                    <div className="space-y-1 pt-1.5 border-t border-stone-800">
+                      <div className="text-[9.5px] font-serif uppercase tracking-wider text-stone-400 font-bold">
+                        {t('Мастерская и инструменты прессы', 'Workshop & Press Tools')}
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5 font-mono text-[10.5px]">
+                        <button
+                          onClick={() => {
+                            setShowTelemetryModal(true);
+                            setShowHeaderArchiveMenu(false);
+                          }}
+                          className="px-2 py-1 rounded bg-purple-500/15 border border-purple-500/40 text-purple-200 font-bold cursor-pointer text-left"
+                        >
+                          📊 {t('Телеметрия', 'Telemetry')}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowModBuilderModal(true);
+                            setShowHeaderArchiveMenu(false);
+                          }}
+                          className="px-2 py-1 rounded bg-orange-500/15 border border-orange-500/40 text-orange-200 font-bold cursor-pointer text-left"
+                        >
+                          🛠️ {t('Моддинг', 'Mod Builder')}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowTrailerPrevizModal(true);
+                            setShowHeaderArchiveMenu(false);
+                          }}
+                          className="px-2 py-1 rounded bg-fuchsia-500/15 border border-fuchsia-500/40 text-fuchsia-200 font-bold cursor-pointer text-left"
+                        >
+                          🎬 {t('Трейлер', 'Trailer')}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowReleaseHubModal(true);
+                            setShowHeaderArchiveMenu(false);
+                          }}
+                          className="px-2 py-1 rounded bg-yellow-500/20 border border-yellow-400/60 text-yellow-200 font-bold cursor-pointer text-left"
+                        >
+                          🦅 {t('Релиз v2.0', 'Release v2.0')}
+                        </button>
+                        <button
+                          onClick={handleDownloadUE5SaveJson}
+                          className="px-2 py-1 rounded bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 font-bold cursor-pointer text-left"
+                        >
+                          ⬇️ UE5 JSON
+                        </button>
+                        <button
+                          onClick={handleTogglePitchTour}
+                          className="px-2 py-1 rounded bg-emerald-500/20 border border-emerald-500/50 text-emerald-200 font-bold cursor-pointer text-left"
+                        >
+                          {pitchTour.active ? `⏹ ${t('Стоп-тур', 'Stop Tour')}` : `▶ ${t('Авто-тур', 'Pitch Tour')}`}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -12815,7 +12856,7 @@ struct FImamatCampaignSnapshot
       {/* ОСНОВНОЙ КОНТЕЙНЕР ВКЛАДОК */}
       <main className="max-w-[1640px] mx-auto px-2.5 mt-1.5">
         {/* ---------------- ВКЛАДКА 1: СТРАТЕГИЧЕСКАЯ КАРТА КАВКАЗА И УПРАВЛЕНИЕ НАИБАМИ ---------------- */}
-        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, turn, turnActionQuota, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
+        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
 
         {/* ---------------- ВКЛАДКА 2: КОДЕКС НИЗАМОВ ИМАМА ШАМИЛЯ ---------------- */}
         {activeTab === 'nizams' && <NizamsTab {...{ courtCases, filteredNizams, handleEnactNizam, handleMediateNaibRivalry, handleResolveCourtCase, naibRivalries, selectedPillar, setSelectedPillar, t, turn, turnActionQuota }} />}
@@ -12998,6 +13039,27 @@ struct FImamatCampaignSnapshot
             setShowPauseMenu(false);
           }}
           onToggleSound={() => setSoundEnabled((v) => !v)}
+          onOpenGlossary={() => {
+            setShowPauseMenu(false);
+            setShowGlossaryModal(true);
+          }}
+          onOpenMuseum={() => {
+            setShowPauseMenu(false);
+            setShowMuseumCodexModal(true);
+          }}
+          onOpenAudioMixer={() => {
+            setShowPauseMenu(false);
+            setShowAudioMixerModal(true);
+          }}
+          spectatorActive={spectatorMode.active}
+          onToggleSpectator={() => {
+            setShowPauseMenu(false);
+            if (spectatorMode.active) {
+              setSpectatorMode((prev) => ({ ...prev, active: false, autoPlay: false }));
+            } else {
+              handleStartSpectatorCampaign();
+            }
+          }}
           onTitle={() => {
             setShowPauseMenu(false);
             setShowTitleScreen(true);

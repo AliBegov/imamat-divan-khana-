@@ -630,7 +630,7 @@ export function TurnTransitionOverlay({ turn, dateLabel, deltas, suppressed = fa
       return undefined;
     }
     setVisibleTurn(turn);
-    const id = setTimeout(() => setVisibleTurn(null), 1350);
+    const id = setTimeout(() => setVisibleTurn(null), 2200);
     return () => clearTimeout(id);
   }, [turn, suppressed]);
   if (visibleTurn === null || suppressed) return null;
@@ -642,56 +642,58 @@ export function TurnTransitionOverlay({ turn, dateLabel, deltas, suppressed = fa
     ['👑', t('Авторитет', 'Authority'), deltas.authority]
   ].filter(([, , v]) => typeof v === 'number');
   return (
-    <div className="fixed inset-0 z-[80] pointer-events-none flex items-center justify-center p-4" aria-live="polite">
-      <div className="hud-turn-splash relative overflow-hidden rounded-2xl max-w-xl w-full border-2 border-amber-400/75 shadow-2xl bg-[#0e0b08]">
-        <div className="relative h-36 sm:h-44 w-full overflow-hidden">
-          <img
-            src={resolveMediaAsset(scene.art)}
-            alt={scene.captionEn}
-            className="w-full h-full object-cover object-center"
+    <div
+      className="fixed top-[68px] left-1/2 -translate-x-1/2 z-[78] pointer-events-none px-3 w-full max-w-[540px]"
+      aria-live="polite"
+    >
+      <div className="hud-turn-splash relative overflow-hidden rounded-xl border border-amber-400/75 shadow-[0_14px_38px_rgba(0,0,0,0.85)] bg-[#0e0b08]/95 backdrop-blur-md">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-22"
+          style={{ backgroundImage: `url("${resolveMediaAsset(scene.art)}")` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0e0b08]/96 via-[#120e0a]/88 to-[#0e0b08]/96" />
+        <div className="relative z-10 px-3.5 py-2.5 flex items-center gap-3">
+          <PortraitMedallion
+            src={findPortrait(scene.portraitKey)}
+            name={scene.captionRu}
+            color="#f59e0b"
+            size={44}
+            selected
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0e0b08] via-[#0e0b08]/45 to-black/30" />
-          <div className="absolute top-2.5 left-3 right-3 flex items-center justify-between">
-            <span className="px-2.5 py-0.5 rounded bg-black/75 border border-amber-400/50 text-[10px] font-mono uppercase tracking-[0.25em] text-amber-300 font-bold">
-              {t('Ход кампании', 'Campaign Turn')} #{visibleTurn}
-            </span>
-            <span className="px-2.5 py-0.5 rounded bg-black/75 border border-amber-500/35 text-[10px] font-serif text-amber-200">
-              📜 {t(scene.captionRu, scene.captionEn)}
-            </span>
-          </div>
-        </div>
-        <div className="px-6 pb-4 -mt-6 relative z-10 text-center">
-          <div className="inline-flex items-center justify-center mb-1.5">
-            <PortraitMedallion
-              src={findPortrait(scene.portraitKey)}
-              name={scene.captionRu}
-              color="#f59e0b"
-              size={48}
-            />
-          </div>
-          <div className="text-xl sm:text-2xl font-serif font-bold text-amber-100 hud-title-glow">
-            {dateLabel}
-          </div>
-          {scene.quoteRu && (
-            <p className="mt-1 text-xs font-serif italic text-amber-200/90 max-w-md mx-auto leading-snug">
-              {t(scene.quoteRu, scene.quoteEn || scene.quoteRu)}
-            </p>
-          )}
-          <div className="hud-divider my-2" />
-          {items.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-[12px] font-mono">
-              {items.map(([icon, label, v]) => (
-                <span
-                  key={label}
-                  className={`px-2 py-0.5 rounded bg-black/50 border border-stone-800 ${
-                    v > 0 ? 'text-emerald-300' : v < 0 ? 'text-rose-300' : 'text-stone-400'
-                  }`}
-                >
-                  {icon} {label} {v > 0 ? `+${v}` : v}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center justify-between gap-1.5">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="px-1.5 py-0.5 rounded bg-amber-400 text-stone-950 text-[9.5px] font-mono uppercase tracking-wider font-extrabold shrink-0">
+                  {t('Ход', 'Turn')} #{visibleTurn}
                 </span>
-              ))}
+                <span className="text-sm sm:text-base font-serif font-bold text-amber-100 truncate">
+                  {dateLabel}
+                </span>
+              </div>
+              <span className="text-[9.5px] font-serif text-amber-300/90 hidden sm:inline truncate max-w-[200px]">
+                📜 {t(scene.captionRu, scene.captionEn)}
+              </span>
             </div>
-          )}
+            {scene.quoteRu && (
+              <p className="mt-0.5 text-[10.5px] font-serif italic text-stone-300 truncate">
+                {t(scene.quoteRu, scene.quoteEn || scene.quoteRu)}
+              </p>
+            )}
+            {items.length > 0 && (
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10.5px] font-mono">
+                {items.map(([icon, label, v]) => (
+                  <span
+                    key={label}
+                    className={`px-1.5 py-0.5 rounded bg-black/55 border border-stone-800/90 ${
+                      v > 0 ? 'text-emerald-300 font-bold' : v < 0 ? 'text-rose-300 font-bold' : 'text-stone-400'
+                    }`}
+                  >
+                    {icon} {v > 0 ? `+${v}` : v}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -931,14 +933,15 @@ export function TitleScreen({
   );
 }
 
-// ===== Меню паузы по Esc (Total War / Paradox) с картой горячих клавиш =====
+// ===== Меню паузы по Esc (Total War / Paradox) с картой горячих клавиш и быстрым доступом к Кодексу =====
 const HOTKEYS = [
   ['Enter', 'Завершить ход', 'End turn'],
-  ['1 – 4', 'Главные разделы', 'Main sections'],
-  ['5 – 8', 'Дополнительные разделы', 'Extra sections'],
-  ['Ctrl/⌘ + колесо', 'Зум 3D-стола к курсору', 'Zoom table to cursor'],
-  ['Перетаскивание', 'Панорама при приближении', 'Pan when zoomed'],
-  ['Esc', 'Это меню', 'This menu']
+  ['1 – 4', 'Главные палаты Диван-ханы', 'Core Divan chambers'],
+  ['5 – 8', 'Дополнительные разделы', 'Archive & extra chambers'],
+  ['ЛКМ по 3D-горе', 'Отправить выбранный отряд в марш', 'March selected unit'],
+  ['Зажать ЛКМ / ПКМ', 'Вращение / сдвиг 3D-камеры', 'Orbit / pan 3D camera'],
+  ['Колесо мыши', 'Масштаб 3D-стола', 'Zoom 3D table'],
+  ['Esc', 'Шатёр паузы и Кодекс', 'Pause tent & Codex']
 ];
 
 export function PauseMenu({
@@ -951,6 +954,11 @@ export function PauseMenu({
   onLoadSlot,
   onTitle,
   onToggleSound,
+  onOpenGlossary,
+  onOpenMuseum,
+  onOpenAudioMixer,
+  onToggleSpectator,
+  spectatorActive = false,
   soundEnabled
 }) {
   return (
@@ -1033,6 +1041,46 @@ export function PauseMenu({
           <button onClick={onToggleSound} className="hud-menu-item w-full">
             {soundEnabled ? '🔊' : '🔇'} {t('Звук и эмбиент Кавказа', 'Sound & Caucasus Ambient')}: {soundEnabled ? t('вкл', 'on') : t('выкл', 'off')}
           </button>
+          {(onOpenGlossary || onOpenMuseum || onOpenAudioMixer || onToggleSpectator) && (
+            <div className="grid grid-cols-2 gap-1.5 my-0.5 text-[11px] font-serif">
+              {onOpenGlossary && (
+                <button
+                  onClick={onOpenGlossary}
+                  className="px-2.5 py-1.5 rounded-lg bg-sky-950/55 hover:bg-sky-900/65 border border-sky-500/40 text-sky-200 font-bold cursor-pointer text-left transition"
+                >
+                  📖 {t('Кодекс и Словарь', 'Codex & Glossary')}
+                </button>
+              )}
+              {onOpenMuseum && (
+                <button
+                  onClick={onOpenMuseum}
+                  className="px-2.5 py-1.5 rounded-lg bg-teal-950/55 hover:bg-teal-900/65 border border-teal-500/40 text-teal-200 font-bold cursor-pointer text-left transition"
+                >
+                  🏛️ {t('Музей Имамата', 'Imamate Museum')}
+                </button>
+              )}
+              {onOpenAudioMixer && (
+                <button
+                  onClick={onOpenAudioMixer}
+                  className="px-2.5 py-1.5 rounded-lg bg-cyan-950/55 hover:bg-cyan-900/65 border border-cyan-500/40 text-cyan-200 font-bold cursor-pointer text-left transition"
+                >
+                  🎛️ {t('Пульт Звука 2.0', 'Audio Mixer 2.0')}
+                </button>
+              )}
+              {onToggleSpectator && (
+                <button
+                  onClick={onToggleSpectator}
+                  className={`px-2.5 py-1.5 rounded-lg border font-bold cursor-pointer text-left transition ${
+                    spectatorActive
+                      ? 'bg-emerald-500 text-stone-950 border-emerald-300'
+                      : 'bg-emerald-950/55 hover:bg-emerald-900/65 border-emerald-500/40 text-emerald-200'
+                  }`}
+                >
+                  🦅 {spectatorActive ? t('Стоп ИИ-Полководец', 'Stop AI Commander') : t('ИИ-Полководец', 'AI Commander')}
+                </button>
+              )}
+            </div>
+          )}
           <button onClick={onTitle} className="hud-menu-item w-full">🏔️ {t('В главное меню и сценарии', 'Main Menu & Scenarios')}</button>
         </div>
         <div className="mt-3.5 border-t border-amber-500/20 pt-2.5">

@@ -120,6 +120,7 @@ function createProceduralBumpCanvas() {
 }
 
 export default function CaucasusTable3DViewport({
+  attachedPowder = 30,
   battleMemorials = [],
   capitalLabelEn = 'Dargo-Vedeno',
   capitalLabelRu = 'Дарго-Ведено',
@@ -127,9 +128,12 @@ export default function CaucasusTable3DViewport({
   cordonFortresses = [],
   dioramaTimeOfDay = 'day',
   externalCameraCmd = null,
+  fullScreenTableMode = false,
   handleCycleSeason3D,
   handleCycleTimeOfDay,
+  handleEnterTacticalDiorama,
   handleInterceptImperialColumn,
+  handleSendEnvoy,
   handleSeverColumnSupplyLine,
   handleStrategicMapClick,
   handleToggleRiverBridge,
@@ -138,8 +142,10 @@ export default function CaucasusTable3DViewport({
   liveFieldUnits = [],
   liveImperialColumns = [],
   naibates = [],
+  orderExecutionCalc = null,
   riverBridges = [],
   seasonPhase = 'summer',
+  selectedNaibate = null,
   selectedNaibateId,
   selectedUnitId,
   setHoveredMapInfo,
@@ -158,9 +164,12 @@ export default function CaucasusTable3DViewport({
   const trackedFortIdxRef = useRef(0);
   const trackedNatureIdxRef = useRef(0);
   const [cameraPresetLabel, setCameraPresetLabel] = useState('theatre');
+  const [cameraMenuOpen, setCameraMenuOpen] = useState(false);
   const [showAllLabels3D, setShowAllLabels3D] = useState(false);
   const [weatherMode3D, setWeatherMode3D] = useState('auto');
   const [hudLabels, setHudLabels] = useState([]);
+  const [hoverPreview, setHoverPreview] = useState(null);
+  const [hoverCursor, setHoverCursor] = useState('grab');
   const orbitRef = useRef({
     yaw: 0.0,
     pitch: 0.76,
@@ -204,6 +213,21 @@ export default function CaucasusTable3DViewport({
       o.radius = Math.min(o.radius, 25.5);
       o.pitch = 0.52;
       setCameraPresetLabel('focus');
+    } else if (externalCameraCmd.type === 'turn_focus') {
+      const curPreset = latestPropsRef.current.cameraPresetLabel;
+      if (
+        curPreset !== 'riders' &&
+        curPreset !== 'columns' &&
+        curPreset !== 'fortresses' &&
+        curPreset !== 'nature' &&
+        curPreset !== 'eagles'
+      ) {
+        const wx = Math.max(-18, Math.min(18, (((externalCameraCmd.mx ?? 350) - 350) / 10) * 0.55));
+        const wz = Math.max(-12, Math.min(12, (((externalCameraCmd.my ?? 230) - 230) / 10) * 0.55));
+        o.targetX = o.targetX * 0.45 + wx * 0.55;
+        o.targetZ = o.targetZ * 0.45 + wz * 0.55;
+        o.radius = Math.max(32, Math.min(48, o.radius));
+      }
     }
   }, [externalCameraCmd]);
 
@@ -1307,7 +1331,36 @@ export default function CaucasusTable3DViewport({
     const routeTargetBeacon = new THREE.Mesh(routeTargetBeaconGeo, routeTargetBeaconMat);
     routeTargetBeacon.rotation.x = -Math.PI / 2;
     routeTargetBeacon.visible = false;
-    routeLayer.add(activeRouteLine, routeTargetBeacon);
+
+    // Интерактивный 3D-превью марша и тактический прицел при наведении курсора (Total War / Civ VI)
+    const HOVER_ARC_PTS = 22;
+    const hoverArcPositions = new Float32Array(HOVER_ARC_PTS * 3);
+    const hoverArcPosAttr = new THREE.BufferAttribute(hoverArcPositions, 3);
+    hoverArcPosAttr.setUsage(THREE.DynamicDrawUsage);
+    const hoverArcGeo = new THREE.BufferGeometry();
+    hoverArcGeo.setAttribute('position', hoverArcPosAttr);
+    hoverArcGeo.setDrawRange(0, 0);
+    const hoverArcMat = new THREE.LineBasicMaterial({
+      color: '#34d399',
+      transparent: true,
+      opacity: 0.8
+    });
+    const hoverArcLine = new THREE.Line(hoverArcGeo, hoverArcMat);
+    hoverArcLine.visible = false;
+
+    const hoverReticleGeo = new THREE.RingGeometry(0.42, 0.64, 28);
+    const hoverReticleMat = new THREE.MeshBasicMaterial({
+      color: '#34d399',
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.78,
+      depthWrite: false
+    });
+    const hoverReticleMesh = new THREE.Mesh(hoverReticleGeo, hoverReticleMat);
+    hoverReticleMesh.rotation.x = -Math.PI / 2;
+    hoverReticleMesh.visible = false;
+
+    routeLayer.add(activeRouteLine, routeTargetBeacon, hoverArcLine, hoverReticleMesh);
 
     const precipSys = createCaucasusPrecipitationSystem({
       spanX: 72,
@@ -1759,9 +1812,243 @@ export default function CaucasusTable3DViewport({
       o.movedPx = 0;
     };
 
+    let lastHoverTs = 0;
+    let lastHoverKey = '';
+    const updateHoverArc = (fromMx, fromMy, toMx, toMy, colorHex) => {
+      hoverArcMat.color.set(colorHex);
+      hoverReticleMat.color.set(colorHex);
+      const endW = mapToWorld(toMx, toMy);
+      hoverReticleMesh.position.set(endW.wx, endW.wy + 0.14, endW.wz);
+      hoverReticleMesh.visible = true;
+      for (let i = 0; i < HOVER_ARC_PTS; i++) {
+        const u = i / (HOVER_ARC_PTS - 1);
+        const mx = fromMx + (toMx - fromMx) * u;
+        const my = fromMy + (toMy - fromMy) * u;
+        const w = mapToWorld(mx, my);
+        const arcLift = Math.sin(u * Math.PI) * 0.42;
+        hoverArcPositions[i * 3] = w.wx;
+        hoverArcPositions[i * 3 + 1] = w.wy + 0.24 + arcLift;
+        hoverArcPositions[i * 3 + 2] = w.wz;
+      }
+      hoverArcPosAttr.needsUpdate = true;
+      hoverArcGeo.setDrawRange(0, HOVER_ARC_PTS);
+      hoverArcLine.visible = true;
+    };
+
+    const clearHoverVisuals = () => {
+      hoverArcLine.visible = false;
+      hoverReticleMesh.visible = false;
+      if (lastHoverKey !== '') {
+        lastHoverKey = '';
+        setHoverPreview(null);
+        setHoverCursor('grab');
+        if (latestPropsRef.current.setHoveredMapInfo) {
+          latestPropsRef.current.setHoveredMapInfo(null);
+        }
+      }
+    };
+
+    const onPointerLeaveCanvas = () => {
+      clearHoverVisuals();
+    };
+
     const onPointerMove = (e) => {
       const o = orbitRef.current;
-      if (!o.isDragging) return;
+      if (!o.isDragging) {
+        const now = performance.now();
+        if (now - lastHoverTs < 42) return;
+        lastHoverTs = now;
+        const rect = renderer.domElement.getBoundingClientRect();
+        if (
+          !rect.width ||
+          !rect.height ||
+          e.clientX < rect.left ||
+          e.clientX > rect.right ||
+          e.clientY < rect.top ||
+          e.clientY > rect.bottom
+        ) {
+          clearHoverVisuals();
+          return;
+        }
+        pointerNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(pointerNdc, camera);
+        const p = latestPropsRef.current;
+        const selUnit =
+          (p.liveFieldUnits || []).find((u) => u.id === p.selectedUnitId) ||
+          (p.liveFieldUnits || [])[0] ||
+          null;
+
+        const pickHits = raycaster.intersectObjects([...mobilePickables, ...staticPickables], false);
+        if (pickHits.length > 0) {
+          const ud = pickHits[0].object.userData || {};
+          if (ud.kind === 'column' && ud.raw) {
+            const c = ud.raw;
+            if (selUnit) updateHoverArc(selUnit.x, selUnit.y, c.x, c.y, '#ef4444');
+            const key = `col:${c.id}`;
+            if (key !== lastHoverKey) {
+              lastHoverKey = key;
+              setHoverCursor('crosshair');
+              const info = {
+                tone: 'enemy',
+                icon: '⚔️',
+                titleRu: `Перехват: ${c.nameRu || c.badgeRu}`,
+                titleEn: `Intercept: ${c.nameEn || c.badgeEn}`,
+                detailRu: `${c.bayonets || 0} шт.${c.supplyCut ? ' • Обоз перерезан' : ''}`,
+                detailEn: `${c.bayonets || 0} bayonets${c.supplyCut ? ' • Supply cut' : ''}`,
+                actionRu: 'ЛКМ — атаковать колонну',
+                actionEn: 'LMB — intercept column'
+              };
+              setHoverPreview(info);
+              p.setHoveredMapInfo && p.setHoveredMapInfo(info);
+            }
+            return;
+          }
+          if (ud.kind === 'convoy' && ud.raw) {
+            const c = ud.raw;
+            if (selUnit) updateHoverArc(selUnit.x, selUnit.y, c.x, c.y, '#f59e0b');
+            const key = `conv:${c.id}`;
+            if (key !== lastHoverKey) {
+              lastHoverKey = key;
+              setHoverCursor('crosshair');
+              const info = {
+                tone: 'convoy',
+                icon: '✂️',
+                titleRu: `Сухарный обоз: ${c.badgeRu || c.nameRu}`,
+                titleEn: `Supply Train: ${c.badgeEn || c.nameEn}`,
+                detailRu: 'Удар по тылу (+22п пороха, -14% штыков РИ/ход)',
+                detailEn: 'Rear strike (+22p powder, -14% enemy bayonets/turn)',
+                actionRu: 'ЛКМ — перерезать обоз',
+                actionEn: 'LMB — sever supply line'
+              };
+              setHoverPreview(info);
+              p.setHoveredMapInfo && p.setHoveredMapInfo(info);
+            }
+            return;
+          }
+          if (ud.kind === 'naibate' && ud.raw) {
+            const n = ud.raw;
+            if (selUnit && n.coords) updateHoverArc(selUnit.x, selUnit.y, n.coords.x, n.coords.y, n.underSiege ? '#f87171' : '#fbbf24');
+            const key = `naib:${n.id}:${n.underSiege ? 1 : 0}`;
+            if (key !== lastHoverKey) {
+              lastHoverKey = key;
+              setHoverCursor('pointer');
+              const info = {
+                tone: n.underSiege ? 'enemy' : 'naibate',
+                icon: n.underSiege ? '🔥' : '🏰',
+                titleRu: `${n.name} (${n.naibName})`,
+                titleEn: `${n.nameEn || n.name} (${n.naibNameEn || n.naibName})`,
+                detailRu: `Гарнизон ${n.garrison} • Порох ${n.gunpowder}п${n.underSiege ? ' • В ОСАДЕ' : ''}`,
+                detailEn: `Garrison ${n.garrison} • Powder ${n.gunpowder}p${n.underSiege ? ' • BESIEGED' : ''}`,
+                actionRu: 'ЛКМ — выбрать наибство',
+                actionEn: 'LMB — select naibate'
+              };
+              setHoverPreview(info);
+              p.setHoveredMapInfo && p.setHoveredMapInfo(info);
+            }
+            return;
+          }
+          if (ud.kind === 'unit' && ud.raw) {
+            const u = ud.raw;
+            hoverArcLine.visible = false;
+            const uw = mapToWorld(u.x, u.y);
+            hoverReticleMat.color.set('#34d399');
+            hoverReticleMesh.position.set(uw.wx, uw.wy + 0.14, uw.wz);
+            hoverReticleMesh.visible = true;
+            const key = `unit:${u.id}`;
+            if (key !== lastHoverKey) {
+              lastHoverKey = key;
+              setHoverCursor('pointer');
+              const info = {
+                tone: 'unit',
+                icon: '🐎',
+                titleRu: u.nameRu || u.badgeRu,
+                titleEn: u.nameEn || u.badgeEn,
+                detailRu: `${u.sabers ?? 300} сабель • ОХ ${Math.round(u.mp ?? 100)}/${u.maxMp || 150}`,
+                detailEn: `${u.sabers ?? 300} sabers • MP ${Math.round(u.mp ?? 100)}/${u.maxMp || 150}`,
+                actionRu: 'ЛКМ — возглавить отряд',
+                actionEn: 'LMB — select squadron'
+              };
+              setHoverPreview(info);
+              p.setHoveredMapInfo && p.setHoveredMapInfo(info);
+            }
+            return;
+          }
+          if (ud.kind === 'bridge' || ud.kind === 'beacon') {
+            hoverArcLine.visible = false;
+            const pt = pickHits[0].point;
+            hoverReticleMat.color.set('#38bdf8');
+            hoverReticleMesh.position.set(pt.x, pt.y + 0.14, pt.z);
+            hoverReticleMesh.visible = true;
+            const key = `${ud.kind}:${ud.id}`;
+            if (key !== lastHoverKey) {
+              lastHoverKey = key;
+              setHoverCursor('pointer');
+              const info =
+                ud.kind === 'bridge'
+                  ? {
+                      tone: 'terrain',
+                      icon: '🌉',
+                      titleRu: 'Горный мост переправы',
+                      titleEn: 'Mountain River Bridge',
+                      detailRu: 'Подрыв задержит царские колонны на переправе',
+                      detailEn: 'Demolishing slows Imperial columns at the crossing',
+                      actionRu: 'ЛКМ — переключить мост',
+                      actionEn: 'LMB — toggle bridge'
+                    }
+                  : {
+                      tone: 'terrain',
+                      icon: '🔥',
+                      titleRu: 'Сигнальная башня-маяк',
+                      titleEn: 'Signal Watchtower Beacon',
+                      detailRu: 'Рассеивает туман войны и ускоряет чапаров',
+                      detailEn: 'Reveals fog of war & accelerates couriers',
+                      actionRu: 'ЛКМ — зажечь / погасить маяк',
+                      actionEn: 'LMB — toggle signal beacon'
+                    };
+              setHoverPreview(info);
+              p.setHoveredMapInfo && p.setHoveredMapInfo(info);
+            }
+            return;
+          }
+        }
+
+        const terrHits = raycaster.intersectObject(terrainMesh, false);
+        if (terrHits.length > 0 && selUnit) {
+          const pt = terrHits[0].point;
+          const mx = Math.max(8, Math.min(692, Math.round(pt.x * 10 + 350)));
+          const my = Math.max(8, Math.min(452, Math.round(pt.z * 10 + 230)));
+          const dist = Math.hypot(mx - selUnit.x, my - selUnit.y);
+          const curMp = Math.max(0, Math.round(selUnit.mp ?? selUnit.maxMp ?? 150));
+          const maxMp = selUnit.maxMp || 150;
+          const estMp = Math.max(8, Math.round(dist * 0.92));
+          const turnsReq = estMp <= curMp ? 1 : Math.max(2, Math.ceil(estMp / maxMp));
+          const elevM = Math.round(Math.max(120, pt.y * 540 + 260));
+          const arcColor = turnsReq === 1 ? '#34d399' : '#fbbf24';
+          updateHoverArc(selUnit.x, selUnit.y, mx, my, arcColor);
+          const qKey = `terr:${Math.round(mx / 10)}:${Math.round(my / 10)}:${selUnit.id}`;
+          if (qKey !== lastHoverKey) {
+            lastHoverKey = qKey;
+            setHoverCursor('crosshair');
+            const info = {
+              tone: turnsReq === 1 ? 'march_ok' : 'march_far',
+              icon: '🐎',
+              titleRu: `Марш: ${selUnit.badgeRu}`,
+              titleEn: `March: ${selUnit.badgeEn}`,
+              detailRu: `Высота ~${elevM}м • ~${estMp} ОХ (${turnsReq === 1 ? 'за 1 ход' : `~${turnsReq} хода`})`,
+              detailEn: `Elev ~${elevM}m • ~${estMp} MP (${turnsReq === 1 ? '1 turn' : `~${turnsReq} turns`})`,
+              actionRu: 'ЛКМ — отправить в поход',
+              actionEn: 'LMB — order march'
+            };
+            setHoverPreview(info);
+            p.setHoveredMapInfo && p.setHoveredMapInfo(info);
+          }
+          return;
+        }
+        clearHoverVisuals();
+        return;
+      }
+      clearHoverVisuals();
       const dx = e.clientX - o.lastX;
       const dy = e.clientY - o.lastY;
       o.lastX = e.clientX;
@@ -1918,6 +2205,7 @@ export default function CaucasusTable3DViewport({
 
     const domEl = renderer.domElement;
     domEl.addEventListener('mousedown', onPointerDown);
+    domEl.addEventListener('mouseleave', onPointerLeaveCanvas);
     window.addEventListener('mousemove', onPointerMove);
     window.addEventListener('mouseup', onPointerUp);
     domEl.addEventListener('wheel', onWheel, { passive: false });
@@ -3140,6 +3428,7 @@ export default function CaucasusTable3DViewport({
       fpsGovRef.current = null;
       touchControls.dispose();
       domEl.removeEventListener('mousedown', onPointerDown);
+      domEl.removeEventListener('mouseleave', onPointerLeaveCanvas);
       window.removeEventListener('mousemove', onPointerMove);
       window.removeEventListener('mouseup', onPointerUp);
       domEl.removeEventListener('wheel', onWheel);
@@ -3176,6 +3465,10 @@ export default function CaucasusTable3DViewport({
       activeRouteLine.material.dispose();
       routeTargetBeaconGeo.dispose();
       routeTargetBeaconMat.dispose();
+      hoverArcGeo.dispose();
+      hoverArcMat.dispose();
+      hoverReticleGeo.dispose();
+      hoverReticleMat.dispose();
       riverGeos.forEach((rg) => rg.dispose());
       riverMat.dispose();
       bumpTex.dispose();
@@ -3236,9 +3529,44 @@ export default function CaucasusTable3DViewport({
     };
   }, []);
 
+  const CAMERA_PRESETS = [
+    ['theatre', t('🏔️ Обзор Кавказа', '🏔️ Caucasus Overview')],
+    ['heroes', t('👑 Герои и Столица', '👑 Heroes & Capital')],
+    ['dargo', t('🌲 Леса Ичкерии', '🌲 Ichkeria Forests')],
+    ['avaria', t('⛰️ Плато Аварии', '⛰️ Avaria Plateau')],
+    ['cordon', t('🏰 Кордон Терека', '🏰 Terek Cordon')],
+    ['riders', t('🐎 Всадники', '🐎 Riders')],
+    ['columns', t('⚔️ Колонны и Орудия', '⚔️ Columns & Guns')],
+    ['fortresses', t('🏛️ Крепости и Аулы', '🏛️ Fortresses & Auls')],
+    ['nature', t('🌊 Природа и Реки', '🌊 Nature & Rivers')],
+    ['eagles', t('🦅 Беркуты', '🦅 Eagles')]
+  ];
+  const activePresetTitle =
+    CAMERA_PRESETS.find(([id]) => id === cameraPresetLabel)?.[1] ||
+    t('🏔️ Обзор Кавказа', '🏔️ Caucasus Overview');
+  const activeUnit =
+    (liveFieldUnits || []).find((u) => u.id === selectedUnitId) ||
+    (liveFieldUnits || [])[0] ||
+    null;
+
   return (
-    <div className="relative isolate w-full h-[380px] sm:h-[540px] lg:h-[600px] max-h-[72dvh] lg:max-h-none rounded-xl overflow-hidden border-2 border-amber-500/60 bg-[#1a2b3d] shadow-2xl select-none">
-      <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+    <div
+      className={`relative isolate w-full rounded-xl overflow-hidden border-2 border-amber-500/60 bg-[#1a2b3d] shadow-2xl select-none transition-[height] duration-300 ${
+        fullScreenTableMode
+          ? 'h-[calc(100dvh-215px)] min-h-[540px]'
+          : 'h-[430px] sm:h-[580px] lg:h-[640px] max-h-[76dvh] lg:max-h-none'
+      }`}
+    >
+      <div
+        ref={mountRef}
+        className={`w-full h-full ${
+          hoverCursor === 'crosshair'
+            ? 'cursor-crosshair'
+            : hoverCursor === 'pointer'
+            ? 'cursor-pointer'
+            : 'cursor-grab active:cursor-grabbing'
+        }`}
+      />
 
       {/* Проекционные тактические шильдики поверх 3D-фигурок .glb с автоматическим анти-наложением (LOD) */}
       <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
@@ -3271,57 +3599,161 @@ export default function CaucasusTable3DViewport({
         ))}
       </div>
 
-      {/* Верхняя плашка управления ракурсами реальной 3D-камеры Three.js + переключатель LOD и залп батарей */}
-      <div className="absolute top-2 left-2 right-2 z-10 flex flex-wrap items-center justify-between gap-1.5 pointer-events-none">
-        <div className="hud-mobile-scroll pointer-events-auto max-w-full overflow-x-auto flex items-center flex-nowrap lg:flex-wrap gap-1 bg-[#120e0a]/90 border border-amber-500/50 rounded-lg px-2 py-1 text-[10.5px] sm:text-[11px] backdrop-blur-sm">
-          <span className="text-amber-300 font-serif font-extrabold mr-1 shrink-0 hidden sm:inline">
-            🏔️ {t('3D-Диорама Кавказа:', '3D Caucasus Diorama:')}
-          </span>
-          {[
-            ['theatre', t('Обзор Кавказа', 'Caucasus Overview')],
-            ['heroes', t('Герои и Столица', 'Heroes & Capital')],
-            ['dargo', t('Леса Ичкерии', 'Ichkeria Forests')],
-            ['avaria', t('Плато Аварии', 'Avaria Plateau')],
-            ['cordon', t('Кордон Терека', 'Terek Cordon')],
-            ['riders', t('🐎 Всадники', '🐎 Riders')],
-            ['columns', t('⚔️ Колонны и Орудия', '⚔️ Columns & Guns')],
-            ['fortresses', t('🏰 Крепости и Аулы', '🏰 Fortresses & Auls')],
-            ['nature', t('🌲 Природа и Реки', '🌲 Nature & Rivers')],
-            ['eagles', t('🦅 Беркуты', '🦅 Eagles')]
-          ].map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => applyCameraPreset(id)}
-              className={`shrink-0 px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition ${
-                cameraPresetLabel === id
-                  ? 'bg-amber-500 text-stone-950'
-                  : 'bg-stone-900/90 hover:bg-stone-800 text-amber-200 border border-amber-500/30'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+      {/* Минималистичный верхний HUD 3D-камеры (95% горного рельефа всегда свободны от кнопок) */}
+      <div className="absolute top-2.5 left-2.5 right-2.5 z-10 flex items-start justify-between gap-2 pointer-events-none">
+        {/* Левый угол: компактный переключатель ракурсов и 3D-атмосферы (раскрывается по клику) */}
+        <div className="pointer-events-auto relative">
           <button
             type="button"
-            onClick={() => setShowAllLabels3D((prev) => !prev)}
-            className={`shrink-0 px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
-              showAllLabels3D
-                ? 'bg-sky-500 text-stone-950 border-sky-300'
-                : 'bg-stone-900/90 hover:bg-stone-800 text-sky-200 border-sky-500/35'
+            onClick={() => setCameraMenuOpen((v) => !v)}
+            className={`px-2.5 py-1 rounded-lg font-serif font-bold text-[11px] cursor-pointer transition border backdrop-blur-md shadow-lg flex items-center gap-1.5 ${
+              cameraMenuOpen
+                ? 'bg-amber-500 text-stone-950 border-amber-200'
+                : 'bg-[#120e0a]/85 hover:bg-[#1b1510]/95 text-amber-200 border-amber-500/45'
             }`}
-            title={t(
-              'Авто-LOD показывает главные цели на общем плане и плавно раскрывает мосты и костры при приближении',
-              'Auto-LOD keeps key targets clean at wide view and reveals bridges & beacons as you zoom in'
-            )}
+            title={t('Выбрать кинематографичный ракурс, сезон, погоду и профиль 3D-графики', 'Choose camera preset, season, weather & 3D quality')}
           >
-            {showAllLabels3D ? t('🏷️ Все ярлыки', '🏷️ All Labels') : t('🏷️ Умный LOD', '🏷️ Smart LOD')}
+            <span>{activePresetTitle}</span>
+            <span className="text-[9.5px] opacity-80">{cameraMenuOpen ? '▴' : '▾'}</span>
           </button>
+
+          {cameraMenuOpen && (
+            <div className="mt-1.5 w-[min(88vw,340px)] bg-[#120e0a]/95 backdrop-blur-xl border border-amber-500/50 rounded-xl p-2.5 shadow-2xl space-y-2 text-[10.5px]">
+              <div className="flex items-center justify-between border-b border-stone-800 pb-1">
+                <span className="text-[10px] font-serif uppercase tracking-wider text-amber-300 font-bold">
+                  📷 {t('Ракурсы 3D-камеры Кавказа', 'Caucasus 3D Camera Presets')}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCameraMenuOpen(false)}
+                  className="text-stone-400 hover:text-white text-[10px] px-1 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                {CAMERA_PRESETS.map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      applyCameraPreset(id);
+                    }}
+                    className={`px-2 py-1 rounded font-serif font-bold cursor-pointer transition text-left truncate ${
+                      cameraPresetLabel === id
+                        ? 'bg-amber-500 text-stone-950'
+                        : 'bg-stone-900/90 hover:bg-stone-800 text-amber-200 border border-amber-500/25'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="pt-1.5 border-t border-stone-800 flex flex-wrap items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setShowAllLabels3D((prev) => !prev)}
+                  className={`px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
+                    showAllLabels3D
+                      ? 'bg-sky-500 text-stone-950 border-sky-300'
+                      : 'bg-stone-900/90 hover:bg-stone-800 text-sky-200 border-sky-500/35'
+                  }`}
+                >
+                  {showAllLabels3D ? t('🏷️ Все ярлыки', '🏷️ All Labels') : t('🏷️ Умный LOD', '🏷️ Smart LOD')}
+                </button>
+                {handleCycleSeason3D && (
+                  <button
+                    type="button"
+                    onClick={handleCycleSeason3D}
+                    className={`px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
+                      seasonPhase === 'winter'
+                        ? 'bg-sky-200 text-slate-950 border-white shadow'
+                        : 'bg-stone-900/90 hover:bg-stone-800 text-emerald-200 border-emerald-500/40'
+                    }`}
+                  >
+                    {seasonPhase === 'winter'
+                      ? t('❄️ Зима', '❄️ Winter')
+                      : seasonPhase === 'autumn'
+                      ? t('🍂 Осень', '🍂 Autumn')
+                      : t('🌿 Лето', '🌿 Summer')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setWeatherMode3D((prev) =>
+                      prev === 'auto' ? 'rain' : prev === 'rain' ? 'snow' : prev === 'snow' ? 'clear' : 'auto'
+                    )
+                  }
+                  className={`px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
+                    weatherMode3D === 'rain'
+                      ? 'bg-sky-700 text-sky-100 border-sky-400'
+                      : weatherMode3D === 'snow'
+                      ? 'bg-slate-200 text-slate-950 border-white'
+                      : 'bg-stone-900/90 hover:bg-stone-800 text-sky-200 border-sky-500/35'
+                  }`}
+                >
+                  {weatherMode3D === 'rain'
+                    ? t('🌧️ Ливень', '🌧️ Rain')
+                    : weatherMode3D === 'snow'
+                    ? t('🌨️ Метель', '🌨️ Snow')
+                    : weatherMode3D === 'clear'
+                    ? t('🌤️ Ясно', '🌤️ Clear')
+                    : t('🌦️ Авто', '🌦️ Auto')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCyclePerfMode}
+                  className={`px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
+                    perfMode3D === 'ultra'
+                      ? 'bg-amber-400 text-stone-950 border-amber-200'
+                      : perfMode3D === 'perf60'
+                      ? 'bg-emerald-500 text-stone-950 border-emerald-200'
+                      : 'bg-stone-900/90 hover:bg-stone-800 text-emerald-200 border-emerald-500/35'
+                  }`}
+                >
+                  {perfMode3D === 'ultra'
+                    ? t('💎 Ультра', '💎 Ultra')
+                    : perfMode3D === 'perf60'
+                    ? t('⚡ 60 FPS', '⚡ 60 FPS')
+                    : t('⚡ Авто', '⚡ Auto')}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Центр горизонта: живой прогноз приказа при наведении на 3D-рельеф, колонну, обоз или аул (никогда не перекрывает нижние панели) */}
+        {hoverPreview && !cameraMenuOpen && (
+          <div
+            className={`hidden md:flex items-center gap-2 px-3 py-1 rounded-lg backdrop-blur-md border shadow-xl text-[10.5px] max-w-[54%] ${
+              hoverPreview.tone === 'enemy'
+                ? 'bg-rose-950/92 border-rose-400/75 text-rose-100'
+                : hoverPreview.tone === 'convoy' || hoverPreview.tone === 'march_far'
+                ? 'bg-amber-950/92 border-amber-400/75 text-amber-100'
+                : 'bg-[#0c1411]/92 border-emerald-400/65 text-emerald-100'
+            }`}
+          >
+            <span className="text-xs shrink-0">{hoverPreview.icon}</span>
+            <span className="font-serif font-bold truncate">
+              {t(hoverPreview.titleRu, hoverPreview.titleEn)}
+            </span>
+            <span className="text-stone-300 font-mono text-[9.5px] hidden lg:inline truncate">
+              • {t(hoverPreview.detailRu, hoverPreview.detailEn)}
+            </span>
+            <span className="px-1.5 py-0.5 rounded bg-black/45 border border-white/15 text-[9.5px] font-mono font-bold shrink-0">
+              {t(hoverPreview.actionRu, hoverPreview.actionEn)}
+            </span>
+          </div>
+        )}
+
+        {/* Правый угол: только смена времени суток и быстрый залп батарей */}
+        <div className="pointer-events-auto flex items-center gap-1.5">
           {handleCycleTimeOfDay && (
             <button
               type="button"
               onClick={handleCycleTimeOfDay}
-              className="shrink-0 px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border bg-stone-900/90 hover:bg-stone-800 text-amber-200 border-amber-500/40"
+              className="px-2.5 py-1 rounded-lg font-serif font-bold text-[10.5px] cursor-pointer transition border bg-[#120e0a]/85 hover:bg-[#1b1510]/95 text-amber-200 border-amber-500/45 backdrop-blur-md shadow-lg"
               title={t('Переключить освещение Кавказа: День / Закат / Ночь', 'Cycle Caucasus lighting: Day / Sunset / Night')}
             >
               {dioramaTimeOfDay === 'sunset'
@@ -3331,100 +3763,77 @@ export default function CaucasusTable3DViewport({
                 : t('☀️ День', '☀️ Day')}
             </button>
           )}
-          {handleCycleSeason3D && (
-            <button
-              type="button"
-              onClick={handleCycleSeason3D}
-              className={`shrink-0 px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
-                seasonPhase === 'winter'
-                  ? 'bg-sky-200 text-slate-950 border-white shadow'
-                  : 'bg-stone-900/90 hover:bg-stone-800 text-emerald-200 border-emerald-500/40'
-              }`}
-              title={t(
-                'Переключить сезонный покров 3D-рельефа: Летняя зелень / Снега Кавказа',
-                'Toggle 3D relief season: Summer foliage / Caucasian Winter snow'
-              )}
-            >
-              {seasonPhase === 'winter'
-                ? t('❄️ Зима', '❄️ Winter')
-                : seasonPhase === 'autumn'
-                ? t('🍂 Осень', '🍂 Autumn')
-                : t('🌿 Лето', '🌿 Summer')}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() =>
-              setWeatherMode3D((prev) =>
-                prev === 'auto' ? 'rain' : prev === 'rain' ? 'snow' : prev === 'snow' ? 'clear' : 'auto'
-              )
-            }
-            className={`shrink-0 px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
-              weatherMode3D === 'rain'
-                ? 'bg-sky-700 text-sky-100 border-sky-400'
-                : weatherMode3D === 'snow'
-                ? 'bg-slate-200 text-slate-950 border-white'
-                : 'bg-stone-900/90 hover:bg-stone-800 text-sky-200 border-sky-500/35'
-            }`}
-            title={t(
-              'Погода Кавказа: Авто / Ливень / Снегопад / Ясно',
-              'Caucasus weather: Auto / Rain / Snowfall / Clear'
-            )}
-          >
-            {weatherMode3D === 'rain'
-              ? t('🌧️ Ливень', '🌧️ Rain')
-              : weatherMode3D === 'snow'
-              ? t('🌨️ Метель', '🌨️ Snow')
-              : weatherMode3D === 'clear'
-              ? t('🌤️ Ясно', '🌤️ Clear')
-              : t('🌦️ Авто', '🌦️ Auto')}
-          </button>
-          <button
-            type="button"
-            onClick={handleCyclePerfMode}
-            className={`shrink-0 px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
-              perfMode3D === 'ultra'
-                ? 'bg-amber-400 text-stone-950 border-amber-200'
-                : perfMode3D === 'perf60'
-                ? 'bg-emerald-500 text-stone-950 border-emerald-200'
-                : 'bg-stone-900/90 hover:bg-stone-800 text-emerald-200 border-emerald-500/35'
-            }`}
-            title={t(
-              'Профиль 3D-графики: Авто 60 FPS / Турбо 60 FPS / Ультра PBR+GTAO',
-              '3D GPU profile: Auto 60 FPS / Turbo 60 FPS / Ultra PBR+GTAO'
-            )}
-          >
-            {perfMode3D === 'ultra'
-              ? t('💎 Ультра', '💎 Ultra')
-              : perfMode3D === 'perf60'
-              ? t('⚡ 60 FPS', '⚡ 60 FPS')
-              : t('⚡ Авто', '⚡ Auto')}
-          </button>
-        </div>
-
-        <div className="pointer-events-auto flex items-center gap-1.5">
           <button
             type="button"
             onClick={triggerManualBatterySalvo}
-            className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-stone-950 font-serif font-extrabold px-2.5 py-1 rounded-lg text-[10.5px] sm:text-[11px] shadow-lg cursor-pointer transition"
+            className="bg-gradient-to-r from-amber-600/95 to-orange-600/95 hover:from-amber-500 hover:to-orange-500 text-stone-950 font-serif font-extrabold px-2.5 py-1 rounded-lg text-[10.5px] shadow-lg cursor-pointer transition"
+            title={t('Артиллерийский залп с 3D-дымом и вспышками на перевалах', 'Fire 3D artillery salvo across the passes')}
           >
-            💥 {t('Залп батарей (3D)', '3D Battery Salvo')}
+            💥 {t('Залп (3D)', '3D Salvo')}
           </button>
-          {isTouchUi ? (
-            <div className="hidden md:block bg-[#120e0a]/85 border border-emerald-500/45 rounded-lg px-2 py-1 text-[10px] text-emerald-200 font-serif">
-              {t(
-                '👆 1 палец — обзор • 2 пальца — зум и сдвиг • Тап — марш',
-                '👆 1 finger — orbit • 2 fingers — pinch & pan • Tap — march'
+        </div>
+      </div>
+
+      {/* Нижняя тактическая полоса поверх 3D-стола: быстрый контекстный приказ + живой прогноз наведения */}
+      <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 flex flex-wrap items-end justify-between gap-2 pointer-events-none">
+        {/* Левый нижний угол: мгновенные приказы выбранному наибству и отряду прямо с 3D-карты */}
+        {!fullScreenTableMode && selectedNaibate && (
+          <div className="pointer-events-auto hidden sm:flex items-center gap-1.5 bg-[#0e0b08]/88 backdrop-blur-md border border-amber-500/45 rounded-xl px-2.5 py-1.5 shadow-xl text-[10.5px]">
+            <div className="pr-2 border-r border-stone-700/80">
+              <div className="font-serif font-bold text-amber-200 leading-tight flex items-center gap-1">
+                <span>{selectedNaibate.underSiege ? '🔥' : '🏰'}</span>
+                <span>{t(selectedNaibate.name, selectedNaibate.nameEn || selectedNaibate.name)}</span>
+                {orderExecutionCalc && (
+                  <span className="hud-num text-[9.5px] text-emerald-300 font-bold">
+                    • {orderExecutionCalc.chance}%
+                  </span>
+                )}
+              </div>
+              {activeUnit && (
+                <div className="text-[9.5px] text-stone-400 font-mono leading-tight">
+                  🐎 {t(activeUnit.badgeRu, activeUnit.badgeEn)} • {t('ОХ', 'MP')}{' '}
+                  {Math.round(activeUnit.mp ?? activeUnit.maxMp ?? 150)}/{activeUnit.maxMp || 150}
+                </div>
               )}
             </div>
-          ) : (
-            <div className="hidden xl:block bg-[#120e0a]/85 border border-emerald-500/45 rounded-lg px-2.5 py-1 text-[10px] text-emerald-200 font-serif">
-              {t(
-                'ЛКМ по горе — марш • Зажать ЛКМ — вращение • ПКМ / Shift — сдвиг • Колесо — масштаб',
-                'LMB on ridge — march • Drag LMB — orbit • RMB / Shift — pan • Wheel — zoom'
-              )}
-            </div>
-          )}
+            {handleSendEnvoy && (
+              <button
+                type="button"
+                onClick={handleSendEnvoy}
+                className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/55 text-amber-100 font-serif font-bold cursor-pointer transition"
+                title={t('Отправить гонца с порохом выбранному наибу', 'Dispatch courier with powder to selected naib')}
+              >
+                🐎 {t(`Гонец (${attachedPowder}п)`, `Courier (${attachedPowder}p)`)}
+              </button>
+            )}
+            {handleStrategicMapClick && selectedNaibate.coords && (
+              <button
+                type="button"
+                onClick={() => handleStrategicMapClick(selectedNaibate.coords.x, selectedNaibate.coords.y)}
+                className="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/55 text-emerald-100 font-serif font-bold cursor-pointer transition"
+                title={t('Отправить выбранный отряд к этому наибству', 'March selected squadron to this naibate')}
+              >
+                🎯 {t('Марш', 'March')}
+              </button>
+            )}
+            {handleEnterTacticalDiorama && (
+              <button
+                type="button"
+                onClick={() => handleEnterTacticalDiorama(selectedNaibate)}
+                className="px-2 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/55 text-rose-100 font-serif font-bold cursor-pointer transition"
+                title={t('Лично возглавить тактический бой / оборону этого аула', 'Personally command the tactical battle / defense')}
+              >
+                ⚔️ {t('Бой', 'Battle')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Правый нижний угол: компактная подсказка управления камерой */}
+        <div className="hidden xl:block ml-auto bg-[#120e0a]/80 backdrop-blur-sm border border-amber-500/30 rounded-lg px-2.5 py-1 text-[9.5px] text-stone-300 font-serif">
+          {isTouchUi
+            ? t('👆 1 палец — обзор • 2 — зум • Тап — марш', '👆 1 finger — orbit • 2 — zoom • Tap — march')
+            : t('ЛКМ — приказ • Зажать ЛКМ — обзор • ПКМ — сдвиг • Колесо — зум', 'LMB — order • Drag LMB — orbit • RMB — pan • Wheel — zoom')}
         </div>
       </div>
     </div>

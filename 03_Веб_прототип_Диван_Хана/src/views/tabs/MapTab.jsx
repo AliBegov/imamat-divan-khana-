@@ -8,7 +8,6 @@ import { HISTORICAL_EPISODES } from '../../data/historicalEpisodes.js';
 import { Minimap, UnitCardBar } from '../hud/TableHUD.jsx';
 import {
   CompassRoseIcon,
-  HighlandEagleIcon,
   ImperialEagleIcon,
   MountainPeakIcon,
   SeveredConvoyIcon,
@@ -1301,6 +1300,7 @@ function MapTab({
   totalWoundedRecoveredOnMap,
   turn,
   turnActionQuota,
+  turnFocusEvent = null,
   unitMovementLog,
   unlockedRelicIds = [],
   weatherOverlayEnabled
@@ -1454,6 +1454,16 @@ function MapTab({
   const extCamSeqRef = useRef(1);
   const [extCamCmd, setExtCamCmd] = useState(null);
   const [season3DOverride, setSeason3DOverride] = useState(null);
+  useEffect(() => {
+    if (!turnFocusEvent || !turnFocusEvent.seq || !real3DTableMode) return;
+    extCamSeqRef.current += 1;
+    setExtCamCmd({
+      seq: extCamSeqRef.current,
+      type: 'turn_focus',
+      mx: turnFocusEvent.mx,
+      my: turnFocusEvent.my
+    });
+  }, [turnFocusEvent, real3DTableMode]);
   const baseSeasonPhase =
     effectiveSkyWeather === 'snow_blizzard'
       ? 'winter'
@@ -1492,11 +1502,6 @@ function MapTab({
     setCamera({ z: 1, cx: MAP_W / 2, cy: MAP_H / 2 });
     extCamSeqRef.current += 1;
     setExtCamCmd({ seq: extCamSeqRef.current, type: 'reset' });
-  };
-  const handlePanCamera = (dx, dy) => {
-    setCamera((prev) => clampCamera({ ...prev, cx: prev.cx + dx / prev.z, cy: prev.cy + dy / prev.z }));
-    extCamSeqRef.current += 1;
-    setExtCamCmd({ seq: extCamSeqRef.current, type: 'pan', dx, dy });
   };
 
   // Плавный облёт камеры к точке (Total War: клик по карточке отряда или мини-карте)
@@ -1690,185 +1695,186 @@ function MapTab({
 
   return (
     <div className="space-y-2">
-            {showQuickPrologue && !fullScreenTableMode && !prologueRewardClaimed && (
-              <div className="relative hud-walnut-bezel bg-gradient-to-r from-[#17120c] via-[#13100c] to-[#0f1512] border border-amber-500/45 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 text-[10.5px] shadow-md">
+            {/* ЕДИНАЯ КОМАНДНАЯ ЛЕНТА КАМПАНИИ: Историческая операция + Компактный 3-шаговый старт (без многослойного сэндвича над 3D-картой) */}
+            {!fullScreenTableMode && (activeEpisodeObj || (showQuickPrologue && !prologueRewardClaimed)) && (
+              <div className="relative hud-walnut-bezel bg-gradient-to-r from-[#1a130c] via-[#13110e] to-[#0e1714] border border-amber-500/45 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 text-[10.5px] shadow-lg">
                 <span className="hud-brass-corner tl" />
                 <span className="hud-brass-corner tr" />
-                <div className="flex items-center gap-1.5 text-amber-200 font-serif font-bold tracking-wide">
-                  <WaxSealIcon className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>{t('ВВОДНЫЙ СОВЕТ В ВЕДЕНО (3 ШАГА):', 'VEDENO OPENING COUNCIL (3 STEPS):')}</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <button
-                    onClick={() => {
-                      const ring = kunakSpyRings?.find((r) => !r.active) || kunakSpyRings?.[0];
-                      if (ring && handleActivateKunakSpyNetwork) {
-                        handleActivateKunakSpyNetwork(ring.id);
-                        return;
-                      }
-                      const target = naibates.find((n) => n.underSiege) || naibates[1] || naibates[0];
-                      if (!target) return;
-                      setSelectedNaibateId(target.id);
-                    }}
-                    className={`px-2 py-0.5 rounded border cursor-pointer transition font-serif font-bold ${
-                      step1Done
-                        ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-200'
-                        : 'bg-amber-500/20 hover:bg-amber-500/35 border-amber-400/60 text-amber-100'
-                    }`}
-                  >
-                    {step1Done ? '✓ ' : '① '}
-                    {t('1. Разведать кордон (Кунаки)', '1. Scout Cordon (Kunaks)')}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const col = liveImperialColumns[0];
-                      if (col && handleSeverColumnSupplyLine) {
-                        handleSeverColumnSupplyLine(col.id);
-                      } else if (col) {
-                        handleInterceptImperialColumn(col.id);
-                      }
-                    }}
-                    className={`px-2 py-0.5 rounded border cursor-pointer transition font-serif font-bold ${
-                      step2Done
-                        ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-200'
-                        : 'bg-sky-500/20 hover:bg-sky-500/35 border-sky-400/60 text-sky-100'
-                    }`}
-                  >
-                    {step2Done ? '✓ ' : '② '}
-                    {t('2. Перерезать обоз колонны', '2. Sever Column Supply Line')}
-                  </button>
-                  <button
-                    onClick={handleNextTurn}
-                    className={`px-2 py-0.5 rounded border cursor-pointer transition font-serif font-bold ${
-                      step3Done
-                        ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-200'
-                        : 'bg-orange-500/25 hover:bg-orange-500/40 border-orange-400/70 text-orange-100'
-                    }`}
-                  >
-                    {step3Done ? '✓ ' : '③ '}
-                    {t('3. Сдать сезон (Новый ход)', '3. Advance Season (Next Turn)')}
-                  </button>
-                  {allPrologueDone && handleClaimPrologueReward && (
-                    <button
-                      onClick={handleClaimPrologueReward}
-                      className="px-2.5 py-0.5 rounded bg-gradient-to-b from-emerald-400 to-emerald-600 hover:from-emerald-300 hover:to-emerald-500 text-stone-950 font-serif font-extrabold cursor-pointer shadow"
-                    >
-                      🎁 {t('Получить +15п пороха и +3% Авторитета', 'Claim +15p Powder & +3% Authority')}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setShowQuickPrologue(false)}
-                    className="px-1.5 py-0.5 rounded bg-stone-900 hover:bg-stone-800 border border-stone-700 text-stone-400 hover:text-stone-200 cursor-pointer"
-                    title={t('Скрыть совет в Ведено', 'Hide Vedeno council bar')}
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            )}
 
-            {/* ОПЕРАТИВНЫЙ СВИТОК ИСТОРИЧЕСКОГО ЭПИЗОДА (4 ФАЗЫ • 1839 / 1843 / 1845 / 1853 / 1859) */}
-            {!fullScreenTableMode && activeEpisodeObj && (
-              <div className="relative hud-walnut-bezel bg-gradient-to-r from-[#1a130c] via-[#13110e] to-[#0e1714] border border-amber-400/50 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 text-[10.5px] shadow-lg">
-                <span className="hud-brass-corner tl" />
-                <span className="hud-brass-corner tr" />
-                <div className="flex flex-wrap items-center gap-2 min-w-0">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/60 text-amber-200 font-serif font-extrabold shrink-0">
-                    📜 {t(activeEpisodeObj.yearsLabelRu, activeEpisodeObj.yearsLabelEn)}
-                  </span>
-                  <span className="font-serif font-extrabold text-amber-100 text-xs truncate">
-                    {t(activeEpisodeObj.titleRu, activeEpisodeObj.titleEn)}
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/90 border border-emerald-500/45 text-emerald-300 font-mono font-bold text-[10px] shrink-0">
-                    ★ {t('Столица:', 'Capital:')} {t(capitalLabelRu, capitalLabelEn)}
-                  </span>
-                  {imperialHeldIds.length > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-950/90 border border-rose-500/60 text-rose-200 font-mono font-bold text-[10px] shrink-0">
-                      🏰 {t(`Крепостей РИ к штурму: ${imperialHeldIds.length}`, `Forts to Storm: ${imperialHeldIds.length}`)}
+                {/* Левая часть: Активная операция кампании */}
+                {activeEpisodeObj && (
+                  <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/60 text-amber-200 font-serif font-extrabold shrink-0">
+                      📜 {t(activeEpisodeObj.yearsLabelRu, activeEpisodeObj.yearsLabelEn)}
                     </span>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {/* Прогресс 4 оперативных фаз текущего эпизода */}
-                  <div className="flex items-center gap-1 bg-black/45 px-2 py-0.5 rounded-lg border border-stone-800">
-                    {activeEpisodeObj.phases.map((ph, idx) => {
-                      const isDone = activeEpProgress.completed || (activeEpProgress.phaseIdx || 0) > idx;
-                      const isCurrent = !activeEpProgress.completed && (activeEpProgress.phaseIdx || 0) === idx;
-                      return (
-                        <span
-                          key={ph.id}
-                          title={t(ph.titleRu, ph.titleEn)}
-                          className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold transition ${
-                            isDone
-                              ? 'bg-emerald-500 text-stone-950'
-                              : isCurrent
-                              ? 'bg-amber-400 text-stone-950 ring-1 ring-amber-200'
-                              : 'bg-stone-900 text-stone-500'
-                          }`}
-                        >
-                          {idx + 1}/4{isDone ? '✓' : ''}
-                        </span>
-                      );
-                    })}
-                  </div>
-
-                  {/* Быстрое переключение между 5 историческими эпизодами */}
-                  <div className="hidden xl:flex items-center gap-0.5 bg-black/35 px-1.5 py-0.5 rounded-lg border border-stone-800">
-                    {HISTORICAL_EPISODES.map((ep) => {
-                      const epDone = episodesState?.[ep.id]?.completed;
-                      const isSel = ep.id === activeEpisodeObj.id;
-                      return (
-                        <button
-                          key={ep.id}
-                          type="button"
-                          onClick={() => {
-                            if (setActiveEpisodeId) setActiveEpisodeId(ep.id);
-                            if (setActiveEpisodeModal) setActiveEpisodeModal(true);
-                          }}
-                          title={t(ep.titleRu, ep.titleEn)}
-                          className={`px-1.5 py-0.5 rounded text-[9.5px] font-serif font-bold cursor-pointer transition ${
-                            isSel
-                              ? 'bg-amber-500/30 border border-amber-400 text-amber-100'
-                              : epDone
-                              ? 'bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/70'
-                              : 'text-stone-400 hover:text-amber-200'
-                          }`}
-                        >
-                          {ep.episodeNumber}
-                          {epDone ? '✓' : ''}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {activeEpProgress.completed && activeEpisodeObj.nextChainEpisodeId && (
+                    <span className="font-serif font-extrabold text-amber-100 text-xs truncate">
+                      {t(activeEpisodeObj.titleRu, activeEpisodeObj.titleEn)}
+                    </span>
+                    <div className="flex items-center gap-0.5 bg-black/45 px-1.5 py-0.5 rounded-lg border border-stone-800">
+                      {activeEpisodeObj.phases.map((ph, idx) => {
+                        const isDone = activeEpProgress.completed || (activeEpProgress.phaseIdx || 0) > idx;
+                        const isCurrent = !activeEpProgress.completed && (activeEpProgress.phaseIdx || 0) === idx;
+                        return (
+                          <span
+                            key={ph.id}
+                            title={t(ph.titleRu, ph.titleEn)}
+                            className={`px-1 py-0.5 rounded text-[9px] font-mono font-bold transition ${
+                              isDone
+                                ? 'bg-emerald-500 text-stone-950'
+                                : isCurrent
+                                ? 'bg-amber-400 text-stone-950'
+                                : 'bg-stone-900 text-stone-500'
+                            }`}
+                          >
+                            {idx + 1}{isDone ? '✓' : ''}
+                          </span>
+                        );
+                      })}
+                    </div>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (setActiveEpisodeId) setActiveEpisodeId(activeEpisodeObj.nextChainEpisodeId);
-                        if (setActiveEpisodeModal) setActiveEpisodeModal(true);
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-stone-950 font-serif font-extrabold cursor-pointer shadow"
+                      onClick={() => setActiveEpisodeModal && setActiveEpisodeModal(true)}
+                      className="px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-stone-950 font-serif font-extrabold cursor-pointer shadow"
                     >
-                      ▶ {t('К следующему Эпизоду', 'Next Episode')}
+                      ⚔️{' '}
+                      {activeEpProgress.completed
+                        ? t('Итоги операции (4/4)', 'Operation Summary (4/4)')
+                        : t(
+                            `Открыть фазу операции (${(activeEpProgress.phaseIdx || 0) + 1}/4)`,
+                            `Open Operation Phase (${(activeEpProgress.phaseIdx || 0) + 1}/4)`
+                          )}
                     </button>
-                  )}
+                    {activeEpProgress.completed && activeEpisodeObj.nextChainEpisodeId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (setActiveEpisodeId) setActiveEpisodeId(activeEpisodeObj.nextChainEpisodeId);
+                          if (setActiveEpisodeModal) setActiveEpisodeModal(true);
+                        }}
+                        className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-stone-950 font-serif font-extrabold cursor-pointer shadow"
+                      >
+                        ▶ {t('Следующий Эпизод', 'Next Episode')}
+                      </button>
+                    )}
+                    {imperialHeldIds.length > 0 && (
+                      <span className="hidden 2xl:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-950/90 border border-rose-500/60 text-rose-200 font-mono font-bold text-[9.5px] shrink-0">
+                        🏰 {imperialHeldIds.length}
+                      </span>
+                    )}
+                  </div>
+                )}
 
-                  <button
-                    type="button"
-                    onClick={() => setActiveEpisodeModal && setActiveEpisodeModal(true)}
-                    className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-stone-950 font-serif font-extrabold cursor-pointer shadow"
-                  >
-                    ⚔️{' '}
-                    {activeEpProgress.completed
-                      ? t('Итоги операции (4/4)', 'Operation Summary (4/4)')
-                      : t(
-                          `Открыть фазу операции (${(activeEpProgress.phaseIdx || 0) + 1}/4)`,
-                          `Open Operation Phase (${(activeEpProgress.phaseIdx || 0) + 1}/4)`
-                        )}
-                  </button>
-                </div>
+                {/* Правая часть: компактный 3-шаговый ориентир старта (первые 3 хода) или переключатель 5 эпизодов */}
+                {showQuickPrologue && !prologueRewardClaimed ? (
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="hidden xl:inline-flex items-center gap-1 text-[9.5px] font-serif uppercase tracking-wider text-amber-300/90 font-bold mr-0.5">
+                      <WaxSealIcon className="w-3 h-3 text-amber-400" />
+                      <span>{t('Старт:', 'Start:')}</span>
+                    </span>
+                    <button
+                      onClick={() => {
+                        const ring = kunakSpyRings?.find((r) => !r.active) || kunakSpyRings?.[0];
+                        if (ring && handleActivateKunakSpyNetwork) {
+                          handleActivateKunakSpyNetwork(ring.id);
+                          return;
+                        }
+                        const target = naibates.find((n) => n.underSiege) || naibates[1] || naibates[0];
+                        if (!target) return;
+                        setSelectedNaibateId(target.id);
+                      }}
+                      className={`px-2 py-0.5 rounded border cursor-pointer transition font-serif font-bold text-[10px] ${
+                        step1Done
+                          ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-200'
+                          : 'bg-amber-500/20 hover:bg-amber-500/35 border-amber-400/60 text-amber-100'
+                      }`}
+                      title={t('Шаг 1: открыть разведку кордона или выбрать осаждённый аул', 'Step 1: scout the cordon or inspect a besieged aul')}
+                    >
+                      {step1Done ? '✓ ' : '① '}
+                      {t('Разведка', 'Scout')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const col = liveImperialColumns[0];
+                        if (col && handleSeverColumnSupplyLine) {
+                          handleSeverColumnSupplyLine(col.id);
+                        } else if (col) {
+                          handleInterceptImperialColumn(col.id);
+                        }
+                      }}
+                      className={`px-2 py-0.5 rounded border cursor-pointer transition font-serif font-bold text-[10px] ${
+                        step2Done
+                          ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-200'
+                          : 'bg-sky-500/20 hover:bg-sky-500/35 border-sky-400/60 text-sky-100'
+                      }`}
+                      title={t('Шаг 2: перерезать сухарный обоз колонны РИ или отдать приказ на 3D-карте', 'Step 2: sever an Imperial supply convoy or issue a 3D map order')}
+                    >
+                      {step2Done ? '✓ ' : '② '}
+                      {t('Удар по обозу', 'Cut Supply')}
+                    </button>
+                    <button
+                      onClick={handleNextTurn}
+                      className={`px-2 py-0.5 rounded border cursor-pointer transition font-serif font-bold text-[10px] ${
+                        step3Done
+                          ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-200'
+                          : 'bg-orange-500/25 hover:bg-orange-500/40 border-orange-400/70 text-orange-100'
+                      }`}
+                      title={t('Шаг 3: завершить первый ход и увидеть ответ театра войны', 'Step 3: advance the season to watch the theater respond')}
+                    >
+                      {step3Done ? '✓ ' : '③ '}
+                      {t('Новый ход', 'Next Turn')}
+                    </button>
+                    {allPrologueDone && handleClaimPrologueReward && (
+                      <button
+                        onClick={handleClaimPrologueReward}
+                        className="px-2 py-0.5 rounded bg-gradient-to-b from-emerald-400 to-emerald-600 hover:from-emerald-300 hover:to-emerald-500 text-stone-950 font-serif font-extrabold cursor-pointer shadow text-[10px]"
+                      >
+                        🎁 {t('+15п / +3%', '+15p / +3%')}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setShowQuickPrologue(false)}
+                      className="px-1.5 py-0.5 rounded bg-stone-900 hover:bg-stone-800 border border-stone-700 text-stone-400 hover:text-stone-200 cursor-pointer text-[10px]"
+                      title={t('Скрыть ориентир старта', 'Hide opening checklist')}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  activeEpisodeObj && (
+                    <div className="hidden lg:flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/85 border border-emerald-500/40 text-emerald-300 font-mono font-bold text-[10px]">
+                        ★ {t(capitalLabelRu, capitalLabelEn)}
+                      </span>
+                      <div className="flex items-center gap-0.5 bg-black/35 px-1.5 py-0.5 rounded-lg border border-stone-800">
+                        {HISTORICAL_EPISODES.map((ep) => {
+                          const epDone = episodesState?.[ep.id]?.completed;
+                          const isSel = ep.id === activeEpisodeObj.id;
+                          return (
+                            <button
+                              key={ep.id}
+                              type="button"
+                              onClick={() => {
+                                if (setActiveEpisodeId) setActiveEpisodeId(ep.id);
+                                if (setActiveEpisodeModal) setActiveEpisodeModal(true);
+                              }}
+                              title={t(ep.titleRu, ep.titleEn)}
+                              className={`px-1.5 py-0.5 rounded text-[9.5px] font-serif font-bold cursor-pointer transition ${
+                                isSel
+                                  ? 'bg-amber-500/30 border border-amber-400 text-amber-100'
+                                  : epDone
+                                  ? 'bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/70'
+                                  : 'text-stone-400 hover:text-amber-200'
+                              }`}
+                            >
+                              {ep.episodeNumber}
+                              {epDone ? '✓' : ''}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )
+                )}
               </div>
             )}
 
@@ -1877,26 +1883,18 @@ function MapTab({
             <div
               className={`${
                 fullScreenTableMode ? 'lg:col-span-12' : 'lg:col-span-8'
-              } bg-[#110e0b] border border-amber-700/35 rounded-xl p-2.5 shadow-2xl space-y-1.5 transition-all duration-300`}
+              } bg-[#110e0b] border border-amber-700/35 rounded-xl p-2 shadow-2xl space-y-1.5 transition-all duration-300`}
             >
-              {/* ЕДИНАЯ ГРАВИРОВАННАЯ ПАНЕЛЬ КАМЕРЫ И СЕМАНТИЧЕСКОГО ЗУМА НАД 3D-СТОЛОМ */}
+              {/* ЧИСТАЯ ОДНОСТРОЧНАЯ ПАНЕЛЬ УПРАВЛЕНИЯ 3D-СТОЛОМ (ВТОРОСТЕПЕННЫЕ ИНСТРУМЕНТЫ В «ИНСТРУМЕНТЫ И СЛОИ») */}
               <div className="relative isolate flex flex-wrap items-center justify-between gap-1.5 bg-[#0c0a08] border border-amber-600/35 rounded-lg px-2.5 py-1 text-[10.5px] font-mono">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <h2 className="text-xs font-bold font-serif text-amber-300 uppercase flex items-center gap-1.5 tracking-wide">
                     <CompassRoseIcon className="w-4 h-4 text-amber-400 shrink-0" />
                     <span>{t('3D-Стол Кавказа', '3D Caucasus Table')}</span>
                   </h2>
-                  <span className="hidden xl:inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-stone-900/90 border border-amber-700/30 text-stone-300 text-[9.5px]">
-                    <span className="text-emerald-300 font-semibold">
-                      {t(
-                        `Разведка кордона: ${7 - cordonFogSectors.length}/7 секторов`,
-                        `Cordon Recon: ${7 - cordonFogSectors.length}/7 sectors`
-                      )}
-                    </span>
-                  </span>
                   {eraObjectivesProgress && (
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9.5px] hud-num ${
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[9.5px] hud-num ${
                         eraObjectivesProgress.allDone
                           ? 'bg-amber-500/20 border-amber-400/80 text-amber-200 font-bold'
                           : 'bg-stone-900/95 border-amber-700/40 text-amber-100/90'
@@ -1908,8 +1906,8 @@ function MapTab({
                       <Award className="w-3 h-3 text-amber-400 shrink-0" />
                       <span>
                         {t(
-                          `Цели эпохи: ${eraObjectivesProgress.doneCount}/${eraObjectivesProgress.totalCount}`,
-                          `Era Goals: ${eraObjectivesProgress.doneCount}/${eraObjectivesProgress.totalCount}`
+                          `Цели: ${eraObjectivesProgress.doneCount}/${eraObjectivesProgress.totalCount}`,
+                          `Goals: ${eraObjectivesProgress.doneCount}/${eraObjectivesProgress.totalCount}`
                         )}
                       </span>
                       <span className="hidden sm:inline-flex items-center gap-0.5">
@@ -1924,12 +1922,15 @@ function MapTab({
                       </span>
                     </span>
                   )}
+                  <span className="hidden 2xl:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-stone-900/90 border border-amber-700/30 text-emerald-300 text-[9.5px]">
+                    {t(`Разведка ${7 - cordonFogSectors.length}/7`, `Recon ${7 - cordonFogSectors.length}/7`)}
+                  </span>
                   {eraObjectivesProgress?.allDone && handleProclaimEraTriumph && (
                     <button
                       onClick={handleProclaimEraTriumph}
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-stone-950 font-serif font-extrabold text-[10px] cursor-pointer shadow"
                     >
-                      <span>🏆 {t('Триумф эпохи!', 'Era Triumph!')}</span>
+                      <span>🏆 {t('Триумф!', 'Triumph!')}</span>
                     </button>
                   )}
                   {naibates.some((n) => n.snowbound) && (
@@ -1941,118 +1942,56 @@ function MapTab({
                       )}
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-950/90 hover:bg-sky-900 border border-sky-400/60 text-sky-200 font-serif font-bold text-[10px] cursor-pointer"
                     >
-                      <span>❄️ {t('Перевалы в снегу (Зажечь маяки)', 'Snowbound Passes (Light Beacons)')}</span>
+                      <span>❄️ {t('Зажечь маяки', 'Light Beacons')}</span>
                     </button>
                   )}
                 </div>
 
-                {/* Главные игровые кнопки: Зум, Погода, Стол на весь экран и «Инструменты и слои» */}
+                {/* Компактный правый блок: Зум, Погода, Судьбы/Реликвии, Полный экран и «Инструменты и слои» */}
                 <div className="flex flex-wrap items-center gap-1">
-                  <button
-                    onClick={() => handleAdjustZoom(-0.3)}
-                    disabled={!real3DTableMode && mapZoom <= ZOOM_MIN}
-                    className="px-2 py-0.5 rounded bg-stone-900 hover:bg-stone-800 border border-amber-500/40 text-amber-200 font-bold cursor-pointer transition disabled:opacity-40 disabled:cursor-not-allowed"
-                    title={t('Отдалить камеру: над хребтами появляются стаи орлов, облака, тучи, грозы, дождь и снег', 'Zoom out: flocks of eagles, clouds, storms, rain & snow appear above the ridges')}
-                  >
-                    − {t('Отдалить (Небо и тучи)', 'Zoom Out (Sky & Clouds)')}
-                  </button>
-                  <span className="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/40 text-amber-200 font-extrabold text-center hud-num inline-flex items-center gap-1">
-                    <HighlandEagleIcon className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>
-                      ×{mapZoom.toFixed(1)} •{' '}
-                      {mapZoom < 1.38
-                        ? t('І. Обзор ТВД', 'I. Theatre View')
-                        : mapZoom < 1.92
-                        ? t('ІІ. Оперативный стол', 'II. Operational')
-                        : t('ІІІ. Тактика ущелий', 'III. Gorge Tactics')}
+                  <div className="inline-flex items-center rounded bg-stone-900/90 border border-amber-500/35 overflow-hidden">
+                    <button
+                      onClick={() => handleAdjustZoom(-0.3)}
+                      disabled={!real3DTableMode && mapZoom <= ZOOM_MIN}
+                      className="px-2 py-0.5 hover:bg-stone-800 text-amber-200 font-bold cursor-pointer transition disabled:opacity-40 disabled:cursor-not-allowed"
+                      title={t('Отдалить (Небо и тучи)', 'Zoom Out (Sky & Clouds)')}
+                    >
+                      <span>−</span>
+                      <span className="sr-only">{t('Отдалить (Небо и тучи)', 'Zoom Out (Sky & Clouds)')}</span>
+                    </button>
+                    <span className="px-1.5 py-0.5 bg-amber-500/10 border-x border-amber-500/25 text-amber-200 font-extrabold hud-num text-[10px]">
+                      ×{mapZoom.toFixed(1)}
                     </span>
-                  </span>
-                  <button
-                    onClick={() => handleAdjustZoom(0.3)}
-                    disabled={!real3DTableMode && mapZoom >= ZOOM_MAX}
-                    className="px-2 py-0.5 rounded bg-stone-900 hover:bg-stone-800 border border-emerald-500/40 text-emerald-200 font-bold cursor-pointer transition disabled:opacity-40 disabled:cursor-not-allowed"
-                    title={t('Приблизить камеру к фигуркам всадников, пушек и пехоты', 'Zoom in on the horsemen, cannon & infantry figurines')}
-                  >
-                    + {t('Приблизить (Фигурки)', 'Zoom In (Figurines)')}
-                  </button>
+                    <button
+                      onClick={() => handleAdjustZoom(0.3)}
+                      disabled={!real3DTableMode && mapZoom >= ZOOM_MAX}
+                      className="px-2 py-0.5 hover:bg-stone-800 text-emerald-200 font-bold cursor-pointer transition disabled:opacity-40 disabled:cursor-not-allowed"
+                      title={t('Приблизить (Фигурки)', 'Zoom In (Figurines)')}
+                    >
+                      <span>+</span>
+                      <span className="sr-only">{t('Приблизить (Фигурки)', 'Zoom In (Figurines)')}</span>
+                    </button>
+                  </div>
                   {mapZoom > ZOOM_MIN && (
-                    <>
-                      <button
-                        onClick={handleResetCamera}
-                        className="px-1.5 py-0.5 rounded bg-stone-900 hover:bg-stone-800 border border-stone-600 text-stone-300 cursor-pointer"
-                      >
-                        {t('Сброс', 'Reset')}
-                      </button>
-                      <div className="flex items-center gap-0.5">
-                        {[
-                          ['◀', -60, 0, t('Запад', 'West')],
-                          ['▲', 0, -45, t('Север', 'North')],
-                          ['▼', 0, 45, t('Юг', 'South')],
-                          ['▶', 60, 0, t('Восток', 'East')]
-                        ].map(([icon, dx, dy, label]) => (
-                          <button
-                            key={icon}
-                            onClick={() => handlePanCamera(dx, dy)}
-                            className="px-1.5 py-0.5 rounded bg-stone-800 hover:bg-stone-700 text-amber-200 cursor-pointer"
-                            title={label}
-                          >
-                            {icon}
-                          </button>
-                        ))}
-                      </div>
-                    </>
+                    <button
+                      onClick={handleResetCamera}
+                      className="px-1.5 py-0.5 rounded bg-stone-900 hover:bg-stone-800 border border-stone-600 text-stone-300 cursor-pointer"
+                      title={t('Сбросить камеру на весь театр', 'Reset camera to full theater')}
+                    >
+                      {t('Сброс', 'Reset')}
+                    </button>
                   )}
-
-                  <button
-                    onClick={() => {
-                      const order = ['auto', 'thunderstorm', 'rain_clouds', 'eagles_clouds', 'snow_blizzard'];
-                      setSkyWeatherMode(order[(order.indexOf(skyWeatherMode) + 1) % order.length]);
-                    }}
-                    className="px-2 py-0.5 rounded bg-indigo-950/90 hover:bg-indigo-900 border border-indigo-400/50 text-indigo-200 font-bold cursor-pointer transition"
-                    title={t(
-                      'Быстрое переключение погоды над 3D-столом: Гроза и молнии, Ливень, Орлы и облака, Снежный буран',
-                      'Cycle sky weather over the 3D table: Thunderstorm, Downpour, Eagles & Clouds, Blizzard'
-                    )}
-                  >
-                    {effectiveSkyWeather === 'thunderstorm'
-                      ? t('⛈️ Гроза', '⛈️ Storm')
-                      : effectiveSkyWeather === 'rain_clouds'
-                      ? t('🌧️ Ливень', '🌧️ Rain')
-                      : effectiveSkyWeather === 'snow_blizzard'
-                      ? t('❄️ Буран', '❄️ Blizzard')
-                      : t('🦅 Орлы и небо', '🦅 Eagles & Sky')}
-                  </button>
-
-                  <button
-                    onClick={() => setReal3DTableMode && setReal3DTableMode((prev) => !prev)}
-                    className={`px-2.5 py-0.5 rounded cursor-pointer transition font-serif font-extrabold ${
-                      real3DTableMode
-                        ? 'bg-gradient-to-r from-amber-400 to-emerald-400 text-stone-950 shadow-lg ring-1 ring-amber-200'
-                        : 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-200 border border-emerald-400/60'
-                    }`}
-                    title={t(
-                      'Переключить стол между аппаратным 3D-движком Three.js WebGL2 (рельеф NASA SRTM + .glb модели башен, конницы, колонн и орлов) и тактическим штабным планом',
-                      'Switch between Three.js WebGL2 3D Engine (NASA SRTM terrain + .glb PBR towers, cavalry, columns & eagles) and Tactical Staff Map'
-                    )}
-                  >
-                    {real3DTableMode
-                      ? t('🗺️ Тактический План', '🗺️ Tactical Staff Plan')
-                      : t('🏔️ Настоящее 3D (WebGL)', '🏔️ Real 3D (WebGL)')}
-                  </button>
 
                   <button
                     onClick={() => setShowHeroArcsDrawer((prev) => !prev)}
                     className={`px-2 py-0.5 rounded cursor-pointer transition font-serif font-bold ${
                       showHeroArcsDrawer
                         ? 'bg-emerald-400 text-stone-950 shadow'
-                        : 'bg-emerald-950/85 hover:bg-emerald-900/85 text-emerald-200 border border-emerald-400/55'
+                        : 'bg-emerald-950/85 hover:bg-emerald-900/85 text-emerald-200 border border-emerald-400/50'
                     }`}
-                    title={t(
-                      'Личные сюжетные цепочки решений 3 ключевых героев Имамата: Хаджи-Мурат, Хаджи-Юсуф Сафаров и Байсунгур Беноевский (Акты I–III)',
-                      'Personal 3-Act Story Chains of 3 Iconic Imamate Heroes: Hadji Murad, Hajji Yusuf Safarov & Baysungur of Benoy'
-                    )}
+                    title={t('Личные сюжетные цепочки Хаджи-Мурата, Сафарова и Байсунгура', 'Hero Story Arcs: Hadji Murad, Safarov & Baysungur')}
                   >
-                    ⚔️ {t('Судьбы Героев', 'Hero Arcs')} ({completedHeroArcsCount}/3)
+                    ⚔️ {t('Герои', 'Heroes')} ({completedHeroArcsCount}/3)
                   </button>
 
                   <button
@@ -2062,12 +2001,9 @@ function MapTab({
                         ? 'bg-amber-400 text-stone-950 shadow'
                         : 'bg-amber-950/80 hover:bg-amber-900/80 text-amber-200 border border-amber-500/45'
                     }`}
-                    title={t(
-                      'Сокровищница Реликвий Имамата: выберите до 2 исторических реликвий, дающих постоянные бонусы в кампаниях',
-                      'Imamate Relics Treasury: equip up to 2 historical relics granting persistent campaign bonuses'
-                    )}
+                    title={t('Сокровищница Реликвий Имамата', 'Imamate Relics Treasury')}
                   >
-                    🏛️ {t('Реликвии', 'Relics')} ({activeRelicIds.length}/2)
+                    🏛️ {activeRelicIds.length}/2
                   </button>
 
                   <button
@@ -2095,14 +2031,32 @@ function MapTab({
                   </button>
                 </div>
 
-                {/* Выпадающая панель «Инструменты и слои» (все сервисные, огневые и атмосферные переключатели) */}
+                {/* Выпадающая панель «Инструменты и слои» (режим 3D/2D, слои карты, залпы, погода и радар) */}
                 {showMapToolsMenu && (
                   <div className="w-full mt-1.5 pt-2 border-t border-amber-500/30 bg-[#120f0c] rounded-lg p-2.5 space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-[10px] uppercase text-amber-300 font-bold">
-                        {t('Слои карты и семантическая детализация:', 'Map Layers & Semantic Detail:')}
+                        {t('Режим карты и слои:', 'Map Mode & Layers:')}
                       </span>
                       <div className="flex flex-wrap items-center gap-1">
+                        <button
+                          onClick={() => setReal3DTableMode && setReal3DTableMode((prev) => !prev)}
+                          className={`px-2.5 py-0.5 rounded cursor-pointer transition font-serif font-extrabold ${
+                            real3DTableMode
+                              ? 'bg-gradient-to-r from-amber-400 to-emerald-400 text-stone-950 shadow'
+                              : 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-200 border border-emerald-400/60'
+                          }`}
+                        >
+                          {real3DTableMode
+                            ? t('🗺️ Тактический План', '🗺️ Tactical Staff Plan')
+                            : t('🏔️ Настоящее 3D (WebGL)', '🏔️ Real 3D (WebGL)')}
+                        </button>
+                        <button
+                          onClick={handleResetCamera}
+                          className="px-2 py-0.5 rounded bg-stone-900 hover:bg-stone-800 border border-stone-600 text-stone-200 cursor-pointer"
+                        >
+                          ⌂ {t('Сброс', 'Reset')}
+                        </button>
                         <button
                           onClick={() => setMapLayer('realistic_3d')}
                           className={`px-2 py-0.5 rounded cursor-pointer transition ${
@@ -2813,6 +2767,7 @@ function MapTab({
                 <div className="relative">
                 {real3DTableMode ? (
                   <CaucasusTable3DViewport
+                    attachedPowder={attachedPowder}
                     naibates={naibates}
                     capitalNaibateId={capitalNaibateId}
                     capitalLabelRu={capitalLabelRu}
@@ -2820,14 +2775,17 @@ function MapTab({
                     imperialHeldIds={imperialHeldIds}
                     seasonPhase={seasonPhase}
                     externalCameraCmd={extCamCmd}
+                    fullScreenTableMode={fullScreenTableMode}
                     liveFieldUnits={liveFieldUnits}
                     liveImperialColumns={liveImperialColumns}
                     cordonFortresses={cordonFortresses}
                     riverBridges={riverBridges}
                     signalBeacons={signalBeacons}
                     battleMemorials={battleMemorials}
+                    selectedNaibate={selectedNaibate}
                     selectedNaibateId={selectedNaibateId}
                     selectedUnitId={selectedUnitId}
+                    orderExecutionCalc={orderExecutionCalc}
                     dioramaTimeOfDay={dioramaTimeOfDay}
                     handleCycleTimeOfDay={handleCycleTimeOfDay}
                     handleCycleSeason3D={() =>
@@ -2843,6 +2801,8 @@ function MapTab({
                     setSelectedNaibateId={setSelectedNaibateId}
                     setSelectedUnitId={setSelectedUnitId}
                     setHoveredMapInfo={setHoveredMapInfo}
+                    handleSendEnvoy={handleSendEnvoy}
+                    handleEnterTacticalDiorama={handleEnterTacticalDiorama}
                     handleInterceptImperialColumn={handleInterceptImperialColumn}
                     handleSeverColumnSupplyLine={handleSeverColumnSupplyLine}
                     handleToggleRiverBridge={handleToggleRiverBridge}
