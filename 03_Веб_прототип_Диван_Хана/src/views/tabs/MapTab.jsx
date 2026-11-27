@@ -2533,8 +2533,8 @@ function MapTab({
                         -{lastBattleAfterActionReport.muridLoss} {t('саб.', 'sab.')}
                       </span>
                       <span className="px-2 py-1 rounded bg-emerald-950/85 border border-emerald-500/50 text-emerald-200 font-bold">
-                        +{lastBattleAfterActionReport.powderGain}{t('п', 'p')} • +{lastBattleAfterActionReport.silverGain}₽
-                        {lastBattleAfterActionReport.capturedUnicorn ? ' • +1💣 единорог • +1★' : ''}
+                        +{lastBattleAfterActionReport.powderGain}{t('п', 'p')} • +{lastBattleAfterActionReport.silverGain}{t('₽', ' rub.')}
+                        {lastBattleAfterActionReport.capturedUnicorn ? t(' • +1💣 единорог • +1★', ' • +1💣 unicorn • +1★') : ''}
                       </span>
                       <button
                         onClick={() => setActiveTab('chronicle')}
@@ -4441,7 +4441,7 @@ function MapTab({
                               />
                               <text x="0" y="-14" textAnchor="middle" fontSize="6.8" fontWeight="bold" fill="#fef3c7">
                                 {cv.escorted ? '🛡️ ' : `${cv.icon} `}
-                                {t(cv.badgeRu, cv.badgeEn)} • +{cv.ransomSilver}₽ ({cvTerr.elevationMeters}{t('м', 'm')})
+                                {t(cv.badgeRu, cv.badgeEn)} • +{cv.ransomSilver}{t('₽', ' rub.')} ({cvTerr.elevationMeters}{t('м', 'm')})
                               </text>
                             </>
                           )}
@@ -4591,7 +4591,7 @@ function MapTab({
                                 strokeWidth="0.9"
                               />
                               <text x="0" y="-13.5" textAnchor="middle" fontSize="6.7" fontWeight="bold" fill="#e0e7ff">
-                                {cr.icon} {t(cr.badgeRu, cr.badgeEn)} (+{cr.lootSilver}₽)
+                                {cr.icon} {t(cr.badgeRu, cr.badgeEn)} (+{cr.lootSilver}{t('₽', ' rub.')})
                               </text>
                             </>
                           )}
@@ -6549,10 +6549,10 @@ function MapTab({
                       </div>
                       <div className="grid grid-cols-2 gap-1.5 font-mono text-[10.5px]">
                         <span className="px-2 py-0.5 rounded bg-orange-500/15 border border-orange-500/30 text-orange-300 font-bold">
-                          🛢️ {t('Порох', 'Powder')}: {resources.gunpowder}п
+                          🛢️ {t('Порох', 'Powder')}: {resources.gunpowder}{t('п', 'p')}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold">
-                          🪙 {t('Серебро', 'Silver')}: {resources.silver}₽
+                          🪙 {t('Серебро', 'Silver')}: {resources.silver}{t('₽', ' rub.')}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold">
                           🌾 {t('Зерно', 'Grain')}: {resources.provisions}
@@ -7033,14 +7033,14 @@ function MapTab({
                                   {t(opt.title, opt.titleEn || opt.title)}
                                 </div>
                                 <div className="text-[10px] font-mono text-emerald-300">
-                                  +{opt.rewardPowder}п {t('пороха', 'powder')} • +{opt.rewardSupport}% {t('Порты', 'Porte')}
+                                  +{opt.rewardPowder}{t('п', 'p')} {t('пороха', 'powder')} • +{opt.rewardSupport}% {t('Порты', 'Porte')}
                                 </div>
                               </div>
                               <button
                                 onClick={() => handleOttomanDiplomacy && handleOttomanDiplomacy(opt)}
                                 className="px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-mono text-[10.5px] font-extrabold shrink-0 cursor-pointer"
                               >
-                                {opt.costSilver}₽ →
+                                {opt.costSilver}{t('₽', ' rub.')} →
                               </button>
                             </div>
                           ))}
@@ -7080,7 +7080,7 @@ function MapTab({
                                 onClick={() => handleAwardOrder && handleAwardOrder(ord)}
                                 className="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-400 text-stone-950 font-mono text-[10.5px] font-extrabold shrink-0 cursor-pointer"
                               >
-                                {ord.silverCost}₽ →
+                                {ord.silverCost}{t('₽', ' rub.')} →
                               </button>
                             </div>
                           ))}
@@ -7118,7 +7118,7 @@ function MapTab({
                             onClick={() => handleEnactNizam && handleEnactNizam(niz)}
                             className="px-2.5 py-1 rounded bg-sky-400 hover:bg-sky-300 text-stone-950 font-mono text-[10px] font-extrabold shrink-0 cursor-pointer"
                           >
-                            🔏 {niz.costSilver}₽
+                            🔏 {niz.costSilver}{t('₽', ' rub.')}
                           </button>
                         </div>
                       ))}
@@ -8122,7 +8122,7 @@ function MapTab({
                               {cv.icon} {t(cv.nameRu, cv.nameEn)}
                             </span>
                             <span className="font-mono text-[9.5px] text-emerald-300 font-bold shrink-0">
-                              +{cv.ransomSilver}₽ • +{cv.ransomPowder}{t('п', 'p')}
+                              +{cv.ransomSilver}{t('₽', ' rub.')} • +{cv.ransomPowder}{t('п', 'p')}
                             </span>
                           </div>
                           <div className="font-mono text-[9.5px] text-stone-300 mt-0.5 flex items-center justify-between">
@@ -8185,7 +8185,7 @@ function MapTab({
                             {mill.icon} {t(mill.badgeRu, mill.badgeEn)}
                           </span>
                           <span className="font-mono text-[9px] font-bold text-amber-300">
-                            +{mill.yieldPowder}{t('п', 'p')} / +{mill.yieldSilver}₽
+                            +{mill.yieldPowder}{t('п', 'p')} / +{mill.yieldSilver}{t('₽', ' rub.')}
                           </span>
                         </div>
                         <div className="font-mono text-[9px] text-stone-400 mt-0.5 truncate">
@@ -8212,7 +8212,7 @@ function MapTab({
                               {cr.icon} {t(cr.nameRu, cr.nameEn)}
                             </span>
                             <span className="font-mono text-[9.5px] text-amber-300 font-bold shrink-0">
-                              +{cr.lootSilver}₽ • -{cr.intelPressureDrop}% {t('нат.', 'press.')}
+                              +{cr.lootSilver}{t('₽', ' rub.')} • -{cr.intelPressureDrop}% {t('нат.', 'press.')}
                             </span>
                           </div>
                           <div className="font-mono text-[9.5px] text-indigo-200/90 mt-0.5 flex items-center justify-between">

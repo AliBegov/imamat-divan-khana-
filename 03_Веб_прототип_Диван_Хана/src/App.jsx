@@ -490,17 +490,25 @@ export default function App() {
   const [selectedSiegeZone, setSelectedSiegeZone] = useState('direct_battery');
   const [siegeState, setSiegeState] = useState({
     aulName: 'Аул Салты (Осада князя М. С. Воронцова)',
+    aulNameEn: 'Aul of Salty (Prince M. S. Vorontsov’s Siege)',
     day: 14,
     wallIntegrity: 76,
     blindageLayers: 3,
     russianMineDistance: 9.5,
     counterMineProgress: 52,
     basinVibration: 'СЛЫШНЫ УДАРЫ КИРОК ПОД ЮЖНОЙ БАШНЕЙ (9.5 саж.)',
+    basinVibrationEn: 'SAPPER PICKS HEARD BENEATH SOUTH TOWER (9.5 sazh.)',
     garrisonMorale: 92,
     russianMorale: 78,
     battleLog: [
-      'День 14-й осады: Настильная батарея русских бьёт в нижний обрыв скалы (мёртвая зона для 2-го и 3-го ярусов саклей).',
-      'Инженер Хаджи-Юсуф Сафаров установил медный таз с водой в подвале башни: колебания воды выдали направление русского минного подкопа!'
+      {
+        ru: 'День 14-й осады: Настильная батарея русских бьёт в нижний обрыв скалы (мёртвая зона для 2-го и 3-го ярусов саклей).',
+        en: 'Siege Day 14: Imperial flat-trajectory battery strikes the lower cliff face (dead zone shields the 2nd & 3rd saklya tiers).'
+      },
+      {
+        ru: 'Инженер Хаджи-Юсуф Сафаров установил медный таз с водой в подвале башни: колебания воды выдали направление русского минного подкопа!',
+        en: 'Engineer Hajji Yusuf Safarov placed a copper water basin in the tower cellar: water ripples exposed the enemy sapper gallery!'
+      }
     ]
   });
 
@@ -509,7 +517,10 @@ export default function App() {
   const [selectedSplineIdx, setSelectedSplineIdx] = useState(1);
   const [ambushStep, setAmbushStep] = useState(1);
   const [ambushLog, setAmbushLog] = useState([
-    '10 июля 1845 г.: Колонна «Сухарной экспедиции» ген. Клюгенау, Викторова и Пассека растянулась на 5 вёрст по лесному гребню от горы Речель к Дарго.'
+    {
+      ru: '10 июля 1845 г.: Колонна «Сухарной экспедиции» ген. Клюгенау, Викторова и Пассека растянулась на 5 вёрст по лесному гребню от горы Речель к Дарго.',
+      en: 'July 10, 1845: The “Biscuit Expedition” column under Gens. Klugenau, Viktorov, and Passek stretches 5 versts along the forest ridge from Mt. Rechel toward Dargo.'
+    }
   ]);
 
   // Активный ИИ Кавказского корпуса и Арсенал Ведено
@@ -712,7 +723,9 @@ export default function App() {
     deadZoneBlocked: 0,
     camoufletsDetonated: 0,
     lastShotReport:
-      'Готовность 3D-полигона: вращайте рельеф мышью или пальцем, двигайте плоскость разреза Милютина и испытывайте баллистику.'
+      'Готовность 3D-полигона: вращайте рельеф мышью или пальцем, двигайте плоскость разреза Милютина и испытывайте баллистику.',
+    lastShotReportEn:
+      '3D Range Ready: orbit the terrain with mouse or touch, slide Milyutin’s cutaway plane, and test mountain ballistics.'
   });
 
   const active3DTerrain = useMemo(
@@ -6210,8 +6223,12 @@ export default function App() {
       setSiegeState((prev) => ({
         ...prev,
         aulName: `${enc.biomeRu} (${enc.elevationMeters}м, против ${enc.columnBadgeRu})`,
+        aulNameEn: `${enc.biomeEn || enc.biomeRu} (${enc.elevationMeters}m, vs. ${enc.columnBadgeEn || enc.columnBadgeRu})`,
         battleLog: [
-          `⚔️ ПЕРЕХОД С 3D-КАРТЫ РЕЛЬЕФА [${enc.x}, ${enc.y}]: «${enc.unitNameRu}» вступил в бой с «${enc.columnNameRu}» (${enc.remainingBayonets} штыков, высота ${enc.elevationMeters}м, уклон ${enc.slopeDeg}°, погода: ${enc.weatherBadgeRu})!`,
+          {
+            ru: `⚔️ ПЕРЕХОД С 3D-КАРТЫ РЕЛЬЕФА [${enc.x}, ${enc.y}]: «${enc.unitNameRu}» вступил в бой с «${enc.columnNameRu}» (${enc.remainingBayonets} штыков, высота ${enc.elevationMeters}м, уклон ${enc.slopeDeg}°, погода: ${enc.weatherBadgeRu})!`,
+            en: `⚔️ ZOOM FROM 3D RELIEF MAP [${enc.x}, ${enc.y}]: “${enc.unitNameEn || enc.unitNameRu}” engaged “${enc.columnNameEn || enc.columnNameRu}” (${enc.remainingBayonets} bayonets, elev. ${enc.elevationMeters}m, slope ${enc.slopeDeg}°, weather: ${enc.weatherBadgeEn || enc.weatherBadgeRu})!`
+          },
           ...prev.battleLog.slice(0, 5)
         ]
       }));
@@ -6238,7 +6255,10 @@ export default function App() {
         }))
       );
       setAmbushLog((prev) => [
-        `⚔️ ТАКТИЧЕСКИЙ ПЕРЕХВАТ С 3D-КАРТЫ [${enc.x}, ${enc.y}]: Отряд «${enc.unitNameRu}» зажал в ущелье «${enc.columnNameRu}» (${enc.remainingBayonets} шт., высота ${enc.elevationMeters}м, уклон ${enc.slopeDeg}°, погода: ${enc.weatherBadgeRu}). Отдайте приказ засадным сотням!`,
+        {
+          ru: `⚔️ ТАКТИЧЕСКИЙ ПЕРЕХВАТ С 3D-КАРТЫ [${enc.x}, ${enc.y}]: Отряд «${enc.unitNameRu}» зажал в ущелье «${enc.columnNameRu}» (${enc.remainingBayonets} шт., высота ${enc.elevationMeters}м, уклон ${enc.slopeDeg}°, погода: ${enc.weatherBadgeRu}). Отдайте приказ засадным сотням!`,
+          en: `⚔️ TACTICAL INTERCEPT FROM 3D MAP [${enc.x}, ${enc.y}]: “${enc.unitNameEn || enc.unitNameRu}” trapped “${enc.columnNameEn || enc.columnNameRu}” in the defile (${enc.remainingBayonets} bay., elev. ${enc.elevationMeters}m, slope ${enc.slopeDeg}°, weather: ${enc.weatherBadgeEn || enc.weatherBadgeRu}). Command your ambush squadrons!`
+        },
         ...prev.slice(0, 5)
       ]);
       setActiveTab('siege');
@@ -6251,8 +6271,12 @@ export default function App() {
         russianMorale: Math.max(54, Math.min(88, Math.round((enc.remainingBayonets || 2000) / 32))),
         garrisonMorale: 92,
         aulName: `${enc.biomeRu} (${enc.elevationMeters}м • Оборона против ${enc.columnBadgeRu})`,
+        aulNameEn: `${enc.biomeEn || enc.biomeRu} (${enc.elevationMeters}m • Defense vs. ${enc.columnBadgeEn || enc.columnBadgeRu})`,
         battleLog: [
-          `⚔️ ТАКТИЧЕСКИЙ ПЕРЕХВАТ С 3D-КАРТЫ [${enc.x}, ${enc.y}]: «${enc.unitNameRu}» остановил колонну «${enc.columnNameRu}» (${enc.remainingBayonets} шт.) на скальном рубеже ${enc.elevationMeters}м (крутизна ${enc.slopeDeg}°)!`,
+          {
+            ru: `⚔️ ТАКТИЧЕСКИЙ ПЕРЕХВАТ С 3D-КАРТЫ [${enc.x}, ${enc.y}]: «${enc.unitNameRu}» остановил колонну «${enc.columnNameRu}» (${enc.remainingBayonets} шт.) на скальном рубеже ${enc.elevationMeters}м (крутизна ${enc.slopeDeg}°)!`,
+            en: `⚔️ TACTICAL INTERCEPT FROM 3D MAP [${enc.x}, ${enc.y}]: “${enc.unitNameEn || enc.unitNameRu}” halted “${enc.columnNameEn || enc.columnNameRu}” (${enc.remainingBayonets} bay.) at the ${enc.elevationMeters}m cliff line (slope ${enc.slopeDeg}°)!`
+          },
           ...prev.battleLog.slice(0, 5)
         ]
       }));
@@ -9200,10 +9224,8 @@ export default function App() {
     if (!isForest) {
       setSiegeState((prev) => ({
         ...prev,
-        aulName: t(
-          `${targetNaibate.name} (Комендант: ${targetNaibate.naibName})`,
-          `${targetNaibate.nameEn || targetNaibate.name} (Commandant: ${targetNaibate.naibNameEn || targetNaibate.naibName})`
-        ),
+        aulName: `${targetNaibate.name} (Комендант: ${targetNaibate.naibName})`,
+        aulNameEn: `${targetNaibate.nameEn || targetNaibate.name} (Commandant: ${targetNaibate.naibNameEn || targetNaibate.naibName})`,
         russianMorale: Math.max(45, targetNaibate.imperialPressure),
         garrisonMorale: Math.max(70, targetNaibate.traits.courage)
       }));
@@ -9723,6 +9745,7 @@ export default function App() {
         russianMineDistance: nextMineDist,
         counterMineProgress: nextCounter,
         basinVibration: vibrationStatus,
+        basinVibrationEn: undefined,
         garrisonMorale: nextGarrisonMorale,
         russianMorale: nextRussianMorale,
         battleLog: [logEntry, ...prev.battleLog]
@@ -10231,14 +10254,16 @@ export default function App() {
       setTacticalMode('milyutin_siege');
       setSiegeState((prev) => ({
         ...prev,
-        aulName: 'Салты (осада 1847 г.)'
+        aulName: 'Салты (осада 1847 г.)',
+        aulNameEn: 'Salty (Siege of 1847)'
       }));
     } else if (crisis.id === 'crisis_chokh_siege_1849') {
       setSelected3DTerrainId('salty_1847');
       setTacticalMode('milyutin_siege');
       setSiegeState((prev) => ({
         ...prev,
-        aulName: 'Бастион Чох (осада 1849 г.)'
+        aulName: 'Бастион Чох (осада 1849 г.)',
+        aulNameEn: 'Chokh Bastion (Siege of 1849)'
       }));
     } else if (crisis.id === 'crisis_shali_forest_clearing_1850') {
       setSelected3DTerrainId('dargo_1845');
@@ -11801,6 +11826,7 @@ struct FImamatCampaignSnapshot
       showMuseumCodexModal ||
       showDispatchesModal ||
       showReleaseHubModal ||
+      showPlaytestFeedbackModal ||
       activeHeroArcModal ||
       activeEpisodeModal ||
       campaignClimaxState
@@ -11832,6 +11858,7 @@ struct FImamatCampaignSnapshot
         setShowMuseumCodexModal(false);
         setShowDispatchesModal(false);
         setShowReleaseHubModal(false);
+        setShowPlaytestFeedbackModal(false);
         setActiveHeroArcModal(null);
         setActiveEpisodeModal(false);
         if (campaignClimaxState) {
@@ -11894,11 +11921,11 @@ struct FImamatCampaignSnapshot
     <HudLangContext.Provider value={t}>
     <div className="hud-safe-screen min-h-screen bg-[#0c0e12] text-stone-100 font-sans pb-8">
       {/* КОМПАКТНАЯ ДВУХСТРОЧНАЯ СТРАТЕГИЧЕСКАЯ ШАПКА ДИВАН-ХАНЫ (РЯД 1: ГОСУДАРСТВО, РЕСУРСЫ И ХОД • РЯД 2: ВКЛАДКИ И ФАЗЫ СЕЗОНА) */}
-      <header className="hud-header backdrop-blur-md border-b border-amber-600/35 px-3 py-1.5 sticky top-0 z-[45]">
+      <header className="hud-header backdrop-blur-md border-b border-amber-600/35 px-2.5 xl:px-3 py-1.5 sticky top-0 z-[45]">
         {/* РЯД 1: Герб, Ход/Сезон, Алерты, 6 Ресурсов Байт аль-маль, Печати, Архив и ЗАВЕРШИТЬ ХОД */}
-        <div className="max-w-[1640px] mx-auto flex flex-wrap 2xl:flex-nowrap items-center justify-between gap-1.5 sm:gap-2">
+        <div className="max-w-[1640px] 2xl:max-w-[1880px] mx-auto flex flex-wrap xl:flex-nowrap items-center justify-between gap-1.5 sm:gap-2">
           {/* Левый блок: Герб Шамиля, название, ход, сезон и алерты */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 xl:gap-2 shrink-0">
             <button
               onClick={() => setShowPauseMenu(true)}
               title={t('Меню (Esc)', 'Menu (Esc)')}
@@ -11906,7 +11933,7 @@ struct FImamatCampaignSnapshot
             >
               {t('Ш', 'S')}
             </button>
-            <h1 className="text-xs sm:text-sm font-bold font-serif tracking-wide text-amber-400 shrink-0 hidden lg:block">
+            <h1 className="text-xs sm:text-sm font-bold font-serif tracking-wide text-amber-400 shrink-0 hidden 2xl:block">
               {t('ИМАМАТ', 'IMAMAT')}
             </h1>
             <span
@@ -11915,7 +11942,7 @@ struct FImamatCampaignSnapshot
             >
               {t('Ход', 'Turn')} {turn} • {t(currentMonthShortRu, currentMonthShortEn)}
             </span>
-            <div className="shrink-0 hidden xl:flex">
+            <div className="shrink-0 hidden 2xl:flex">
               <AlertBar alerts={hudAlerts} t={t} />
             </div>
           </div>
@@ -12053,26 +12080,26 @@ struct FImamatCampaignSnapshot
                 `Сообщить о баге или идее (Воронка 5 ходов: ${first5TurnsFunnel.completedCount}/${first5TurnsFunnel.totalCount})`,
                 `Report a bug or idea (First-5-Turns Funnel: ${first5TurnsFunnel.completedCount}/${first5TurnsFunnel.totalCount})`
               )}
-              className="px-2 py-1 rounded-lg text-[10.5px] font-serif font-bold border transition cursor-pointer inline-flex items-center gap-1 bg-amber-500/15 hover:bg-amber-500/30 border-amber-400/55 text-amber-200"
+              className="px-2 py-1 rounded-lg text-[10.5px] font-serif font-bold border transition cursor-pointer inline-flex items-center gap-1 bg-amber-500/15 hover:bg-amber-500/30 border-amber-400/55 text-amber-200 shrink-0 whitespace-nowrap"
             >
               <span>💬</span>
-              <span className="hidden xl:inline">{t('Отзыв / Баг', 'Feedback')}</span>
-              <span className="xl:hidden">{t('Баг', 'Bug')}</span>
+              <span className="hidden 2xl:inline">{t('Отзыв / Баг', 'Feedback')}</span>
+              <span className="2xl:hidden">{t('Баг', 'Bug')}</span>
             </button>
 
             {/* Единое меню «Кодекс, Архив и Настройки» (чистый HUD без служебного шума) */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 onClick={() => setShowHeaderArchiveMenu((v) => !v)}
-                className={`px-2.5 py-1 rounded-lg text-[10.5px] font-serif font-bold transition cursor-pointer border flex items-center gap-1 ${
+                className={`px-2 xl:px-2.5 py-1 rounded-lg text-[10.5px] font-serif font-bold transition cursor-pointer border flex items-center gap-1 whitespace-nowrap ${
                   showHeaderArchiveMenu
                     ? 'bg-amber-500/25 text-amber-200 border-amber-400'
                     : 'bg-[#1a1612] text-stone-200 hover:bg-stone-800 border-stone-700'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5 text-amber-300" />
-                <span className="hidden sm:inline">{t('Архив и настройки', 'Archive & Settings')} ▾</span>
-                <span className="sm:hidden">{t('Архив', 'Menu')} ▾</span>
+                <span className="hidden 2xl:inline">{t('Архив и настройки', 'Archive & Settings')} ▾</span>
+                <span className="2xl:hidden">{t('Архив', 'Archive')} ▾</span>
               </button>
 
               {showHeaderArchiveMenu && (
@@ -12319,7 +12346,7 @@ struct FImamatCampaignSnapshot
         </div>
 
         {/* РЯД 2: 4 главные палаты Диван-ханы + раскрываемый раздел «Ещё разделы» и единый индикатор этапа сезона */}
-        <div className="max-w-[1640px] mx-auto mt-1 pt-1 border-t border-stone-800/80 flex flex-wrap items-center justify-between gap-1.5">
+        <div className="max-w-[1640px] 2xl:max-w-[1880px] mx-auto mt-1 pt-1 border-t border-stone-800/80 flex flex-wrap items-center justify-between gap-1.5">
           <div className="hud-mobile-scroll max-w-full overflow-x-auto flex flex-nowrap md:flex-wrap items-center gap-1">
             <button
               onClick={() => setActiveTab('map')}
@@ -12889,7 +12916,7 @@ struct FImamatCampaignSnapshot
       {showGlossaryModal && <GlossaryModal {...{ glossaryCategory, glossarySearch, setGlossaryCategory, setGlossarySearch, setShowGlossaryModal, t }} />}
 
       {/* МОДАЛЬНОЕ ОКНО: ТЕЛЕМЕТРИЯ СЕССИИ STEAM PLAYTEST (ImamatPlaytestSessionTelemetry) */}
-      {showTelemetryModal && <TelemetryModal {...{ buildPlaytestTelemetryPayload, handleDownloadPlaytestTelemetryJson, setShowTelemetryModal }} />}
+      {showTelemetryModal && <TelemetryModal {...{ buildPlaytestTelemetryPayload, handleDownloadPlaytestTelemetryJson, setShowTelemetryModal, t }} />}
 
       {/* МОДАЛЬНОЕ ОКНО: 12 ИСТОРИЧЕСЧЕСКИХ ДОСТИЖЕНИЙ STEAMWORKS (DT_SteamAchievements) */}
       {showAchievementsModal && <AchievementsModal {...{ setShowAchievementsModal, steamAchievementsStatus, t, unlockedAchievementsCount }} />}
@@ -12942,7 +12969,7 @@ struct FImamatCampaignSnapshot
       )}
 
       {/* ОСНОВНОЙ КОНТЕЙНЕР ВКЛАДОК */}
-      <main className="max-w-[1640px] mx-auto px-2.5 mt-1.5">
+      <main className="max-w-[1640px] 2xl:max-w-[1880px] mx-auto px-2.5 mt-1.5">
         {/* ---------------- ВКЛАДКА 1: СТРАТЕГИЧЕСКАЯ КАРТА КАВКАЗА И УПРАВЛЕНИЕ НАИБАМИ ---------------- */}
         {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, delayedConsequences, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, first5TurnsFunnel, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleActivateSingleKunakRing, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, hapticsEnabled: audioMixerConfig.hapticsEnabled, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconIntel, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowPlaytestFeedbackModal, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, tactileFeedback, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, triggerTactileCue, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
 

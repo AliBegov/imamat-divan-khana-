@@ -415,15 +415,32 @@ export default function DiplomacyTab({
 
             {(selectedNaibate.ordersAwarded || []).length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1 border-t border-amber-500/15">
-                {selectedNaibate.ordersAwarded.map((oName, idx) => (
-                  <span
-                    key={`${oName}-${idx}`}
-                    className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-200 font-mono text-[10px] font-bold flex items-center gap-1.5"
-                  >
-                    <ShamilOrderMedallion orderId={inferOrderIdFromName(oName)} size={18} />
-                    {oName}
-                  </span>
-                ))}
+                {selectedNaibate.ordersAwarded.map((oName, idx) => {
+                  const inferredId = inferOrderIdFromName(oName);
+                  const legacyAwardEnMap = {
+                    'Лев Газавата': 'Lion of the Gazavat',
+                    'Звезда Шамиля I ст.': 'Star of Shamil (1st Class)',
+                    'Шашка Чести': 'Shashka of Honor',
+                    'Печать Мудира': 'Seal of the Mudir',
+                    'Знамя Мудира': 'Banner of the Mudir'
+                  };
+                  const catalogMatch =
+                    KUBACHI_25_ORDERS_CATALOG.find((o) => o.id === inferredId) ||
+                    (inferredId === FELT_SHAME_BADGE.id ? FELT_SHAME_BADGE : null);
+                  const localizedAwardName = t(
+                    oName,
+                    legacyAwardEnMap[oName] || catalogMatch?.nameEn || oName
+                  );
+                  return (
+                    <span
+                      key={`${oName}-${idx}`}
+                      className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-200 font-mono text-[10px] font-bold flex items-center gap-1.5"
+                    >
+                      <ShamilOrderMedallion orderId={inferredId} size={18} />
+                      {localizedAwardName}
+                    </span>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -574,7 +591,7 @@ export default function DiplomacyTab({
                         </div>
                       </div>
                       <span className="text-[11px] font-mono text-amber-300 font-bold shrink-0">
-                        {ord.silverCost > 0 ? `${ord.silverCost}₽` : '0₽'}
+                        {ord.silverCost > 0 ? t(`${ord.silverCost}₽`, `${ord.silverCost} rub.`) : t('0₽', '0 rub.')}
                       </span>
                     </div>
                     <p className="text-[10.5px] italic text-amber-100/85 leading-snug">

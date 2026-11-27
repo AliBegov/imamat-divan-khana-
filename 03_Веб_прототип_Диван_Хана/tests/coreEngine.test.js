@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  TARGET_RESOLUTION_MATRIX,
+  auditBilingualDataCatalog,
+  detectCyrillicLeaksInEnglishText,
+  evaluateResolutionMatrixGate5,
+  localizeLogEntry
+} from '../src/game/localizationQaEngine.js';
+
+import {
   CAMPAIGN_SCENARIOS,
   IMPERIAL_GENERALS,
   INITIAL_NAIBATES,
@@ -1553,4 +1561,125 @@ test('74. computeFirst5TurnsFunnel handles missing or zero session timestamps sa
   assert.equal(safe.sessionDurationSec, 0);
   assert.equal(safe.sessionDurationMin, 0);
   assert.ok(safe.nextHintRu.length > 10 && safe.nextHintEn.length > 10);
+});
+
+// ============================================================================
+// СПРИНТ 10 (ФАЗА 5 / GATE 5): АУДИТ RU/EN ЛОКАЛИЗАЦИИ И МАТРИЦА РАЗРЕШЕНИЙ
+// ============================================================================
+test('75. TARGET_RESOLUTION_MATRIX covers Steam Deck 1280x800 through 4K UHD 3840x2160', () => {
+  assert.equal(TARGET_RESOLUTION_MATRIX.length, 5);
+  assert.equal(TARGET_RESOLUTION_MATRIX[0].width, 1280);
+  assert.equal(TARGET_RESOLUTION_MATRIX[0].height, 800);
+  assert.equal(TARGET_RESOLUTION_MATRIX[4].width, 3840);
+  assert.equal(TARGET_RESOLUTION_MATRIX[4].height, 2160);
+  for (let i = 1; i < TARGET_RESOLUTION_MATRIX.length; i += 1) {
+    assert.ok(TARGET_RESOLUTION_MATRIX[i].width > TARGET_RESOLUTION_MATRIX[i - 1].width);
+    assert.ok(TARGET_RESOLUTION_MATRIX[i].minCanvasWidth >= TARGET_RESOLUTION_MATRIX[i - 1].minCanvasWidth);
+  }
+});
+
+test('76. detectCyrillicLeaksInEnglishText flags leaked Russian words while allowing language switcher labels', () => {
+  const clean = detectCyrillicLeaksInEnglishText('Imamat: Divan-Khana\nTurn 1 • Jul\nРусский\nFeedback\n2.4 ms');
+  assert.equal(clean.ok, true);
+  assert.equal(clean.leakCount, 0);
+
+  const dirty = detectCyrillicLeaksInEnglishText('Combat HQ\nАул Салты (Осада)\n2.4 мс\nDefender Morale');
+  assert.equal(dirty.ok, false);
+  assert.equal(dirty.leakCount, 2);
+  assert.ok(dirty.leakedLines.some((l) => l.includes('Аул Салты')));
+  assert.ok(dirty.leakedLines.some((l) => l.includes('2.4 мс')));
+});
+
+test('77. auditBilingualDataCatalog verifies 100% EN translations across scenarios, Imperial generals, and naibates', () => {
+  const scenAudit = auditBilingualDataCatalog(CAMPAIGN_SCENARIOS, [
+    ['yearLabel', 'yearLabelEn'],
+    ['subtitle', 'subtitleEn'],
+    ['goalDesc', 'goalDescEn']
+  ]);
+  assert.equal(scenAudit.ok, true, `Scenario EN issues: ${JSON.stringify(scenAudit)}`);
+
+  const genAudit = auditBilingualDataCatalog(IMPERIAL_GENERALS, [
+    ['shortLabelRu', 'shortLabelEn'],
+    ['name', 'nameEn'],
+    ['role', 'roleEn'],
+    ['doctrineName', 'doctrineNameEn'],
+    ['desc', 'descEn']
+  ]);
+  assert.equal(genAudit.ok, true, `Generals EN issues: ${JSON.stringify(genAudit)}`);
+
+  const naibAudit = auditBilingualDataCatalog(INITIAL_NAIBATES, [
+    ['name', 'nameEn'],
+    ['region', 'regionEn'],
+    ['naibName', 'naibNameEn'],
+    ['naibTitle', 'naibTitleEn'],
+    ['bio', 'bioEn']
+  ]);
+  assert.equal(naibAudit.ok, true, `Naibates EN issues: ${JSON.stringify(naibAudit)}`);
+});
+
+test('78. auditBilingualDataCatalog verifies 100% EN coverage across 25 Kubachi orders, 32 dilemmas, audio & playtest catalogs', () => {
+  const ordersAudit = auditBilingualDataCatalog(KUBACHI_25_ORDERS_CATALOG, [
+    ['name', 'nameEn'],
+    ['metalRu', 'metalEn'],
+    ['arabicMotto', 'arabicMottoEn'],
+    ['shape', 'shapeEn'],
+    ['perkRu', 'perkEn']
+  ]);
+  assert.equal(ordersAudit.ok, true, `Orders EN issues: ${JSON.stringify(ordersAudit)}`);
+
+  const dilAudit = auditBilingualDataCatalog(HISTORICAL_DILEMMAS_32, [
+    ['senderRu', 'senderEn'],
+    ['urgencyRu', 'urgencyEn'],
+    ['titleRu', 'titleEn'],
+    ['descRu', 'descEn']
+  ]);
+  assert.equal(dilAudit.ok, true, `Dilemmas EN issues: ${JSON.stringify(dilAudit)}`);
+
+  const musicAudit = auditBilingualDataCatalog(ADAPTIVE_MUSIC_LAYERS, [
+    ['nameRu', 'nameEn'],
+    ['shortRu', 'shortEn'],
+    ['scaleRu', 'scaleEn'],
+    ['descRu', 'descEn']
+  ]);
+  assert.equal(musicAudit.ok, true, `Music EN issues: ${JSON.stringify(musicAudit)}`);
+
+  const foleyAudit = auditBilingualDataCatalog(FOLEY_SOUNDBOARD_CATALOG, [['labelRu', 'labelEn']]);
+  assert.equal(foleyAudit.ok, true, `Foley EN issues: ${JSON.stringify(foleyAudit)}`);
+
+  const funnelAudit = auditBilingualDataCatalog(FIRST_5_TURNS_MILESTONES, [
+    ['shortRu', 'shortEn'],
+    ['hintRu', 'hintEn']
+  ]);
+  assert.equal(funnelAudit.ok, true, `Funnel EN issues: ${JSON.stringify(funnelAudit)}`);
+
+  const catAudit = auditBilingualDataCatalog(FEEDBACK_CATEGORIES, [['labelRu', 'labelEn']]);
+  assert.equal(catAudit.ok, true, `Feedback categories EN issues: ${JSON.stringify(catAudit)}`);
+});
+
+test('79. evaluateResolutionMatrixGate5 enforces 0px overflow and compact header budgets from Steam Deck to 4K', () => {
+  const passEval = evaluateResolutionMatrixGate5([
+    { id: 'steam_deck', innerWidth: 1280, overflowX: 0, headerHeight: 76, canvasWidth: 860 },
+    { id: 'laptop_1440', innerWidth: 1440, overflowX: 0, headerHeight: 75, canvasWidth: 960 },
+    { id: 'macbook_1540', innerWidth: 1540, overflowX: 0, headerHeight: 75, canvasWidth: 1030 },
+    { id: 'full_hd', innerWidth: 1920, overflowX: 0, headerHeight: 75, canvasWidth: 1240 },
+    { id: 'uhd_4k', innerWidth: 3840, overflowX: 0, headerHeight: 75, canvasWidth: 1240 }
+  ]);
+  assert.equal(passEval.pass, true);
+  assert.equal(passEval.failures.length, 0);
+
+  const failEval = evaluateResolutionMatrixGate5([
+    { id: 'steam_deck', innerWidth: 1280, overflowX: 12, headerHeight: 111, canvasWidth: 680 }
+  ]);
+  assert.equal(failEval.pass, false);
+  assert.equal(failEval.failures.length, 3);
+});
+
+test('80. localizeLogEntry resolves bilingual siege/ambush log objects cleanly in RU and EN', () => {
+  const bilingual = { ru: 'День 14-й осады', en: 'Siege Day 14' };
+  const tRu = (ru) => ru;
+  const tEn = (_ru, en) => en;
+  assert.equal(localizeLogEntry(bilingual, tRu), 'День 14-й осады');
+  assert.equal(localizeLogEntry(bilingual, tEn), 'Siege Day 14');
+  assert.equal(localizeLogEntry('Plain fallback', tEn), 'Plain fallback');
+  assert.equal(localizeLogEntry(null, tEn), '');
 });

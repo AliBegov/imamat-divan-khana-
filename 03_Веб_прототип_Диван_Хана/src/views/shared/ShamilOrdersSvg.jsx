@@ -1120,7 +1120,7 @@ export function ShamilOrdersMuseumShowcase({
           <div className="flex items-center gap-2 shrink-0">
             {activeCatalogItem && (
               <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/55 text-amber-200 font-mono text-[10px] font-bold">
-                {activeCatalogItem.silverCost}₽
+                {t(`${activeCatalogItem.silverCost}₽`, `${activeCatalogItem.silverCost} rub.`)}
               </span>
             )}
             {onAwardOrder && activeCatalogItem ? (

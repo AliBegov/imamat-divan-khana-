@@ -907,9 +907,9 @@ export function TitleScreen({
                     <div className="px-2.5 pb-2 pt-1 border-t border-stone-800/80 flex items-center justify-between text-[10px] hud-num text-amber-300/90">
                       <span className="inline-flex items-center gap-1">
                         <PowderFlaskIcon className="w-3 h-3 text-amber-400" />
-                        <span>{scen.initialResources.gunpowder}п</span>
+                        <span>{scen.initialResources.gunpowder}{t('п', 'p')}</span>
                       </span>
-                      <span>🪙 {scen.initialResources.silver}₽</span>
+                      <span>🪙 {scen.initialResources.silver}{t('₽', ' rub.')}</span>
                       <span>👑 {scen.initialResources.authority}%</span>
                     </div>
                   </button>

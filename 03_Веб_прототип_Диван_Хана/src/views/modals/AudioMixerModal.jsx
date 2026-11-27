@@ -58,7 +58,10 @@ export default function AudioMixerModal({
           </div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/45 text-emerald-300 font-mono text-[11px] font-bold">
-              ⚡ {t('Отклик:', 'Response:')} {displayLatency != null ? `${displayLatency} мс` : '< 5 мс'}
+              ⚡ {t('Отклик:', 'Response:')}{' '}
+              {displayLatency != null
+                ? `${displayLatency} ${t('мс', 'ms')}`
+                : `< 5 ${t('мс', 'ms')}`}
             </span>
             <button
               onClick={() => setShowAudioMixerModal(false)}
@@ -385,7 +388,7 @@ export default function AudioMixerModal({
               </span>
               {lastAuditionedId && (
                 <span className="text-[10.5px] font-mono text-emerald-300">
-                  ✓ {lastAuditionedId} ({auditionLatencyMs} мс)
+                  ✓ {lastAuditionedId} ({auditionLatencyMs} {t('мс', 'ms')})
                 </span>
               )}
             </div>

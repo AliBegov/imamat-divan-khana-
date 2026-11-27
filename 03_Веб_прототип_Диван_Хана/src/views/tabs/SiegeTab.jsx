@@ -395,7 +395,7 @@ export default function SiegeTab({
                     {t(doctrineLabelRu, doctrineLabelEn)}
                   </span>
                   <span className="px-2 py-0.5 rounded bg-emerald-950/85 border border-emerald-500/45 text-emerald-200 font-bold">
-                    +{tacticalBattleSession.capturedPowderPoods || 0}{t('п', 'p')} • +{tacticalBattleSession.capturedSilverRubles || 0}₽
+                    +{tacticalBattleSession.capturedPowderPoods || 0}{t('п', 'p')} • +{tacticalBattleSession.capturedSilverRubles || 0}{t('₽', ' rub.')}
                   </span>
                 </div>
               </div>
@@ -558,11 +558,11 @@ export default function SiegeTab({
                             )}
                       </span>
                       <h3 className="text-sm sm:text-base font-bold font-serif text-stone-100">
-                        {siegeState.aulName}
+                        {t(siegeState.aulName, siegeState.aulNameEn || siegeState.aulName)}
                       </h3>
                     </div>
                     <div className="text-xs font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded">
-                      {siegeState.basinVibration}
+                      {t(siegeState.basinVibration, siegeState.basinVibrationEn || siegeState.basinVibration)}
                     </div>
                   </div>
 
@@ -740,7 +740,7 @@ export default function SiegeTab({
                       </div>
                       {stats3D?.lastShotReport && (
                         <div className="bg-[#100d0b] border border-amber-500/25 rounded-lg px-3 py-1.5 text-[11px] text-amber-100">
-                          {stats3D.lastShotReport}
+                          {t(stats3D.lastShotReport, stats3D.lastShotReportEn || stats3D.lastShotReport)}
                         </div>
                       )}
                     </div>
@@ -1398,7 +1398,9 @@ export default function SiegeTab({
                   <div className="bg-[#0b0d11] border border-stone-800 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2 text-xs font-mono">
                     {siegeState.battleLog.map((entry, idx) => (
                       <div key={idx} className="text-stone-300 border-b border-stone-800/70 pb-1.5">
-                        {entry}
+                        {typeof entry === 'string'
+                          ? t(entry, siegeState.battleLogEn?.[idx] || entry)
+                          : t(entry.ru, entry.en || entry.ru)}
                       </div>
                     ))}
                   </div>
@@ -1723,7 +1725,7 @@ export default function SiegeTab({
                 <div className="bg-[#0b0d11] border border-stone-800 rounded-lg p-3 max-h-44 overflow-y-auto space-y-2 text-xs font-mono">
                   {ambushLog.map((entry, idx) => (
                     <div key={idx} className="text-stone-300 border-b border-stone-800/70 pb-1.5">
-                      {entry}
+                      {typeof entry === 'string' ? entry : t(entry.ru, entry.en || entry.ru)}
                     </div>
                   ))}
                 </div>
