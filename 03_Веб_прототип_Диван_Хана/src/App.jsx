@@ -12219,48 +12219,7 @@ struct FImamatCampaignSnapshot
               </span>
             </span>
 
-            {/* СПРИНТ 8: Живой индикатор 3-слойной адаптивной музыки (Совет -> Марш -> Бой) */}
-            <button
-              type="button"
-              onClick={() => setShowAudioMixerModal(true)}
-              title={t(
-                `Адаптивная партитура: ${adaptiveMusicState.meta.nameRu} (${adaptiveMusicState.bpm} BPM). Нажмите для открытия пульта звука 4.0`,
-                `Adaptive Score: ${adaptiveMusicState.meta.nameEn} (${adaptiveMusicState.bpm} BPM). Click to open Audio Mixer 4.0`
-              )}
-              className={`px-2 py-1 rounded-lg text-[10.5px] font-mono font-bold border transition cursor-pointer hidden lg:inline-flex items-center gap-1.5 ${
-                !soundEnabled || !audioMixerConfig.musicEnabled
-                  ? 'bg-[#1a1612] text-stone-400 border-stone-700 hover:border-amber-500/50'
-                  : adaptiveMusicState.layer === 'battle'
-                    ? 'bg-rose-950/75 text-rose-200 border-rose-500/55 hover:border-rose-400'
-                    : adaptiveMusicState.layer === 'march'
-                      ? 'bg-amber-950/75 text-amber-200 border-amber-500/55 hover:border-amber-400'
-                      : 'bg-cyan-950/65 text-cyan-200 border-cyan-500/45 hover:border-cyan-300'
-              }`}
-            >
-              <span>{soundEnabled && audioMixerConfig.musicEnabled ? adaptiveMusicState.meta.icon : '🔇'}</span>
-              <span>
-                {soundEnabled && audioMixerConfig.musicEnabled
-                  ? t(adaptiveMusicState.meta.shortRu, adaptiveMusicState.meta.shortEn)
-                  : t('Без звука', 'Muted')}
-              </span>
-            </button>
-
-            {/* СПРИНТ 9 (Фаза 5): Кнопка репорта багов и идей для «слепых» плейтестов Волн 1–2 */}
-            <button
-              type="button"
-              onClick={() => setShowPlaytestFeedbackModal(true)}
-              title={t(
-                `Сообщить о баге или идее (Воронка 5 ходов: ${first5TurnsFunnel.completedCount}/${first5TurnsFunnel.totalCount})`,
-                `Report a bug or idea (First-5-Turns Funnel: ${first5TurnsFunnel.completedCount}/${first5TurnsFunnel.totalCount})`
-              )}
-              className="px-2 py-1 rounded-lg text-[10.5px] font-serif font-bold border transition cursor-pointer inline-flex items-center gap-1 bg-amber-500/15 hover:bg-amber-500/30 border-amber-400/55 text-amber-200 shrink-0 whitespace-nowrap"
-            >
-              <span>💬</span>
-              <span className="hidden 2xl:inline">{t('Отзыв / Баг', 'Feedback')}</span>
-              <span className="2xl:hidden">{t('Баг', 'Bug')}</span>
-            </button>
-
-            {/* Единое меню «Кодекс, Архив и Настройки» (чистый HUD без служебного шума) */}
+            {/* Единое меню «Кодекс, Архив и Настройки» (чистый HUD без лишних кнопок) */}
             <div className="relative shrink-0">
               <button
                 onClick={() => setShowHeaderArchiveMenu((v) => !v)}
@@ -12417,7 +12376,17 @@ struct FImamatCampaignSnapshot
                       }}
                       className="px-2 py-1 rounded bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-200 font-bold cursor-pointer"
                     >
-                      🎛️ {t('Звук 2.0', 'Audio Mixer')}
+                      🎛️ {t('Звук 2.0', 'Audio Mixer')} ({soundEnabled && audioMixerConfig.musicEnabled ? t(adaptiveMusicState.meta.shortRu, adaptiveMusicState.meta.shortEn) : t('Выкл', 'Off')})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPlaytestFeedbackModal(true);
+                        setShowHeaderArchiveMenu(false);
+                      }}
+                      className="px-2 py-1 rounded bg-amber-500/15 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 font-bold cursor-pointer"
+                    >
+                      💬 {t('Отзыв / Баг', 'Feedback')}
                     </button>
                     <button
                       onClick={() => setSoundEnabled((s) => !s)}

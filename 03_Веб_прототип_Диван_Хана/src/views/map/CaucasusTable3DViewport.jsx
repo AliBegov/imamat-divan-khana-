@@ -4154,6 +4154,28 @@ export default function CaucasusTable3DViewport({
                     ? t('⚡ 60 FPS', '⚡ 60 FPS')
                     : t('⚡ Авто', '⚡ Auto')}
                 </button>
+                {handleCycleTimeOfDay && (
+                  <button
+                    type="button"
+                    onClick={handleCycleTimeOfDay}
+                    className="px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border bg-stone-900/90 hover:bg-stone-800 text-amber-200 border-amber-500/40"
+                    title={t('Переключить освещение Кавказа: День / Закат / Ночь', 'Cycle Caucasus lighting: Day / Sunset / Night')}
+                  >
+                    {dioramaTimeOfDay === 'sunset'
+                      ? t('🌅 Закат', '🌅 Sunset')
+                      : dioramaTimeOfDay === 'night'
+                      ? t('🌙 Ночь', '🌙 Night')
+                      : t('☀️ День', '☀️ Day')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={triggerManualBatterySalvo}
+                  className="bg-gradient-to-r from-amber-600/95 to-orange-600/95 hover:from-amber-500 hover:to-orange-500 text-stone-950 font-serif font-extrabold px-2 py-0.5 rounded cursor-pointer transition"
+                  title={t('Артиллерийский залп с 3D-дымом и вспышками на перевалах', 'Fire 3D artillery salvo across the passes')}
+                >
+                  💥 {t('Залп (3D)', '3D Salvo')}
+                </button>
               </div>
             </div>
           )}
@@ -4183,7 +4205,7 @@ export default function CaucasusTable3DViewport({
           </div>
         )}
 
-        {/* Правый угол: Разведка и Намерения ИИ (Спринт 6), смена времени суток и быстрый залп батарей */}
+        {/* Правый угол: компактная всплывающая кнопка «Разведка» (освещение и 3D-залп перенесены в всплывающие панели) */}
         <div className="pointer-events-auto relative flex items-center gap-1.5">
           {reconIntel && (
             <button
@@ -4209,28 +4231,6 @@ export default function CaucasusTable3DViewport({
               )}
             </button>
           )}
-          {handleCycleTimeOfDay && (
-            <button
-              type="button"
-              onClick={handleCycleTimeOfDay}
-              className="px-2.5 py-1 rounded-lg font-serif font-bold text-[10.5px] cursor-pointer transition border bg-[#120e0a]/85 hover:bg-[#1b1510]/95 text-amber-200 border-amber-500/45 backdrop-blur-md shadow-lg"
-              title={t('Переключить освещение Кавказа: День / Закат / Ночь', 'Cycle Caucasus lighting: Day / Sunset / Night')}
-            >
-              {dioramaTimeOfDay === 'sunset'
-                ? t('🌅 Закат', '🌅 Sunset')
-                : dioramaTimeOfDay === 'night'
-                ? t('🌙 Ночь', '🌙 Night')
-                : t('☀️ День', '☀️ Day')}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={triggerManualBatterySalvo}
-            className="bg-gradient-to-r from-amber-600/95 to-orange-600/95 hover:from-amber-500 hover:to-orange-500 text-stone-950 font-serif font-extrabold px-2.5 py-1 rounded-lg text-[10.5px] shadow-lg cursor-pointer transition"
-            title={t('Артиллерийский залп с 3D-дымом и вспышками на перевалах', 'Fire 3D artillery salvo across the passes')}
-          >
-            💥 {t('Залп (3D)', '3D Salvo')}
-          </button>
 
           {/* Выпадающий «Штаб разведки ИИ» (Спринт 6): директива генерала РИ, туман перевалов и кунаки */}
           {intelPanelOpen && reconIntel && (
@@ -4362,10 +4362,10 @@ export default function CaucasusTable3DViewport({
         </div>
       </div>
 
-      {/* Нижняя тактическая полоса поверх 3D-стола: быстрый контекстный приказ + живой прогноз наведения */}
+      {/* Нижняя тактическая полоса поверх 3D-стола: в полноэкранном режиме быстрые приказы, в обычном — чистый вид 3D-рельефа */}
       <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 flex flex-wrap items-end justify-between gap-2 pointer-events-none">
-        {/* Левый нижний угол: мгновенные приказы выбранному наибству и отряду прямо с 3D-карты */}
-        {!fullScreenTableMode && selectedNaibate && (
+        {/* Левый нижний угол: быстрые приказы показываются только в полноэкранном режиме стола (когда правая карточка скрыта) */}
+        {fullScreenTableMode && selectedNaibate && (
           <div className="pointer-events-auto hidden sm:flex items-center gap-1.5 bg-[#0e0b08]/88 backdrop-blur-md border border-amber-500/45 rounded-xl px-2.5 py-1.5 shadow-xl text-[10.5px]">
             <div className="pr-2 border-r border-stone-700/80">
               <div className="font-serif font-bold text-amber-200 leading-tight flex items-center gap-1">
