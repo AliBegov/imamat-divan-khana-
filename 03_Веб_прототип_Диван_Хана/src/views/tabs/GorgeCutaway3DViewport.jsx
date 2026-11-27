@@ -41,6 +41,7 @@ import {
 } from '../shared/caucasusPhotorealCavalry3D.js';
 import {
   createPhotorealImperialColumnInstance,
+  createPhotorealMuridInfantryInstance,
   createPhotorealSupplyWagonInstance,
   createPhotorealUnicornCannonInstance,
   disposePhotorealCorpsInstance
@@ -1380,6 +1381,21 @@ export default function GorgeCutaway3DViewport({
       actorsGroup.add(heroMount);
       heroRefs.push(heroMount);
     });
+    // Скульптурная пешая сотня мюридов Имамата на солнечном гребне утёса рядом с Хаджи-Муратом
+    {
+      const mx = -3.55;
+      const mz = 3.45;
+      const my = sampleHeightAt(mx, mz);
+      const muridDetachment = createPhotorealMuridInfantryInstance({
+        scale: 0.68,
+        castShadow: true,
+        clippingPlanes: [clipPlane]
+      });
+      muridDetachment.position.set(mx, my, mz);
+      muridDetachment.rotation.y = Math.PI / 2 - 0.18;
+      actorsGroup.add(muridDetachment);
+      marchSupportRefs.push(muridDetachment);
+    }
     {
       const gorgeBeacon = createPhotorealSignalBeaconInstance({
         isLit: true,

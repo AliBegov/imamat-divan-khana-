@@ -2456,6 +2456,7 @@ export default function CaucasusTable3DViewport({
                   castShadow: true
                 })
               : createPhotorealSupplyWagonInstance({
+                  variant: 'imamat',
                   includeDraftHorse: true,
                   scale: 0.96,
                   castShadow: true
