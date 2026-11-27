@@ -1467,7 +1467,11 @@ function MapTab({
   const baseSeasonPhase =
     effectiveSkyWeather === 'snow_blizzard'
       ? 'winter'
-      : monthIdx >= 3
+      : monthIdx % 8 >= 6
+      ? 'spring'
+      : monthIdx % 8 >= 4
+      ? 'winter'
+      : monthIdx % 8 >= 2
       ? 'autumn'
       : 'summer';
   const seasonPhase = season3DOverride || baseSeasonPhase;
@@ -2791,7 +2795,14 @@ function MapTab({
                     handleCycleSeason3D={() =>
                       setSeason3DOverride((prev) => {
                         const cur = prev || baseSeasonPhase;
-                        const next = cur === 'summer' ? 'autumn' : cur === 'autumn' ? 'winter' : 'summer';
+                        const next =
+                          cur === 'spring'
+                            ? 'summer'
+                            : cur === 'summer'
+                            ? 'autumn'
+                            : cur === 'autumn'
+                            ? 'winter'
+                            : 'spring';
                         setSkyWeatherMode(next === 'winter' ? 'snow_blizzard' : 'eagles_clouds');
                         return next;
                       })

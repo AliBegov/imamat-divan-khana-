@@ -995,7 +995,15 @@ export function createPhotorealCaucasusTerrainMaterial({ summerMap, bumpMap, pbr
         float valleyOrchardMask = smoothstep(0.46, 0.24, tpi) * innerDagestan * (1.0 - smoothstep(0.24, 0.44, elevNorm));
         vec3 valleyOrchardCol = mix(vec3(0.08, 0.20, 0.07), vec3(0.16, 0.29, 0.10), detailN);
 
-        // Осеннее золото лесов и горных лугов
+        // Весеннее пробуждение (uSeasonMix = -1.0) и осеннее золото (uSeasonMix = +1.0)
+        float springFactor = clamp(-uSeasonMix, 0.0, 1.0);
+        if (springFactor > 0.01) {
+          forestFloor = mix(forestFloor, mix(vec3(0.12, 0.27, 0.07), vec3(0.22, 0.38, 0.11), detailN), springFactor * 0.72);
+          alpineMeadow = mix(alpineMeadow, mix(vec3(0.18, 0.34, 0.10), vec3(0.32, 0.44, 0.16), macroN), springFactor * 0.68);
+          dagestanPlateauGrass = mix(dagestanPlateauGrass, vec3(0.26, 0.36, 0.14), springFactor * 0.56);
+          valleyOrchardCol = mix(valleyOrchardCol, vec3(0.22, 0.40, 0.15), springFactor * 0.65);
+          steppeCol = mix(steppeCol, vec3(0.24, 0.35, 0.12), springFactor * 0.62);
+        }
         float autumnFactor = clamp(1.0 - abs(uSeasonMix - 1.0), 0.0, 1.0);
         if (autumnFactor > 0.01) {
           forestFloor = mix(forestFloor, mix(vec3(0.26, 0.12, 0.04), vec3(0.40, 0.22, 0.06), detailN), autumnFactor * 0.78);
@@ -1083,10 +1091,11 @@ export function createPhotorealCaucasusTerrainMaterial({ summerMap, bumpMap, pbr
           surfaceCol = mix(surfaceCol, caspianWater, caspianSea);
         }
 
-        // 6. Дендритные ледники Богосского хребта и Главного Кавказского хребта (> 2850 м)
+        // 6. Дендритные ледники Богосского хребта и Главного Кавказского хребта (> 2850 м) + весеннее таяние
         float northShade = clamp(-wn.z * 0.5 + 0.5, 0.0, 1.0);
         float winterFactor = clamp(uSeasonMix - 1.0, 0.0, 1.0);
         float snowLineElev = mix(0.68, 0.48, clamp(uSeasonMix, 0.0, 1.0));
+        snowLineElev = mix(snowLineElev, 0.55, springFactor);
         snowLineElev = mix(snowLineElev, 0.04, winterFactor);
 
         float snowPotential = elevNorm +
@@ -1313,8 +1322,15 @@ export function createExtendedCaucasusSurroundMaterial({ pbrPack = null, edgeMap
         vec3 alpineMeadow = mix(vec3(0.15, 0.25, 0.09), vec3(0.25, 0.32, 0.14), macroN);
         vec3 dagestanPasture = mix(vec3(0.36, 0.31, 0.18), vec3(0.46, 0.39, 0.23), midN * 0.7 + detailN * 0.3);
 
+        float springF = clamp(-uSeasonMix, 0.0, 1.0);
         float winterF = clamp(uSeasonMix - 1.0, 0.0, 1.0);
         float autumnF = clamp(1.0 - abs(uSeasonMix - 1.0), 0.0, 1.0);
+        if (springF > 0.01) {
+          forestFloor = mix(forestFloor, vec3(0.14, 0.30, 0.08), springF * 0.65);
+          alpineMeadow = mix(alpineMeadow, vec3(0.22, 0.38, 0.12), springF * 0.62);
+          dagestanPasture = mix(dagestanPasture, vec3(0.28, 0.37, 0.15), springF * 0.52);
+          steppeCol = mix(steppeCol, vec3(0.24, 0.35, 0.12), springF * 0.58);
+        }
         if (autumnF > 0.01) {
           forestFloor = mix(forestFloor, vec3(0.30, 0.16, 0.05), autumnF * 0.74);
           alpineMeadow = mix(alpineMeadow, vec3(0.32, 0.24, 0.11), autumnF * 0.60);
@@ -1537,6 +1553,13 @@ export function createPhotorealRiverMaterial({ pbrPack = null } = {}) {
         float totalFoam = clamp(max(foamStreaks * (0.48 + 0.34 * rapidFactor), standingCrest * 0.78) + shoreFroth * 0.72, 0.0, 0.84);
         vec3 foamColor = mix(vec3(0.68, 0.84, 0.88), vec3(0.90, 0.96, 0.99), smoothstep(0.32, 0.82, totalFoam));
         waterCol = mix(waterCol, foamColor, totalFoam * 0.76);
+
+        float springFlow = clamp(-uSeasonMix, 0.0, 1.0);
+        if (springFlow > 0.01) {
+          // Весеннее половодье: более яркая ледниковая бирюза и бурная пена талых вод!
+          waterCol = mix(waterCol, vec3(0.14, 0.52, 0.56), springFlow * 0.24);
+          waterCol = mix(waterCol, vec3(0.88, 0.96, 1.0), totalFoam * springFlow * 0.28);
+        }
 
         float winterIce = clamp(uSeasonMix - 1.0, 0.0, 1.0);
         if (winterIce > 0.01) {

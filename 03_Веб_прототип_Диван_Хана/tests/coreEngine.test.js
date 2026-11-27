@@ -21,9 +21,12 @@ import {
   computeNizamModifiers,
   computeOrderExecutionBreakdown,
   createFreshTurnActionQuota,
+  cycleSeasonPhase,
   evaluateCampaignClimax,
+  getSeasonMixValue,
   refreshFieldUnitsForNewTurn,
-  resolveEnvoysForTurn
+  resolveEnvoysForTurn,
+  resolveSeasonPhaseForTurn
 } from '../src/game/turnEngine.js';
 import {
   rankVulnerableNaibates,
@@ -752,4 +755,27 @@ test('32. buildImamatSaveFilename and createFreshTurnActionQuota return canonica
   assert.equal(quota.sealsRemaining, 3);
   assert.equal(quota.maxSeals, 3);
   assert.equal(quota.envoysSent, 0);
+});
+
+test('33. cycleSeasonPhase cycles cleanly across all 4 Caucasus seasons (spring->summer->autumn->winter->spring)', () => {
+  assert.equal(cycleSeasonPhase('spring'), 'summer');
+  assert.equal(cycleSeasonPhase('summer'), 'autumn');
+  assert.equal(cycleSeasonPhase('autumn'), 'winter');
+  assert.equal(cycleSeasonPhase('winter'), 'spring');
+  assert.equal(cycleSeasonPhase('unknown'), 'summer');
+});
+
+test('34. resolveSeasonPhaseForTurn maps campaign months to all 4 seasons and respects blizzard override', () => {
+  assert.equal(resolveSeasonPhaseForTurn(0, 'eagles_clouds'), 'summer');
+  assert.equal(resolveSeasonPhaseForTurn(2, 'eagles_clouds'), 'autumn');
+  assert.equal(resolveSeasonPhaseForTurn(4, 'eagles_clouds'), 'winter');
+  assert.equal(resolveSeasonPhaseForTurn(6, 'eagles_clouds'), 'spring');
+  assert.equal(resolveSeasonPhaseForTurn(0, 'snow_blizzard'), 'winter');
+});
+
+test('35. getSeasonMixValue returns canonical WebGL2 shader mix values for all 4 seasons', () => {
+  assert.equal(getSeasonMixValue('spring'), -1.0);
+  assert.equal(getSeasonMixValue('summer'), 0.0);
+  assert.equal(getSeasonMixValue('autumn'), 1.0);
+  assert.equal(getSeasonMixValue('winter'), 2.0);
 });

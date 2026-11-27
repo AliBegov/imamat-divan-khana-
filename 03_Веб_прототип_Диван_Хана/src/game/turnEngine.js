@@ -586,3 +586,30 @@ export function evaluateCampaignClimax({
   }
   return null;
 }
+
+// ============================================================================
+// 4-СЕЗОННЫЙ КАЛЕНДАРЬ КАВКАЗА (ВЕСНА / ЛЕТО / ОСЕНЬ / ЗИМА — СПРИНТ 4)
+// ============================================================================
+export const SEASON_CYCLE_ORDER = ['spring', 'summer', 'autumn', 'winter'];
+
+export function resolveSeasonPhaseForTurn(monthIdx = 0, effectiveSkyWeather = 'eagles_clouds') {
+  if (effectiveSkyWeather === 'snow_blizzard') return 'winter';
+  const m = ((Math.floor(monthIdx) % 12) + 12) % 12;
+  // Кампания 1845 начинается в начале лета (monthIdx 0..1 — лето, 2..3 — осень, 4..5 — зима, 6..7 — весна)
+  if (m === 0 || m === 1 || m === 8 || m === 9) return 'summer';
+  if (m === 2 || m === 3 || m === 10) return 'autumn';
+  if (m === 4 || m === 5 || m === 11) return 'winter';
+  return 'spring';
+}
+
+export function cycleSeasonPhase(currentPhase = 'summer') {
+  const idx = SEASON_CYCLE_ORDER.indexOf(currentPhase);
+  return SEASON_CYCLE_ORDER[(idx === -1 ? 1 : idx + 1) % SEASON_CYCLE_ORDER.length];
+}
+
+export function getSeasonMixValue(seasonPhase = 'summer') {
+  if (seasonPhase === 'spring') return -1.0;
+  if (seasonPhase === 'autumn') return 1.0;
+  if (seasonPhase === 'winter') return 2.0;
+  return 0.0;
+}

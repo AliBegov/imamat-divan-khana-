@@ -57,6 +57,7 @@ import {
   disposePhotorealCorpsInstance
 } from '../shared/caucasusPhotorealColumnsArtillery3D.js';
 import {
+  createPhotorealBeechAbatisInstance,
   createPhotorealImamatCapitalInstance,
   createPhotorealImperialFortressInstance,
   createPhotorealStoneBridgeInstance,
@@ -767,7 +768,13 @@ export default function CaucasusTable3DViewport({
     });
     const terrainUniforms = terrainMat.userData.shaderUniforms;
     terrainUniforms.uSeasonMix.value =
-      initialPhase === 'winter' ? 2.0 : initialPhase === 'autumn' ? 1.0 : 0.0;
+      initialPhase === 'winter'
+        ? 2.0
+        : initialPhase === 'autumn'
+        ? 1.0
+        : initialPhase === 'spring'
+        ? -1.0
+        : 0.0;
 
     const terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
     terrainMesh.castShadow = true;
@@ -1164,14 +1171,21 @@ export default function CaucasusTable3DViewport({
     });
     dummy.rotation.order = 'XYZ';
 
-    // Реалистичная природная палитра кавказской листвы, хвои и подлеска под фотоатлас
+    // Реалистичная природная палитра кавказской листвы, хвои и подлеска под все 4 сезона (Весна/Лето/Осень/Зима)
     const applySeasonalFoliagePalette = (phase) => {
       const col = new THREE.Color();
+      const springPalette = ['#5ea83a', '#74bf4a', '#86cc5a', '#4f9934', '#9ed468'];
       const summerPalette = ['#4b7a38', '#568540', '#3f6d31', '#618f43', '#4e7c3e'];
       const autumnPalette = ['#d66b1d', '#e58e26', '#b83f18', '#798c2b', '#e2ad2c'];
       const winterPalette = ['#93a4b5', '#b0becb', '#738494', '#8697a6', '#c5d1dc'];
       const pal =
-        phase === 'winter' ? winterPalette : phase === 'autumn' ? autumnPalette : summerPalette;
+        phase === 'winter'
+          ? winterPalette
+          : phase === 'autumn'
+          ? autumnPalette
+          : phase === 'spring'
+          ? springPalette
+          : summerPalette;
 
       allBroadleaf.forEach((tp, idx) => {
         col.set(pal[tp.tintSeed % pal.length]);
@@ -1179,20 +1193,28 @@ export default function CaucasusTable3DViewport({
       });
       if (beechCrownInstanced.instanceColor) beechCrownInstanced.instanceColor.needsUpdate = true;
 
+      const pineSpring = ['#3e7a4f', '#4b8a5b', '#356d46', '#569463'];
       const pineSummer = ['#356647', '#407452', '#2d583d', '#487a58'];
       const pineWinter = ['#6c888c', '#829da1', '#5c787c', '#92abb0'];
-      const pPal = phase === 'winter' ? pineWinter : pineSummer;
+      const pPal = phase === 'winter' ? pineWinter : phase === 'spring' ? pineSpring : pineSummer;
       pinePositions.forEach((pp, idx) => {
         col.set(pPal[pp.tintSeed % pPal.length]);
         pineInstanced.setColorAt(idx, col);
       });
       if (pineInstanced.instanceColor) pineInstanced.instanceColor.needsUpdate = true;
 
+      const bushSpring = ['#528f38', '#68a644', '#488234', '#7ab54c'];
       const bushSummer = ['#3f6b32', '#527d3b', '#365e2d', '#62853d'];
       const bushAutumn = ['#9e5620', '#b87624', '#7a4b1f', '#6b7528'];
       const bushWinter = ['#7b8d9c', '#95a7b5', '#687987', '#899ca9'];
       const bPal =
-        phase === 'winter' ? bushWinter : phase === 'autumn' ? bushAutumn : bushSummer;
+        phase === 'winter'
+          ? bushWinter
+          : phase === 'autumn'
+          ? bushAutumn
+          : phase === 'spring'
+          ? bushSpring
+          : bushSummer;
       undergrowthPositions.forEach((up, idx) => {
         col.set(bPal[up.tintSeed % bPal.length]);
         undergrowthInstanced.setColorAt(idx, col);
@@ -1200,7 +1222,7 @@ export default function CaucasusTable3DViewport({
       if (undergrowthInstanced.instanceColor) undergrowthInstanced.instanceColor.needsUpdate = true;
 
       terrainUniforms.uSeasonMix.value =
-        phase === 'winter' ? 2.0 : phase === 'autumn' ? 1.0 : 0.0;
+        phase === 'winter' ? 2.0 : phase === 'autumn' ? 1.0 : phase === 'spring' ? -1.0 : 0.0;
       riverMat.uniforms.uSeasonMix.value = terrainUniforms.uSeasonMix.value;
       surroundUniforms.uSeasonMix.value = terrainUniforms.uSeasonMix.value;
     };
@@ -1637,6 +1659,23 @@ export default function CaucasusTable3DViewport({
         inst.position.set(wx, wy, wz);
         inst.rotation.y = fIdx * 0.48;
         staticLayer.add(inst);
+      });
+
+      // 2.5. Скульптурные буковые лесные засеки Ичкерии и подступов к Дарго-Ведено (Blender 4.2.9 LTS)
+      [
+        { mx: 214, my: 184, rotY: 0.45, scale: 0.92 },
+        { mx: 248, my: 162, rotY: -0.35, scale: 0.96 },
+        { mx: 174, my: 205, rotY: 0.92, scale: 0.88 },
+        { mx: 282, my: 194, rotY: -0.62, scale: 0.90 }
+      ].forEach((ab) => {
+        const { wx, wy, wz } = mapToWorld(ab.mx, ab.my);
+        const abInst = createPhotorealBeechAbatisInstance({
+          scale: ab.scale,
+          castShadow: true
+        });
+        abInst.position.set(wx, wy - 0.03, wz);
+        abInst.rotation.y = ab.rotY;
+        staticLayer.add(abInst);
       });
 
       // 3. Каменные сводчатые арочные мосты строго НАД руслами реальных SRTM-рек (перпендикулярно течению, устои на обоих берегах!)
@@ -2373,24 +2412,25 @@ export default function CaucasusTable3DViewport({
       }
 
       if (smokePlumeTimer <= 0) {
-        smokePlumeTimer = 0.18;
+        smokePlumeTimer = 0.16;
         (p.naibates || []).forEach((n) => {
           if (!n.underSiege || !n.coords) return;
           const { wx, wy, wz } = mapToWorld(n.coords.x, n.coords.y);
+          // Густой двухслойный дым осад и пожаров над осаждённым аулом + редкие угли/вспышки
           smokeSys.spawnSmoke({
-            x: wx + (Math.random() - 0.5) * 0.72,
-            y: wy + 1.85,
-            z: wz + (Math.random() - 0.5) * 0.72,
-            vx: 0.28 + (Math.random() - 0.5) * 0.2,
-            vy: 0.78 + Math.random() * 0.45,
-            vz: (Math.random() - 0.5) * 0.2,
-            scale: 0.44,
-            grow: 0.92,
-            life: 3.1,
-            flash: Math.random() > 0.76,
+            x: wx + (Math.random() - 0.5) * 0.78,
+            y: wy + 1.80,
+            z: wz + (Math.random() - 0.5) * 0.78,
+            vx: 0.30 + (Math.random() - 0.5) * 0.22,
+            vy: 0.88 + Math.random() * 0.48,
+            vz: (Math.random() - 0.5) * 0.22,
+            scale: 0.50,
+            grow: 1.04,
+            life: 3.4,
+            flash: Math.random() > 0.70,
             flashHex: '#ea580c',
-            colorHex: '#64748b',
-            maxOpacity: 0.52
+            colorHex: '#475569',
+            maxOpacity: 0.58
           });
         });
         (p.signalBeacons || []).forEach((b) => {
@@ -3001,7 +3041,7 @@ export default function CaucasusTable3DViewport({
         p.weatherMode3D === 'auto'
           ? p.seasonPhase === 'winter'
             ? 'snow'
-            : p.seasonPhase === 'autumn' && p.weatherOverlayEnabled
+            : (p.seasonPhase === 'autumn' || p.seasonPhase === 'spring') && p.weatherOverlayEnabled
             ? 'rain'
             : 'clear'
           : p.weatherMode3D || 'clear';
@@ -3129,7 +3169,7 @@ export default function CaucasusTable3DViewport({
       eaglesGroup.children.forEach((eg, idx) => {
         updatePhotorealGoldenEagle(eg, elapsed, idx === 0 ? sunDirTmp : null);
       });
-      updatePhotorealFortressFlags(staticLayer, elapsed, p.dioramaTimeOfDay);
+      updatePhotorealFortressFlags(staticLayer, elapsed, p.dioramaTimeOfDay, p.seasonPhase);
       updatePhotorealSignalBeacons(staticLayer, elapsed, p.dioramaTimeOfDay);
 
       const o = orbitRef.current;
@@ -3669,6 +3709,10 @@ export default function CaucasusTable3DViewport({
                     className={`px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
                       seasonPhase === 'winter'
                         ? 'bg-sky-200 text-slate-950 border-white shadow'
+                        : seasonPhase === 'autumn'
+                        ? 'bg-amber-900/90 hover:bg-amber-800 text-amber-100 border-amber-400/60'
+                        : seasonPhase === 'spring'
+                        ? 'bg-lime-900/90 hover:bg-lime-800 text-lime-100 border-lime-400/60'
                         : 'bg-stone-900/90 hover:bg-stone-800 text-emerald-200 border-emerald-500/40'
                     }`}
                   >
@@ -3676,6 +3720,8 @@ export default function CaucasusTable3DViewport({
                       ? t('❄️ Зима', '❄️ Winter')
                       : seasonPhase === 'autumn'
                       ? t('🍂 Осень', '🍂 Autumn')
+                      : seasonPhase === 'spring'
+                      ? t('🌱 Весна', '🌱 Spring')
                       : t('🌿 Лето', '🌿 Summer')}
                   </button>
                 )}
