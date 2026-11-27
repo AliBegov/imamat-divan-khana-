@@ -17,7 +17,18 @@ import {
   Wheat,
   Crown
 } from 'lucide-react';
-import { playHistoricalSound, syncCaucasianAmbient } from './game/audio.js';
+import {
+  playHistoricalSound,
+  setGlobalAudioMixerState,
+  syncAdaptiveMusicScore,
+  syncCaucasianAmbient
+} from './game/audio.js';
+import {
+  loadAudioMixerConfig,
+  resolveAdaptiveMusicState,
+  resolveTactileCueForAction,
+  saveAudioMixerConfig
+} from './game/adaptiveAudioEngine.js';
 import { clientToMapPoint } from './game/mapProjection.js';
 import {
   computeBaseTurnEconomy,
@@ -189,12 +200,40 @@ export default function App() {
   const [showTelemetryModal, setShowTelemetryModal] = useState(false);
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showAudioMixerModal, setShowAudioMixerModal] = useState(false);
-  const [audioMixerConfig, setAudioMixerConfig] = useState({
-    masterVolume: 0.85,
-    windLayerEnabled: false,
-    copperBasinSonarEnabled: false,
-    hearthWatermillEnabled: false
-  });
+  const [audioMixerConfig, setAudioMixerConfig] = useState(() => loadAudioMixerConfig());
+  const [tactileFeedback, setTactileFeedback] = useState(null);
+  const [lastActionLatencyMs, setLastActionLatencyMs] = useState(null);
+  const tactileClearTimerRef = useRef(null);
+
+  const triggerTactileCue = useCallback(
+    (actionType = 'map_click', pos = null) => {
+      const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      const cue = resolveTactileCueForAction(actionType);
+      if (cue.soundId) {
+        playHistoricalSound(cue.soundId, soundEnabled);
+      }
+      if (audioMixerConfig.hapticsEnabled) {
+        setTactileFeedback({
+          ...cue,
+          actionType,
+          pos,
+          seq: Date.now()
+        });
+        if (tactileClearTimerRef.current) {
+          window.clearTimeout(tactileClearTimerRef.current);
+        }
+        tactileClearTimerRef.current = window.setTimeout(() => {
+          setTactileFeedback(null);
+        }, cue.durationMs || 260);
+      }
+      const elapsed = Math.max(
+        0.1,
+        Number((((typeof performance !== 'undefined' ? performance.now() : Date.now()) - t0)).toFixed(1))
+      );
+      setLastActionLatencyMs(elapsed);
+    },
+    [soundEnabled, audioMixerConfig.hapticsEnabled]
+  );
   const [showModBuilderModal, setShowModBuilderModal] = useState(false);
   const [showReplayModal, setShowReplayModal] = useState(false);
   const [replaySelectedTurnIdx, setReplaySelectedTurnIdx] = useState(0);
@@ -4924,9 +4963,9 @@ export default function App() {
     }
   };
 
-  // СПРИНТ 35 (M35): Залп горных батарей и штуцерных засад с живыми клубами порохового дыма и трассами ядер на 3D-диораме
+  // СПРИНТ 35 (M35) / СПРИНТ 8: Залп горных батарей с эхом теснины и тактильным импульсом 3D-стола
   const handleTriggerArtillerySmokeVfx = () => {
-    playHistoricalSound('cannon', soundEnabled);
+    triggerTactileCue('cannon_salvo');
     setAnimatedBattleVfx(true);
     setTotalBatterySalvos((c) => c + 1);
 
@@ -6647,7 +6686,7 @@ export default function App() {
       return;
     }
 
-    playHistoricalSound('seal', soundEnabled, { volume: audioMixerConfig.masterVolume });
+    triggerTactileCue('seal_decree');
     setResolvedPacketIds((prev) => (prev.includes(packet.id) ? prev : [...prev, packet.id]));
     setActiveDivanPacket(null);
 
@@ -7349,7 +7388,7 @@ export default function App() {
       stateOrdersUsed: prev.stateOrdersUsed + 1
     }));
 
-    playHistoricalSound(isDisciplinary ? 'horn' : 'blade', soundEnabled);
+    triggerTactileCue(isDisciplinary ? 'felt_shame' : 'order_award');
 
     setResources((prev) => ({
       ...prev,
@@ -11494,14 +11533,84 @@ struct FImamatCampaignSnapshot
       ),
     [weatherOverlayEnabled, liveWeatherFronts]
   );
+  const siegesActiveCount = useMemo(
+    () => naibates.filter((n) => n.underSiege).length,
+    [naibates]
+  );
+  const movingUnitsCount = useMemo(
+    () => liveFieldUnits.filter((u) => Array.isArray(u.waypoints) && u.waypoints.length > 0).length,
+    [liveFieldUnits]
+  );
+  const adaptiveMusicState = useMemo(
+    () =>
+      resolveAdaptiveMusicState({
+        activeTab,
+        hasTacticalEncounter: Boolean(activeTacticalEncounter),
+        siegesCount: siegesActiveCount,
+        activeEnvoysCount: activeEnvoys.length,
+        movingUnitsCount,
+        imminentStrikeTurns: imperialAi?.turnsUntilStrike ?? 3,
+        recentBattlePulse: Boolean(animatedBattleVfx),
+        overrideLayer: audioMixerConfig.musicLayerOverride || 'auto'
+      }),
+    [
+      activeTab,
+      activeTacticalEncounter,
+      siegesActiveCount,
+      activeEnvoys.length,
+      movingUnitsCount,
+      imperialAi?.turnsUntilStrike,
+      animatedBattleVfx,
+      audioMixerConfig.musicLayerOverride
+    ]
+  );
+
+  useEffect(() => {
+    saveAudioMixerConfig(audioMixerConfig);
+    setGlobalAudioMixerState(audioMixerConfig, soundEnabled);
+  }, [audioMixerConfig, soundEnabled]);
+
   useEffect(() => {
     syncCaucasianAmbient({
       enabled: Boolean(soundEnabled && !showTitleScreen),
       activeTab,
       hasStorm: hasActiveStormFront,
-      masterVolume: audioMixerConfig.masterVolume
+      masterVolume: audioMixerConfig.masterVolume,
+      ambientVolume: audioMixerConfig.ambientVolume ?? 0.75
     });
-  }, [soundEnabled, showTitleScreen, activeTab, hasActiveStormFront, audioMixerConfig.masterVolume]);
+  }, [
+    soundEnabled,
+    showTitleScreen,
+    activeTab,
+    hasActiveStormFront,
+    audioMixerConfig.masterVolume,
+    audioMixerConfig.ambientVolume
+  ]);
+
+  useEffect(() => {
+    syncAdaptiveMusicScore({
+      enabled: Boolean(soundEnabled && !showTitleScreen),
+      mixerConfig: audioMixerConfig,
+      activeTab,
+      hasTacticalEncounter: Boolean(activeTacticalEncounter),
+      siegesCount: siegesActiveCount,
+      activeEnvoysCount: activeEnvoys.length,
+      movingUnitsCount,
+      imminentStrikeTurns: imperialAi?.turnsUntilStrike ?? 3,
+      recentBattlePulse: Boolean(animatedBattleVfx)
+    });
+  }, [
+    soundEnabled,
+    showTitleScreen,
+    audioMixerConfig,
+    activeTab,
+    activeTacticalEncounter,
+    siegesActiveCount,
+    activeEnvoys.length,
+    movingUnitsCount,
+    imperialAi?.turnsUntilStrike,
+    animatedBattleVfx
+  ]);
 
   const saveSlotsMeta = useMemo(() => {
     void saveSlotsRefreshTick;
@@ -11833,6 +11942,32 @@ struct FImamatCampaignSnapshot
                 {t('Печати:', 'Seals:')} {turnActionQuota.sealsRemaining}/{turnActionQuota.maxSeals}
               </span>
             </span>
+
+            {/* СПРИНТ 8: Живой индикатор 3-слойной адаптивной музыки (Совет -> Марш -> Бой) */}
+            <button
+              type="button"
+              onClick={() => setShowAudioMixerModal(true)}
+              title={t(
+                `Адаптивная партитура: ${adaptiveMusicState.meta.nameRu} (${adaptiveMusicState.bpm} BPM). Нажмите для открытия пульта звука 4.0`,
+                `Adaptive Score: ${adaptiveMusicState.meta.nameEn} (${adaptiveMusicState.bpm} BPM). Click to open Audio Mixer 4.0`
+              )}
+              className={`px-2 py-1 rounded-lg text-[10.5px] font-mono font-bold border transition cursor-pointer hidden lg:inline-flex items-center gap-1.5 ${
+                !soundEnabled || !audioMixerConfig.musicEnabled
+                  ? 'bg-[#1a1612] text-stone-400 border-stone-700 hover:border-amber-500/50'
+                  : adaptiveMusicState.layer === 'battle'
+                    ? 'bg-rose-950/75 text-rose-200 border-rose-500/55 hover:border-rose-400'
+                    : adaptiveMusicState.layer === 'march'
+                      ? 'bg-amber-950/75 text-amber-200 border-amber-500/55 hover:border-amber-400'
+                      : 'bg-cyan-950/65 text-cyan-200 border-cyan-500/45 hover:border-cyan-300'
+              }`}
+            >
+              <span>{soundEnabled && audioMixerConfig.musicEnabled ? adaptiveMusicState.meta.icon : '🔇'}</span>
+              <span>
+                {soundEnabled && audioMixerConfig.musicEnabled
+                  ? t(adaptiveMusicState.meta.shortRu, adaptiveMusicState.meta.shortEn)
+                  : t('Без звука', 'Muted')}
+              </span>
+            </button>
 
             {/* Единое меню «Кодекс, Архив и Настройки» (чистый HUD без служебного шума) */}
             <div className="relative">
@@ -12668,8 +12803,8 @@ struct FImamatCampaignSnapshot
       {/* МОДАЛЬНОЕ ОКНО: 12 ИСТОРИЧЕСЧЕСКИХ ДОСТИЖЕНИЙ STEAMWORKS (DT_SteamAchievements) */}
       {showAchievementsModal && <AchievementsModal {...{ setShowAchievementsModal, steamAchievementsStatus, t, unlockedAchievementsCount }} />}
 
-      {/* МОДАЛЬНОЕ ОКНО: ПРОЦЕДУРНЫЙ ДИЕГЕТИЧЕСКИЙ ПУЛЬТ ЗВУКА (WebAudio Synthesizer 2.0) */}
-      {showAudioMixerModal && <AudioMixerModal {...{ audioMixerConfig, setAudioMixerConfig, setShowAudioMixerModal, setSoundEnabled, siegeState, soundEnabled, t }} />}
+      {/* МОДАЛЬНОЕ ОКНО: ПРОЦЕДУРНЫЙ ДИЕГЕТИЧЕСКИЙ ПУЛЬТ АДАПТИВНОГО ЗВУКА 4.0 (Спринт 8 / Gate 4) */}
+      {showAudioMixerModal && <AudioMixerModal {...{ adaptiveMusicState, audioMixerConfig, lastActionLatencyMs, setAudioMixerConfig, setShowAudioMixerModal, setSoundEnabled, siegeState, soundEnabled, t }} />}
 
       {/* МОДАЛЬНОЕ ОКНО: КОНСТРУКТОР ИСТОРИЧЕСКИХ СЦЕНАРИЕВ И МОДОВ (DT_Naibates_1845 Mod Builder) */}
       {showModBuilderModal && <ModBuilderModal {...{ activeModNaibate, handleApplyCustomModScenario, handleApplyModPreset, handleExportCustomModJson, handleImportCustomModJson, handleUpdateModNaibate, modDraft, modImportJsonText, modSelectedNaibateId, setModDraft, setModImportJsonText, setModSelectedNaibateId, setShowModBuilderModal, t }} />}
@@ -12695,7 +12830,7 @@ struct FImamatCampaignSnapshot
       {/* ОСНОВНОЙ КОНТЕЙНЕР ВКЛАДОК */}
       <main className="max-w-[1640px] mx-auto px-2.5 mt-1.5">
         {/* ---------------- ВКЛАДКА 1: СТРАТЕГИЧЕСКАЯ КАРТА КАВКАЗА И УПРАВЛЕНИЕ НАИБАМИ ---------------- */}
-        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, delayedConsequences, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleActivateSingleKunakRing, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconIntel, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
+        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, delayedConsequences, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleActivateSingleKunakRing, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, hapticsEnabled: audioMixerConfig.hapticsEnabled, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconIntel, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, tactileFeedback, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, triggerTactileCue, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
 
         {/* ---------------- ВКЛАДКА 2: КОДЕКС НИЗАМОВ ИМАМА ШАМИЛЯ ---------------- */}
         {activeTab === 'nizams' && <NizamsTab {...{ courtCases, filteredNizams, handleEnactNizam, handleMediateNaibRivalry, handleResolveCourtCase, naibRivalries, selectedPillar, setSelectedPillar, t, turn, turnActionQuota }} />}

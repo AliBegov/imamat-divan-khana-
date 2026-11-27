@@ -1207,6 +1207,7 @@ function MapTab({
   handleToggleSignalBeacon,
   handleTriggerArtillerySmokeVfx,
   handleUpgradeFieldHospital,
+  hapticsEnabled = true,
   heroArcsState = {},
   hoveredMapInfo,
   imperialAi,
@@ -1284,6 +1285,7 @@ function MapTab({
   soundEnabled,
   t,
   tableQuickDrawer,
+  tactileFeedback = null,
   terrainProbe,
   terrainSimSpeed,
   totalBatterySalvos,
@@ -1301,6 +1303,7 @@ function MapTab({
   totalMuhtasibInspections,
   totalPrisonerExchangesCompleted,
   totalWoundedRecoveredOnMap,
+  triggerTactileCue = null,
   turn,
   turnActionQuota,
   turnFocusEvent = null,
@@ -1457,6 +1460,18 @@ function MapTab({
   const extCamSeqRef = useRef(1);
   const [extCamCmd, setExtCamCmd] = useState(null);
   const [season3DOverride, setSeason3DOverride] = useState(null);
+  const [mapRipple, setMapRipple] = useState(null);
+  const handleMapTablePointerDown = (e) => {
+    if (!hapticsEnabled) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return;
+    const x = Math.round(e.clientX - rect.left);
+    const y = Math.round(e.clientY - rect.top);
+    setMapRipple({ id: Date.now(), x, y, color: tactileFeedback?.rippleColor || '#fbbf24' });
+    if (triggerTactileCue && e.target?.tagName === 'CANVAS') {
+      triggerTactileCue('map_click', { x, y });
+    }
+  };
   useEffect(() => {
     if (!turnFocusEvent || !turnFocusEvent.seq || !real3DTableMode) return;
     extCamSeqRef.current += 1;
@@ -2760,7 +2775,10 @@ function MapTab({
                 }
               >
               <div
-                className="relative rounded-2xl overflow-hidden border-4 border-[#8a5d29] hud-walnut-bezel bg-[#0d1110] shadow-[0_22px_50px_rgba(0,0,0,0.9)] transition-transform duration-500"
+                onPointerDown={handleMapTablePointerDown}
+                className={`relative rounded-2xl overflow-hidden border-4 border-[#8a5d29] hud-walnut-bezel bg-[#0d1110] shadow-[0_22px_50px_rgba(0,0,0,0.9)] transition-transform duration-500 ${
+                  hapticsEnabled && tactileFeedback?.shakeClass ? tactileFeedback.shakeClass : ''
+                } ${hapticsEnabled && tactileFeedback?.flashClass ? tactileFeedback.flashClass : ''}`}
                 style={
                   gameCameraTilt && !real3DTableMode
                     ? {
@@ -2772,6 +2790,18 @@ function MapTab({
                 }
               >
                 <div className="relative">
+                {hapticsEnabled && mapRipple && (
+                  <span
+                    key={mapRipple.id}
+                    className="hud-click-ripple absolute z-30 w-10 h-10 rounded-full border-2"
+                    style={{
+                      left: mapRipple.x,
+                      top: mapRipple.y,
+                      borderColor: mapRipple.color,
+                      boxShadow: `0 0 14px ${mapRipple.color}`
+                    }}
+                  />
+                )}
                 {real3DTableMode ? (
                   <CaucasusTable3DViewport
                     attachedPowder={attachedPowder}

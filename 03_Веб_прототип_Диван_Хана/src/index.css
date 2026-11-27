@@ -462,7 +462,61 @@ body {
   .hud-embers,
   .hud-alert-critical,
   .hud-warn-pulse,
-  .hud-end-turn-ready {
+  .hud-end-turn-ready,
+  .hud-map-shake-light,
+  .hud-map-shake-heavy,
+  .hud-silver-flash,
+  .hud-seal-stamp,
+  .hud-click-ripple {
     animation: none !important;
   }
+}
+
+/* ===== СПРИНТ 8 (GATE 4): ТАКТИЛЬНЫЙ ОТКЛИК И МИКРО-АНИМАЦИИ (< 50 МС GAME FEEL) ===== */
+button:not(:disabled):active {
+  transform: scale(0.975);
+  transition: transform 45ms ease-out;
+}
+.hud-map-shake-light {
+  animation: hud-map-shake-light 0.22s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+.hud-map-shake-heavy {
+  animation: hud-map-shake-heavy 0.28s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+.hud-silver-flash {
+  animation: hud-silver-flash 0.45s ease-out both;
+}
+.hud-seal-stamp {
+  animation: hud-seal-stamp 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.hud-click-ripple {
+  pointer-events: none;
+  animation: hud-click-ripple 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes hud-map-shake-light {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-2px, 1px, 0); }
+  55% { transform: translate3d(2px, -1px, 0); }
+  80% { transform: translate3d(-1px, 0, 0); }
+}
+@keyframes hud-map-shake-heavy {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-4px, 2px, 0); }
+  45% { transform: translate3d(4px, -2px, 0); }
+  70% { transform: translate3d(-2px, 1px, 0); }
+  88% { transform: translate3d(1px, -1px, 0); }
+}
+@keyframes hud-silver-flash {
+  0% { box-shadow: inset 0 0 0 0 rgba(251, 191, 36, 0), 0 0 0 0 rgba(254, 240, 138, 0); }
+  30% { box-shadow: inset 0 0 36px 4px rgba(251, 191, 36, 0.35), 0 0 28px 4px rgba(254, 240, 138, 0.45); }
+  100% { box-shadow: inset 0 0 0 0 rgba(251, 191, 36, 0), 0 0 0 0 rgba(254, 240, 138, 0); }
+}
+@keyframes hud-seal-stamp {
+  0% { transform: scale(1.015); }
+  45% { transform: scale(0.992); }
+  100% { transform: scale(1); }
+}
+@keyframes hud-click-ripple {
+  0% { transform: translate(-50%, -50%) scale(0.28); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(1.95); opacity: 0; }
 }

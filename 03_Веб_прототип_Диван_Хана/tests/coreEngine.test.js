@@ -77,6 +77,18 @@ import {
   runScenarioMonteCarloSuite,
   scheduleDelayedConsequence
 } from '../src/game/naibPoliticsEngine.js';
+import {
+  ADAPTIVE_MUSIC_LAYERS,
+  AUDIO_MIXER_STORAGE_KEY,
+  DEFAULT_AUDIO_MIXER_CONFIG,
+  FOLEY_SOUNDBOARD_CATALOG,
+  computeBusGains,
+  loadAudioMixerConfig,
+  normalizeAudioMixerConfig,
+  resolveAdaptiveMusicState,
+  resolveTactileCueForAction,
+  saveAudioMixerConfig
+} from '../src/game/adaptiveAudioEngine.js';
 
 function createMemoryStorage() {
   const map = new Map();
@@ -1278,4 +1290,109 @@ test('58. runScenarioMonteCarloSuite produces balanced difficulty curves and div
   assert.ok(mc.uniqueDilemmasTriggered >= 24);
   assert.equal(mc.difficultyOrderingOk, true);
   assert.equal(mc.varianceOk, true);
+});
+
+// ============================================================================
+// СПРИНТ 8 (ФАЗА 4 / GATE 4): 3-СЛОЙНЫЙ АДАПТИВНЫЙ ЗВУК, ФОЛИ И GAME FEEL
+// ============================================================================
+test('59. ADAPTIVE_MUSIC_LAYERS exposes all 3 Caucasian score layers (Council, March, Battle) with ascending BPM', () => {
+  assert.equal(ADAPTIVE_MUSIC_LAYERS.length, 3);
+  assert.deepEqual(
+    ADAPTIVE_MUSIC_LAYERS.map((l) => l.id),
+    ['council', 'march', 'battle']
+  );
+  assert.ok(ADAPTIVE_MUSIC_LAYERS[0].bpm < ADAPTIVE_MUSIC_LAYERS[1].bpm);
+  assert.ok(ADAPTIVE_MUSIC_LAYERS[1].bpm < ADAPTIVE_MUSIC_LAYERS[2].bpm);
+});
+
+test('60. resolveAdaptiveMusicState transitions cleanly from Council to March to Battle based on live tension', () => {
+  const council = resolveAdaptiveMusicState({ activeTab: 'diplomacy', siegesCount: 0 });
+  assert.equal(council.layer, 'council');
+  assert.equal(council.stemWeights.council, 1.0);
+  assert.equal(council.stemWeights.march, 0);
+  assert.equal(council.stemWeights.battle, 0);
+
+  const march = resolveAdaptiveMusicState({ activeTab: 'map', activeEnvoysCount: 1, siegesCount: 0 });
+  assert.equal(march.layer, 'march');
+  assert.equal(march.stemWeights.march, 1.0);
+  assert.ok(march.stemWeights.council > 0);
+
+  const battle = resolveAdaptiveMusicState({ activeTab: 'siege', hasTacticalEncounter: true });
+  assert.equal(battle.layer, 'battle');
+  assert.equal(battle.stemWeights.battle, 1.0);
+  assert.ok(battle.stemWeights.march > 0);
+});
+
+test('61. resolveAdaptiveMusicState honors manual mixer layer override cleanly', () => {
+  const forced = resolveAdaptiveMusicState({ activeTab: 'diplomacy', overrideLayer: 'battle' });
+  assert.equal(forced.layer, 'battle');
+  assert.equal(forced.isOverridden, true);
+  assert.equal(forced.stemWeights.battle, 1.0);
+});
+
+test('62. computeBusGains enforces mute, musicEnabled toggle, and independent 4-bus scaling', () => {
+  const muted = computeBusGains(DEFAULT_AUDIO_MIXER_CONFIG, false);
+  assert.deepEqual(muted, { master: 0, music: 0, sfx: 0, ambient: 0 });
+
+  const noMusic = computeBusGains({ ...DEFAULT_AUDIO_MIXER_CONFIG, musicEnabled: false }, true);
+  assert.equal(noMusic.music, 0);
+  assert.ok(noMusic.sfx > 0);
+  assert.ok(noMusic.ambient > 0);
+
+  const full = computeBusGains({ masterVolume: 1.0, musicVolume: 0.6, sfxVolume: 0.8, ambientVolume: 0.5, musicEnabled: true }, true);
+  assert.equal(full.music, 0.6);
+  assert.equal(full.sfx, 0.8);
+  assert.equal(full.ambient, 0.5);
+});
+
+test('63. loadAudioMixerConfig and saveAudioMixerConfig persist and normalize values safely', () => {
+  const storage = createMemoryStorage();
+  const saved = saveAudioMixerConfig(
+    { masterVolume: 9.9, musicVolume: -2, sfxVolume: 1.1, musicLayerOverride: 'march', hapticsEnabled: false },
+    storage
+  );
+  assert.equal(saved.masterVolume, 1.5);
+  assert.equal(saved.musicVolume, 0);
+  assert.equal(saved.sfxVolume, 1.1);
+  assert.equal(saved.musicLayerOverride, 'march');
+  assert.equal(saved.hapticsEnabled, false);
+
+  const loaded = loadAudioMixerConfig(storage);
+  assert.deepEqual(loaded, saved);
+  assert.ok(storage.getItem(AUDIO_MIXER_STORAGE_KEY));
+
+  const badOverride = normalizeAudioMixerConfig({ musicLayerOverride: 'invalid' });
+  assert.equal(badOverride.musicLayerOverride, 'auto');
+});
+
+test('64. FOLEY_SOUNDBOARD_CATALOG covers all signature historical Caucasus foley cues', () => {
+  const ids = new Set(FOLEY_SOUNDBOARD_CATALOG.map((f) => f.id));
+  assert.ok(FOLEY_SOUNDBOARD_CATALOG.length >= 14);
+  ['seal', 'silver_chime', 'gallop', 'cannon', 'cannon_echo', 'rifle', 'blade', 'horn', 'basin_ping', 'ui_tick'].forEach(
+    (reqId) => assert.ok(ids.has(reqId), `Missing foley id ${reqId}`)
+  );
+});
+
+test('65. resolveTactileCueForAction maps strategic actions to instant sound and visual micro-feedback', () => {
+  const cannon = resolveTactileCueForAction('cannon_salvo');
+  assert.equal(cannon.soundId, 'cannon');
+  assert.equal(cannon.shakeClass, 'hud-map-shake-heavy');
+
+  const award = resolveTactileCueForAction('order_award');
+  assert.equal(award.soundId, 'silver_chime');
+  assert.equal(award.flashClass, 'hud-silver-flash');
+
+  const seal = resolveTactileCueForAction('seal_decree');
+  assert.equal(seal.soundId, 'seal');
+  assert.equal(seal.flashClass, 'hud-seal-stamp');
+});
+
+test('66. Adaptive music & tactile resolution executes well under Gate 4 50ms latency budget', () => {
+  const t0 = performance.now();
+  for (let i = 0; i < 200; i += 1) {
+    resolveAdaptiveMusicState({ activeTab: i % 2 === 0 ? 'map' : 'siege', siegesCount: i % 3 });
+    resolveTactileCueForAction(i % 2 === 0 ? 'order_award' : 'cannon_salvo');
+  }
+  const avgMs = (performance.now() - t0) / 200;
+  assert.ok(avgMs < 1.0, `Expected <1ms per decision, got ${avgMs}`);
 });
