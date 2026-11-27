@@ -10,7 +10,7 @@ export function selectEpochGeneralIdx({
   aiDoctrineLocked = false
 }) {
   if (aiDoctrineLocked) return currentGeneralIdx;
-  if (activeScenarioId === 'camp_1839') return 1;
+  if (activeScenarioId === 'camp_1839' || activeScenarioId === 'camp_1847') return 1;
   if (nextTurnNum <= 4) return 0;
   if (nextTurnNum <= 8) return 2;
   return 3;

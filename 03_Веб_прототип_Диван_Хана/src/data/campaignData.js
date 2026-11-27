@@ -63,19 +63,21 @@ export const TACTICAL_3D_TERRAINS = [
 ];
 
 // ============================================================================
-// ИСТОРИЧЕСКИЕ СЦЕНАРИИ КАМПАНИЙ (1839, 1843, 1845, 1859 ГГ.)
+// ИСТОРИЧЕСКИЕ СЦЕНАРИИ КАМПАНИЙ (1839, 1843, 1845, 1847–1849, 1859 ГГ.)
+// 3 флагманские отполированные кампании: 1845 Дарго, 1839 Ахульго, 1847–1849 Война осад
 // ============================================================================
 export const CAMPAIGN_SCENARIOS = [
   {
     id: 'camp_1839',
+    flagship: true,
     yearLabel: '1839 г. — Эпопея Ахульго',
     yearLabelEn: '1839 — The Epic of Akhulgo',
     subtitle: '80-дневная оборона скалы Ахульго и Сурхаевой башни против корпуса ген. П. Х. Граббе',
     subtitleEn: '80-day defense of Mount Akhulgo and Surkhay’s Tower against Gen. P. Kh. Grabbe’s siege corps',
     sceneArt: 'Diorama_Siege_TopDown_Salty_1847.jpg',
     actors: ['Имам Шамиль', 'Байсунгур Беноевский', 'Ген. Граббе'],
-    initialResources: { gunpowder: 110, provisions: 680, silver: 310, authority: 78, ottomanSupport: 25 },
-    pressureModifier: 16,
+    initialResources: { gunpowder: 125, provisions: 740, silver: 340, authority: 78, ottomanSupport: 25 },
+    pressureModifier: 11,
     generalIdx: 1,
     goalDesc: 'Удержать скальные бастионы Койсубу, сбить натиск осадных батарей и вывести ядро мюридов в Чечню.',
     goalDescEn: 'Hold the Koisubu cliff bastions, repel the siege batteries, and lead the murid core into Chechnya.'
@@ -96,6 +98,7 @@ export const CAMPAIGN_SCENARIOS = [
   },
   {
     id: 'camp_1845',
+    flagship: true,
     yearLabel: '1845 г. — Даргинский поход',
     yearLabelEn: '1845 — The Dargo Expedition',
     subtitle: 'Прорыв 20-тысячной армии наместника графа М. С. Воронцова в Ичкерию и «Сухарная экспедиция»',
@@ -107,6 +110,21 @@ export const CAMPAIGN_SCENARIOS = [
     generalIdx: 0,
     goalDesc: 'Заманить колонну Воронцова в лесной мешок Дарго, перерезать подвоз сухарей на хребте Речель и перенести столицу в Ведено.',
     goalDescEn: 'Lure Vorontsov’s column into the Dargo forest trap, sever the Rechel ridge supply line, and establish the new capital at Vedeno.'
+  },
+  {
+    id: 'camp_1847',
+    flagship: true,
+    yearLabel: '1847–1849 гг. — Война осад: Салты и Чох',
+    yearLabelEn: '1847–1849 — War of Sieges: Salty & Chokh',
+    subtitle: 'Минная и артиллерийская война в Центральном Дагестане: оборона Гергебиля, Салтов и неприступного Чоха против кн. Аргутинского',
+    subtitleEn: 'Subterranean mining and artillery sieges in Central Dagestan: defense of Gergebil, Salty, and unbroken Chokh against Prince Argutinsky',
+    sceneArt: 'Crisis_Chokh_Siege_1849.jpg',
+    actors: ['Имам Шамиль', 'Хаджи-Юсуф', 'Кн. Аргутинский'],
+    initialResources: { gunpowder: 165, provisions: 1080, silver: 520, authority: 84, ottomanSupport: 42 },
+    pressureModifier: 8,
+    generalIdx: 1,
+    goalDesc: 'Выдержать осадный таран и подкопы под Гергебилем, Салтами и Чохом, сохранив пороховые мельницы и верность аварских наибов.',
+    goalDescEn: 'Withstand siege artillery and sapper mines at Gergebil, Salty, and Chokh while safeguarding powder mills and Avar Naib loyalty.'
   },
   {
     id: 'camp_1859',

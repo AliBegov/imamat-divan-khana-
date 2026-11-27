@@ -76,6 +76,8 @@ export function buildCampaignSavePayload(
     imperialHeldIds: state.imperialHeldIds || [],
     campaignHistoryLog: state.campaignHistoryLog || [],
     tacticalBattleSession: state.tacticalBattleSession || null,
+    delayedConsequences: Array.isArray(state.delayedConsequences) ? state.delayedConsequences : [],
+    resolvedPacketIds: Array.isArray(state.resolvedPacketIds) ? state.resolvedPacketIds : [],
     seasonShortRu: seasonRuRaw ? seasonRuRaw.split(' (')[0] : state.seasonShortRu || '',
     seasonShortEn: seasonEnRaw ? seasonEnRaw.split(' (')[0] : state.seasonShortEn || '',
     savedAt,

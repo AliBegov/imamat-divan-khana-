@@ -833,7 +833,7 @@ export function TitleScreen({
                   <span>{t('Выбор исторического сценария', 'Select Historical Campaign')}</span>
                 </div>
                 <div className="text-sm sm:text-base font-serif font-bold text-amber-100 mt-0.5">
-                  {t('Четыре эпохи Кавказской войны (1839–1859)', 'Four Eras of the Caucasian War (1839–1859)')}
+                  {t('3 флагманские кампании и 5 эпох (1839–1859)', '3 Flagship Campaigns & 5 Eras (1839–1859)')}
                 </div>
               </div>
               {onChangeDifficulty && (
@@ -880,6 +880,11 @@ export function TitleScreen({
                           draggable={false}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#14100c] via-black/30 to-transparent" />
+                        {scen.flagship && (
+                          <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-emerald-950/90 border border-emerald-400/60 text-emerald-200 text-[9px] font-mono font-bold">
+                            ★ {t('Флагман', 'Flagship')}
+                          </span>
+                        )}
                         <span
                           className={`absolute top-1.5 right-1.5 px-2 py-0.5 rounded text-[9.5px] font-serif font-bold ${
                             isSelected

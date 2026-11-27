@@ -1,6 +1,10 @@
 // Чистая HTML + SVG реконструкция 25 подлинных орденов и знаков отличия Имамата Шамиля (XIX в.)
 // По экспозиции Национального музея Республики Дагестан им. А. Тахо-Годи (кубачинская и гоцатлинская чеканка, чернь, позолота)
 import { useId, useState } from 'react';
+import {
+  KUBACHI_25_ORDERS_CATALOG,
+  getOrderCatalogItemById
+} from '../../game/naibPoliticsEngine.js';
 
 const DEG = Math.PI / 180;
 
@@ -139,9 +143,14 @@ function KubachiMetalDefs({ uid }) {
   );
 }
 
-// Маппинг названия вручённого ордена -> канонический ID
+// Маппинг названия вручённого ордена -> канонический ID (поддержка всех 25 орденов + войлочный знак)
 export function inferOrderIdFromName(name = '') {
   const s = String(name).toLowerCase();
+  if (/войлоч|позор|felt|shame/.test(s)) return 'felt_shame_badge';
+  const exact = KUBACHI_25_ORDERS_CATALOG.find(
+    (o) => o.name.toLowerCase() === s || (o.nameEn && o.nameEn.toLowerCase() === s)
+  );
+  if (exact) return exact.id;
   if (/мудир|звезд|фестон|mudir|star/.test(s)) return 'order_mudir';
   if (/полумесяц|хилял|crescent|hilal/.test(s)) return 'order_crescent';
   if (/шашк|розетк|медальон|sword|shashka|rosette/.test(s)) return 'order_sword';
@@ -826,6 +835,45 @@ function renderOrderArtwork(variant, uid) {
       );
     }
 
+    // ---- ДИСЦИПЛИНАРНЫЙ ЗНАК НИЗАМА: ВОЙЛОЧНЫЙ ЛОСКУТ ПОЗОРА ТРУСУ ----
+    case 'felt_shame_badge': {
+      return (
+        <g filter={`url(#${uid}-drop)`}>
+          <path
+            d="M 16,22 L 82,19 L 86,78 L 19,83 Z"
+            fill="#4a3b31"
+            stroke="#2a201a"
+            strokeWidth="2.2"
+          />
+          <path
+            d="M 21,27 L 77,25 L 80,73 L 24,77 Z"
+            fill="none"
+            stroke="#9a8368"
+            strokeWidth="1.4"
+            strokeDasharray="4 3"
+            opacity="0.85"
+          />
+          {/* Грубые крестовые стежки суровой нитью по углам войлочного лоскута */}
+          <path d="M 18,22 L 28,31 M 28,22 L 18,31" stroke="#d9c6a5" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M 72,20 L 82,29 M 82,20 L 72,29" stroke="#d9c6a5" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M 20,70 L 30,79 M 30,70 L 20,79" stroke="#d9c6a5" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M 73,67 L 83,76 M 83,67 L 73,76" stroke="#d9c6a5" strokeWidth="1.8" strokeLinecap="round" />
+          <text
+            x="50"
+            y="53"
+            textAnchor="middle"
+            fontSize="10"
+            fontFamily="Georgia, serif"
+            fontWeight="700"
+            fill="#d9c6a5"
+            opacity="0.85"
+          >
+            НИЗАМ
+          </text>
+        </g>
+      );
+    }
+
     default:
       return renderOrderArtwork('order_lion', uid);
   }
@@ -931,9 +979,15 @@ export function ShamilOrdersMuseumShowcase({
   compact = false,
   interactive = true,
   t = (ru) => ru,
-  className = ''
+  className = '',
+  onAwardOrder = null,
+  recipientName = '',
+  availableSilver = 999,
+  awardedOrderIds = []
 }) {
   const [activeItem, setActiveItem] = useState(MUSEUM_CASE_ROWS[1].items[2]); // По умолчанию — Звезда Мудира (центр)
+  const activeCatalogItem = activeItem ? getOrderCatalogItemById(activeItem.id) : null;
+  const awardedSet = new Set(awardedOrderIds || []);
 
   return (
     <div
@@ -968,7 +1022,7 @@ export function ShamilOrdersMuseumShowcase({
           >
             {row.items.map((item) => {
               const isSelected = interactive && activeItem?.id === item.id;
-              const isPlayable = Boolean(item.playableId);
+              const isHeld = awardedSet.has(item.id);
               const baseSize = compact
                 ? row.rowNum === 2
                   ? 34
@@ -1021,10 +1075,16 @@ export function ShamilOrdersMuseumShowcase({
                     size={finalSize}
                     title={t(item.nameRu, item.nameEn)}
                   />
-                  {isPlayable && !compact && (
+                  {!compact && (
                     <span
-                      className="pointer-events-none absolute -bottom-1 right-0 w-2.5 h-2.5 rounded-full bg-amber-400 border border-stone-950 shadow"
-                      title={t('Доступен к пожалованию в Диван-хане', 'Available to bestow in Divan-Khana')}
+                      className={`pointer-events-none absolute -bottom-1 right-0 w-2.5 h-2.5 rounded-full border border-stone-950 shadow ${
+                        isHeld ? 'bg-emerald-400' : 'bg-amber-400/90'
+                      }`}
+                      title={
+                        isHeld
+                          ? t('Уже пожалован этому наибу', 'Already bestowed on this Naib')
+                          : t('Доступен к пожалованию в Диван-хане', 'Available to bestow in Divan-Khana')
+                      }
                     />
                   )}
                 </button>
@@ -1037,31 +1097,57 @@ export function ShamilOrdersMuseumShowcase({
       {/* Подлинная мини-бирка музейной витрины [2] в правом нижнем углу бархатного поля */}
       <span
         className={`pointer-events-none absolute right-2.5 z-10 px-1.5 py-0.5 rounded-[2px] bg-[#ece4d2] text-[#292018] font-mono text-[9px] font-bold shadow ${
-          interactive && !compact ? 'bottom-14' : 'bottom-2'
+          interactive && !compact ? 'bottom-16' : 'bottom-2'
         }`}
       >
         2
       </span>
 
-      {/* Интерактивная латунная табличка выбранного экспоната (в полном режиме) */}
+      {/* Интерактивная латунная табличка выбранного экспоната с 1-клик пожалованием (в полном режиме) */}
       {interactive && !compact && activeItem && (
-        <div className="relative z-10 border-t border-amber-500/35 bg-gradient-to-r from-[#18100c]/95 via-[#211610]/95 to-[#18100c]/95 px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+        <div className="relative z-10 border-t border-amber-500/35 bg-gradient-to-r from-[#18100c]/95 via-[#211610]/95 to-[#18100c]/95 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2.5 text-[11px]">
           <div className="flex items-center gap-2.5 min-w-0">
-            <ShamilOrderMedallion orderId={activeItem.id} size={30} showVelvet />
+            <ShamilOrderMedallion orderId={activeItem.id} size={34} showVelvet />
             <div className="min-w-0">
               <div className="font-serif font-bold text-amber-200 truncate">
                 №{activeItem.num} • {t(activeItem.nameRu, activeItem.nameEn)}
               </div>
-              <div className="font-mono text-[10px] text-stone-300 truncate">
-                {t(activeItem.metalRu, activeItem.metalEn)}
+              <div className="font-mono text-[10px] text-emerald-300 truncate">
+                {activeCatalogItem ? t(activeCatalogItem.perkRu, activeCatalogItem.perkEn) : t(activeItem.metalRu, activeItem.metalEn)}
               </div>
             </div>
           </div>
-          {activeItem.playableId && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/55 text-amber-200 font-mono text-[9.5px] font-bold shrink-0">
-              ★ {t('Награда Диван-ханы', 'Divan-Khana Award')}
-            </span>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {activeCatalogItem && (
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/55 text-amber-200 font-mono text-[10px] font-bold">
+                {activeCatalogItem.silverCost}₽
+              </span>
+            )}
+            {onAwardOrder && activeCatalogItem ? (
+              <button
+                type="button"
+                disabled={availableSilver < activeCatalogItem.silverCost}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAwardOrder(activeCatalogItem);
+                }}
+                className={`px-3 py-1 rounded-lg font-serif font-bold text-[11px] transition ${
+                  availableSilver < activeCatalogItem.silverCost
+                    ? 'bg-stone-800 text-stone-500 border border-stone-700 cursor-not-allowed'
+                    : 'bg-gradient-to-b from-amber-400 to-amber-600 hover:brightness-110 text-stone-950 shadow cursor-pointer'
+                }`}
+              >
+                {t(
+                  `Жаловать${recipientName ? ` (${recipientName})` : ''}`,
+                  `Bestow${recipientName ? ` (${recipientName})` : ''}`
+                )}
+              </button>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/55 text-amber-200 font-mono text-[9.5px] font-bold">
+                ★ {t('Награда Диван-ханы (1 из 25)', 'Divan-Khana Award (1 of 25)')}
+              </span>
+            )}
+          </div>
         </div>
       )}
     </div>

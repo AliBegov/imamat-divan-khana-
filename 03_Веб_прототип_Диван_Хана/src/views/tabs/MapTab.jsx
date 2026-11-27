@@ -1136,6 +1136,7 @@ function MapTab({
   cordonFortresses,
   crises = [],
   deepRaidTargets,
+  delayedConsequences = [],
   dioramaTimeOfDay,
   episodesState = {},
   eraObjectivesProgress = null,
@@ -6865,7 +6866,7 @@ function MapTab({
                         </button>
                       )}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-1.5 border-t border-amber-500/25">
+                    <div className={`grid grid-cols-1 ${(activeDivanPacket.choices || []).length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-2 pt-1.5 border-t border-amber-500/25`}>
                       {(activeDivanPacket.choices || []).map((ch, idx) => (
                         <button
                           key={ch.id}
@@ -6879,12 +6880,31 @@ function MapTab({
                           }`}
                         >
                           <WaxSealIcon className="w-3.5 h-3.5 text-amber-300 shrink-0 mt-0.5" />
-                          <span className="text-[11px] font-serif font-bold leading-snug">
-                            {t(ch.labelRu, ch.labelEn)}
+                          <span className="min-w-0 space-y-1">
+                            <span className="block text-[11px] font-serif font-bold leading-snug">
+                              {t(ch.labelRu, ch.labelEn)}
+                            </span>
+                            {(ch.delayPreviewRu || ch.delayPreviewEn) && (
+                              <span className="block text-[10px] font-mono text-amber-300/90 leading-tight">
+                                {t(ch.delayPreviewRu, ch.delayPreviewEn || ch.delayPreviewRu)}
+                              </span>
+                            )}
                           </span>
                         </button>
                       ))}
                     </div>
+                    {delayedConsequences.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-amber-500/15 text-[10px] font-mono text-amber-200/85">
+                        <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-400/35 font-bold">
+                          ⏳ {t(`В очереди эхо-последствий: ${delayedConsequences.length}`, `Pending delayed echoes: ${delayedConsequences.length}`)}
+                        </span>
+                        {delayedConsequences.slice(0, 3).map((dc) => (
+                          <span key={dc.id} className="px-1.5 py-0.5 rounded bg-stone-900/90 border border-stone-700/70 text-stone-300 truncate max-w-[260px]">
+                            {t(`Ход ${dc.dueTurn}: ${dc.effect?.titleRu || dc.sourceTitleRu}`, `Turn ${dc.dueTurn}: ${dc.effect?.titleEn || dc.sourceTitleEn}`)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 

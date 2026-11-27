@@ -59,10 +59,15 @@ import {
   buildReadableAiIntentVectors,
   buildReconSources
 } from './game/reconIntelEngine.js';
+import {
+  applyOrderAwardToNaibate,
+  pickNextHistoricalDilemma,
+  resolveDueDelayedConsequences,
+  scheduleDelayedConsequence
+} from './game/naibPoliticsEngine.js';
 import { HighlandEagleIcon, WaxSealIcon } from './views/hud/PeriodIcons.jsx';
 import {
   CAMPAIGN_SCENARIOS,
-  DYNAMIC_DIVAN_PACKETS,
   TACTICAL_3D_TERRAINS,
   SEASON_CLIMATE_MODIFIERS,
   HISTORICAL_FIGURES_ARCHIVE,
@@ -213,6 +218,7 @@ export default function App() {
   const [prologueRewardClaimed, setPrologueRewardClaimed] = useState(false);
   const [activeDivanPacket, setActiveDivanPacket] = useState(null);
   const [resolvedPacketIds, setResolvedPacketIds] = useState([]);
+  const [delayedConsequences, setDelayedConsequences] = useState([]);
   const [campaignClimaxState, setCampaignClimaxState] = useState(null);
   const [climaxDismissed, setClimaxDismissed] = useState(false);
   const [deployedSector, setDeployedSector] = useState('blindage');
@@ -2360,6 +2366,9 @@ export default function App() {
     } else if (scenario.id === 'camp_1845') {
       setSelected3DTerrainId('dargo_1845');
       setTacticalMode('forest_spline');
+    } else if (scenario.id === 'camp_1847') {
+      setSelected3DTerrainId('salty_1847');
+      setTacticalMode('milyutin_siege');
     } else if (scenario.id === 'camp_1859') {
       setSelected3DTerrainId('gunib_1859');
       setTacticalMode('milyutin_siege');
@@ -2418,6 +2427,7 @@ export default function App() {
     setActiveTacticalEncounter(null);
     setActiveDivanPacket(null);
     setResolvedPacketIds([]);
+    setDelayedConsequences([]);
     setHeroArcsState(createInitialHeroArcsState());
     setActiveHeroArcModal(null);
     setCampaignClimaxState(null);
@@ -6583,34 +6593,22 @@ export default function App() {
     );
   };
 
-  // ВОЛНА III (Шаг 1): Подбор и разрешение реактивного сургучного пакета гонца по живой обстановке ТВД
+  // СПРИНТ 7 (Фаза 3): Подбор одной из 32 исторических дилемм с отложенными последствиями (2–4 хода)
   const pickReactiveDivanPacket = (
     naibsSnapshot = naibates,
     resSnapshot = resources,
-    resolvedList = resolvedPacketIds
-  ) => {
-    const pool = DYNAMIC_DIVAN_PACKETS.filter((p) => !resolvedList.includes(p.id));
-    const candidates = pool.length > 0 ? pool : DYNAMIC_DIVAN_PACKETS;
-    const besiegedNaib = naibsSnapshot.find((n) => n.underSiege);
-    if (besiegedNaib) {
-      const p = candidates.find((x) => x.triggerType === 'besieged');
-      if (p) return { ...p, contextNaibId: besiegedNaib.id, contextNaibNameRu: besiegedNaib.name, contextNaibNameEn: besiegedNaib.nameEn || besiegedNaib.name };
-    }
-    const proudNaib = naibsSnapshot.find((n) => (n.traits?.pride || 0) >= 70);
-    if (proudNaib) {
-      const p = candidates.find((x) => x.triggerType === 'high_pride');
-      if (p) return { ...p, contextNaibId: proudNaib.id, contextNaibNameRu: proudNaib.name, contextNaibNameEn: proudNaib.nameEn || proudNaib.name };
-    }
-    if ((resSnapshot.provisions || 0) <= 1280) {
-      const p = candidates.find((x) => x.triggerType === 'provisions');
-      if (p) return p;
-    }
-    if ((resSnapshot.gunpowder || 0) <= 185 || (resSnapshot.ottomanSupport || 0) >= 45) {
-      const p = candidates.find((x) => x.triggerType === 'ottoman');
-      if (p) return p;
-    }
-    return candidates[turn % candidates.length] || DYNAMIC_DIVAN_PACKETS[0];
-  };
+    resolvedList = resolvedPacketIds,
+    turnNum = turn
+  ) =>
+    pickNextHistoricalDilemma({
+      naibates: naibsSnapshot,
+      resources: resSnapshot,
+      turn: turnNum,
+      resolvedIds: resolvedList,
+      activeScenarioId,
+      naibRivalries,
+      isWinter: (turnNum - 1) % 4 === 2
+    });
 
   const handleSummonDivanPacket = () => {
     playHistoricalSound('paper', soundEnabled, { volume: audioMixerConfig.masterVolume });
@@ -6760,6 +6758,17 @@ export default function App() {
       setImperialAi((prev) => ({ ...prev, scouted: true }));
     }
 
+    if (choice.delayedEffect) {
+      setDelayedConsequences((prev) =>
+        scheduleDelayedConsequence(prev, {
+          turn,
+          packet,
+          choice,
+          contextNaibId: targetId
+        })
+      );
+    }
+
     setChronicle((prev) => [
       {
         id: `pkt-res-${Date.now()}`,
@@ -6769,16 +6778,16 @@ export default function App() {
         senderEn: packet.senderEn,
         title: `Сургучный указ по донесению: ${packet.titleRu}`,
         titleEn: `Sealed Decree on Dispatch: ${packet.titleEn}`,
-        text: `Решение Имама: «${choice.labelRu}».`,
-        textEn: `Imam’s Ruling: “${choice.labelEn}”.`
+        text: `Решение Имама: «${choice.labelRu}».${choice.delayPreviewRu ? ` ${choice.delayPreviewRu}` : ''}`,
+        textEn: `Imam’s Ruling: “${choice.labelEn}”.${choice.delayPreviewEn ? ` ${choice.delayPreviewEn}` : ''}`
       },
       ...prev
     ]);
 
     showNotice(
       t(
-        `📜 Исполнен сургучный указ: «${choice.labelRu}»`,
-        `📜 Sealed decree executed: “${choice.labelEn}”`
+        `📜 Исполнен указ: «${choice.labelRu}»${choice.delayedEffect ? ` (⏳ эхо через ${choice.delayedEffect.delayTurns || 2} ход.)` : ''}`,
+        `📜 Sealed decree executed: “${choice.labelEn}”${choice.delayedEffect ? ` (⏳ echo in ${choice.delayedEffect.delayTurns || 2} turns)` : ''}`
       ),
       'ok'
     );
@@ -7311,6 +7320,7 @@ export default function App() {
   };
 
   const handleAwardOrder = (orderItem) => {
+    const isDisciplinary = Boolean(orderItem?.isDisciplinary);
     if (turnActionQuota.sealsRemaining <= 0 || turnActionQuota.stateOrdersUsed >= turnActionQuota.maxStateOrdersPerTurn) {
       alertMsg(
         t(
@@ -7320,7 +7330,8 @@ export default function App() {
       );
       return;
     }
-    if (resources.silver < orderItem.silverCost) {
+    const cost = orderItem.silverCost ?? 0;
+    if (resources.silver < cost) {
       alertMsg(
         t(
           'Недостаточно серебра в казне для чеканки ордена кубачинскими мастерами!',
@@ -7330,62 +7341,53 @@ export default function App() {
       return;
     }
 
+    const applied = applyOrderAwardToNaibate(selectedNaibate, orderItem);
+
     setTurnActionQuota((prev) => ({
       ...prev,
       sealsRemaining: Math.max(0, prev.sealsRemaining - 1),
       stateOrdersUsed: prev.stateOrdersUsed + 1
     }));
 
-    playHistoricalSound('blade', soundEnabled);
+    playHistoricalSound(isDisciplinary ? 'horn' : 'blade', soundEnabled);
 
     setResources((prev) => ({
       ...prev,
-      silver: prev.silver - orderItem.silverCost,
-      authority: Math.min(100, prev.authority + 3)
+      silver: Math.max(0, prev.silver - applied.silverCost),
+      authority: Math.min(100, Math.max(15, prev.authority + applied.authorityDelta))
     }));
 
-    unlockRelic('relic_alqarakhi_chronicle_inkwell');
+    if (!isDisciplinary) {
+      unlockRelic('relic_alqarakhi_chronicle_inkwell');
+    }
     setNaibates((prev) =>
-      prev.map((n) =>
-        n.id === selectedNaibate.id
-          ? {
-              ...n,
-              ordersAwarded: [...n.ordersAwarded, orderItem.name],
-              trustScore: Math.min(3, (n.trustScore ?? 0) + 2),
-              lastMemoryRu: `Удостоен серебряного знака отличия «${orderItem.name}» перед лицом Диван-ханы`,
-              lastMemoryEn: `Honored with Kubachi silver medal “${orderItem.nameEn || orderItem.name}” before the Divan-Khana`,
-              traits: {
-                ...n.traits,
-                iman: Math.min(100, n.traits.iman + orderItem.imanBonus),
-                pride: Math.max(10, n.traits.pride - orderItem.prideReduction)
-              }
-            }
-          : n
-      )
+      prev.map((n) => (n.id === selectedNaibate.id ? applied.nextNaibate : n))
     );
 
-    // ВОЛНА IV (Шаг 2): Награждение серебряным знаком отличия вручает медаль и полевой сотне наиба (+1★ и +6% дисциплины)
-    setLiveFieldUnits((prev) => {
-      const targetSquadronId =
-        prev.find((u) => u.homeNaibateId === selectedNaibate.id && u.id !== 'unit_powder_caravan')?.id ||
-        selectedUnitId ||
-        'unit_hadji_murat';
-      return prev.map((u) =>
-        u.id === targetSquadronId
-          ? {
-              ...u,
-              medals: [...(u.medals || []), orderItem.name],
-              vetXp: Math.min(3, (u.vetXp ?? 0) + 1)
-            }
-          : u
-      );
-    });
+    // СПРИНТ 7: Прямое боевое влияние орденов Шамиля на полевую сотню наиба
+    if (!isDisciplinary && applied.squadronVetDelta > 0) {
+      setLiveFieldUnits((prev) => {
+        const targetSquadronId =
+          prev.find((u) => u.homeNaibateId === selectedNaibate.id && u.id !== 'unit_powder_caravan')?.id ||
+          selectedUnitId ||
+          'unit_hadji_murat';
+        return prev.map((u) =>
+          u.id === targetSquadronId
+            ? {
+                ...u,
+                medals: [...(u.medals || []), orderItem.name],
+                vetXp: Math.min(3, (u.vetXp ?? 0) + applied.squadronVetDelta)
+              }
+            : u
+        );
+      });
+    }
 
-    // Реактивное усиление ревности соперничающего наиба при награждении одного из них
+    // Политический эффект: ревность соперничающего наиба (или разрядка при взыскании)
     setNaibRivalries((prev) =>
       prev.map((r) =>
         (r.naibAId === selectedNaibate.id || r.naibBId === selectedNaibate.id) && !r.resolved
-          ? { ...r, tension: Math.min(100, r.tension + 6) }
+          ? { ...r, tension: Math.max(5, Math.min(100, r.tension + applied.rivalJealousyDelta)) }
           : r
       )
     );
@@ -7395,15 +7397,39 @@ export default function App() {
         id: `log-ord-${Date.now()}`,
         turn,
         category: 'nizam',
-        sender: 'Казначей Хаджияв и златокузнецы Гоцатля',
-        senderEn: 'Treasurer Hajjiyav & Gotsatl Silversmiths',
-        title: `Награждение наиба: ${selectedNaibate.naibName}`,
-        titleEn: `Naib Decorated: ${selectedNaibate.naibNameEn || selectedNaibate.naibName}`,
-        text: `Имам Шамиль жаловал наибу округа «${selectedNaibate.name}» серебряный знак отличия «${orderItem.name}» (${orderItem.arabicMotto}). Иман наиба вырос на +${orderItem.imanBonus}, Гордыня снизилась на -${orderItem.prideReduction}.`,
-        textEn: `Imam Shamil awarded the Naib of “${selectedNaibate.nameEn || selectedNaibate.name}” the nielloed silver decoration “${orderItem.nameEn || orderItem.name}” (${orderItem.arabicMotto}). Naib’s Iman increased by +${orderItem.imanBonus}, Pride reduced by -${orderItem.prideReduction}.`
+        sender: isDisciplinary
+          ? 'Верховный суд мухтасибов Диван-ханы'
+          : 'Казначей Хаджияв и златокузнецы Кубачи и Гоцатля',
+        senderEn: isDisciplinary
+          ? 'Supreme Muhtasib Tribunal of Divan-Khana'
+          : 'Treasurer Hajjiyav & Kubachi-Gotsatl Silversmiths',
+        title: isDisciplinary
+          ? `Дисциплинарный знак Низама: ${selectedNaibate.naibName}`
+          : `Пожалован орден №${orderItem.num || '★'}: ${selectedNaibate.naibName}`,
+        titleEn: isDisciplinary
+          ? `Disciplinary Nizam Mark: ${selectedNaibate.naibNameEn || selectedNaibate.naibName}`
+          : `Bestowed Order #${orderItem.num || '★'}: ${selectedNaibate.naibNameEn || selectedNaibate.naibName}`,
+        text: isDisciplinary
+          ? `Наибу округа «${selectedNaibate.name}» по Низаму назначен «${orderItem.name}» (${orderItem.perkRu || ''}). Гордыня и амбиции урезаны, Авторитет Имама +${applied.authorityDelta}%.`
+          : `Имам Шамиль жаловал наибу округа «${selectedNaibate.name}» кубачинский знак «${orderItem.name}» (${orderItem.arabicMotto || ''}). ${orderItem.perkRu || `Иман +${orderItem.imanBonus}, Гордыня -${orderItem.prideReduction}`}.`,
+        textEn: isDisciplinary
+          ? `Naib of “${selectedNaibate.nameEn || selectedNaibate.name}” received the “${orderItem.nameEn || orderItem.name}” (${orderItem.perkEn || ''}). Pride and ambition curbed, Imam Authority +${applied.authorityDelta}%.`
+          : `Imam Shamil bestowed Kubachi order “${orderItem.nameEn || orderItem.name}” upon the Naib of “${selectedNaibate.nameEn || selectedNaibate.name}” (${orderItem.arabicMottoEn || ''}). ${orderItem.perkEn || `Iman +${orderItem.imanBonus}, Pride -${orderItem.prideReduction}`}.`
       },
       ...prev
     ]);
+
+    showNotice(
+      t(
+        isDisciplinary
+          ? `⚠️ Назначен «${orderItem.name}» для ${selectedNaibate.naibName} (${orderItem.perkRu})`
+          : `🎖️ Орден «${orderItem.name}» жалован ${selectedNaibate.naibName} (${orderItem.perkRu})`,
+        isDisciplinary
+          ? `⚠️ Issued “${orderItem.nameEn || orderItem.name}” to ${selectedNaibate.naibNameEn || selectedNaibate.naibName}`
+          : `🎖️ Bestowed “${orderItem.nameEn || orderItem.name}” on ${selectedNaibate.naibNameEn || selectedNaibate.naibName}`
+      ),
+      isDisciplinary ? 'warn' : 'ok'
+    );
   };
 
   // ============================================================================
@@ -7878,36 +7904,64 @@ export default function App() {
     const emergencyPowderSupport = naibatesStep.emergencyPowderSupport;
     authorityDelta += naibatesStep.authorityDelta;
     if (naibatesStep.logs.length > 0) newLogs.push(...naibatesStep.logs);
-    setNaibates(computedNextNaibates);
-
-    const nextVedenoPowder = Math.max(0, resources.gunpowder + powderDelta - emergencyPowderSupport);
-    const nextProvisionsTotal = Math.max(0, resources.provisions + provisionsDelta);
-    const nextSilverTotal = Math.max(0, resources.silver + silverDelta);
-    const nextAuthTotal = Math.min(100, Math.max(15, resources.authority + authorityDelta));
-    const nextResourcesObj = {
+    const baseNextVedenoPowder = Math.max(0, resources.gunpowder + powderDelta - emergencyPowderSupport);
+    const baseNextProvisionsTotal = Math.max(0, resources.provisions + provisionsDelta);
+    const baseNextSilverTotal = Math.max(0, resources.silver + silverDelta);
+    const baseNextAuthTotal = Math.min(100, Math.max(15, resources.authority + authorityDelta));
+    const baseNextResourcesObj = {
       ...resources,
-      gunpowder: nextVedenoPowder,
-      provisions: nextProvisionsTotal,
-      silver: nextSilverTotal,
-      authority: nextAuthTotal
+      gunpowder: baseNextVedenoPowder,
+      provisions: baseNextProvisionsTotal,
+      silver: baseNextSilverTotal,
+      authority: baseNextAuthTotal
     };
-    setResources(nextResourcesObj);
 
-    // ВОЛНА III (Шаг 1): Доставка реактивного сургучного пакета гонца в Палату Диван-ханы при смене сезона
+    // 4. СПРИНТ 7: Исполнение созревших отложенных последствий дилемм (2–4 хода)
+    const delayedStep = resolveDueDelayedConsequences({
+      queue: delayedConsequences,
+      nextTurn: nextTurnNum,
+      naibates: computedNextNaibates,
+      resources: baseNextResourcesObj
+    });
+    const finalNextNaibates = delayedStep.nextNaibates;
+    const nextResourcesObj = delayedStep.nextResources;
+    const nextVedenoPowder = nextResourcesObj.gunpowder;
+    const nextProvisionsTotal = nextResourcesObj.provisions;
+    const nextSilverTotal = nextResourcesObj.silver;
+    const nextAuthTotal = nextResourcesObj.authority;
+    setDelayedConsequences(delayedStep.remainingQueue);
+    setNaibates(finalNextNaibates);
+    setResources(nextResourcesObj);
+    if (delayedStep.logs.length > 0) {
+      newLogs.push(...delayedStep.logs);
+      const firstEcho = delayedStep.firedEffects[0]?.effect;
+      if (firstEcho && !spectatorMode.active && !pitchTour.active) {
+        showNotice(
+          t(
+            `⏳ Сбылся отголосок указа: ${firstEcho.titleRu}`,
+            `⏳ Delayed consequence fired: ${firstEcho.titleEn || firstEcho.titleRu}`
+          ),
+          'info'
+        );
+      }
+    }
+
+    // ВОЛНА III / СПРИНТ 7: Доставка одной из 32 исторических дилемм с отложенным эхом при смене сезона
     if (!spectatorMode.active && !pitchTour.active && !activeDivanPacket) {
       const nextPkt = pickReactiveDivanPacket(
-        computedNextNaibates,
+        finalNextNaibates,
         nextResourcesObj,
-        resolvedPacketIds
+        resolvedPacketIds,
+        nextTurnNum
       );
       if (nextPkt) {
         setActiveDivanPacket(nextPkt);
       }
     }
 
-    const nextRegPowder = computedNextNaibates.reduce((s, n) => s + n.gunpowder, 0);
-    const nextGarrisonTotal = computedNextNaibates.reduce((s, n) => s + n.garrison + n.murtazeks, 0);
-    const nextSiegesCount = computedNextNaibates.filter((n) => n.underSiege).length;
+    const nextRegPowder = finalNextNaibates.reduce((s, n) => s + n.gunpowder, 0);
+    const nextGarrisonTotal = finalNextNaibates.reduce((s, n) => s + n.garrison + n.murtazeks, 0);
+    const nextSiegesCount = finalNextNaibates.filter((n) => n.underSiege).length;
 
     // ВОЛНА III (Шаг 3): Проверка исторической кульминации (Триумф Имамата / Последний оплот на Гунибе) с Хода 5+
     const climaxResult = evaluateCampaignClimax({
@@ -7973,7 +8027,7 @@ export default function App() {
         activeScenarioId,
         simDifficultyWeight,
         resources: nextResourcesObj,
-        naibates: computedNextNaibates,
+        naibates: finalNextNaibates,
         nizams,
         courtCases,
         crises,
@@ -7998,7 +8052,9 @@ export default function App() {
         capitalLabelEn,
         imperialHeldIds,
         campaignHistoryLog: nextCampaignHistoryLog,
-        tacticalBattleSession
+        tacticalBattleSession,
+        delayedConsequences: delayedStep.remainingQueue,
+        resolvedPacketIds
       },
       { seasons: SEASONS, seasonsEn: SEASONS_EN }
     );
@@ -10818,7 +10874,9 @@ struct FImamatCampaignSnapshot
         capitalLabelEn,
         imperialHeldIds,
         campaignHistoryLog,
-        tacticalBattleSession
+        tacticalBattleSession,
+        delayedConsequences,
+        resolvedPacketIds
       },
       { seasons: SEASONS, seasonsEn: SEASONS_EN }
     );
@@ -10873,6 +10931,8 @@ struct FImamatCampaignSnapshot
     if (Array.isArray(data.imperialHeldIds)) setImperialHeldIds(data.imperialHeldIds);
     if (Array.isArray(data.campaignHistoryLog)) setCampaignHistoryLog(data.campaignHistoryLog);
     if (data.tacticalBattleSession) setTacticalBattleSession(data.tacticalBattleSession);
+    setDelayedConsequences(Array.isArray(data.delayedConsequences) ? data.delayedConsequences : []);
+    if (Array.isArray(data.resolvedPacketIds)) setResolvedPacketIds(data.resolvedPacketIds);
     setActiveTacticalEncounter(null);
     playHistoricalSound('horn', soundEnabled, { volume: audioMixerConfig.masterVolume });
     alertMsg(
@@ -12635,13 +12695,13 @@ struct FImamatCampaignSnapshot
       {/* ОСНОВНОЙ КОНТЕЙНЕР ВКЛАДОК */}
       <main className="max-w-[1640px] mx-auto px-2.5 mt-1.5">
         {/* ---------------- ВКЛАДКА 1: СТРАТЕГИЧЕСКАЯ КАРТА КАВКАЗА И УПРАВЛЕНИЕ НАИБАМИ ---------------- */}
-        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleActivateSingleKunakRing, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconIntel, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
+        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, delayedConsequences, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleActivateSingleKunakRing, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconIntel, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
 
         {/* ---------------- ВКЛАДКА 2: КОДЕКС НИЗАМОВ ИМАМА ШАМИЛЯ ---------------- */}
         {activeTab === 'nizams' && <NizamsTab {...{ courtCases, filteredNizams, handleEnactNizam, handleMediateNaibRivalry, handleResolveCourtCase, naibRivalries, selectedPillar, setSelectedPillar, t, turn, turnActionQuota }} />}
 
         {/* ---------------- ВКЛАДКА 3: ДИПЛОМАТИЯ СО СТАМБУЛОМ И СЕРЕБРЯНЫЕ ОРДЕНА ШАМИЛЯ ---------------- */}
-        {activeTab === 'diplomacy' && <DiplomacyTab {...{ handleAwardOrder, handleOttomanDiplomacy, resources, selectedNaibate, t }} />}
+        {activeTab === 'diplomacy' && <DiplomacyTab {...{ delayedConsequences, handleAwardOrder, handleOttomanDiplomacy, handleSummonDivanPacket, naibRivalries, naibates, resolvedPacketIds, resources, selectedNaibate, setActiveTab, setSelectedNaibateId, t, turn }} />}
 
         {/* ---------------- ВКЛАДКА 4: БЕЗСЕТОЧНЫЙ ТАКТИЧЕСКИЙ СИМУЛЯТОР (ОСАДА МИЛЮТИНА + ЛЕСНОЙ СПЛАЙН) ---------------- */}
         {activeTab === 'siege' && <SiegeTab {...{ active3DTerrain, activeTacticalEncounter, activeTacticalNaibate, ambushLog, ambushStep, autoResolveForecast, cam3D, canvas3DRef, convoyStruckInBattle, deployedSector, deploymentStance, enemyAssaultVector, forestStealthPct, handleApplyTacticalBattleResult, handleAutoResolveTacticalBattle, handleCanvasPointerDown, handleCanvasPointerMove, handleCanvasPointerUp, handleChangeDeploymentStance, handleEnterTacticalDiorama, handleLaunch3DProjectile, handleReloadGazyrs, handleResetSplineAmbush, handleSplineAmbushAction, handleTacticalAction, liveImperialColumns: enrichedImperialColumns, mortarAngle3D, naibates, selectedSiegeZone, selectedSplineIdx, setActiveTab, setCam3D, setDeployedSector, setMortarAngle3D, setSelectedSiegeZone, setSelectedSplineIdx, setTacticalMode, setTacticalPaused, setUnicornAngle3D, siegeInline3D, setSiegeInline3D, siegeState, soundEnabled, splineEchelons, splineSegments, stats3D, t, tacticalBattleSession, tacticalMode, tacticalModifiers, tacticalPaused, turnActionQuota, unicornAngle3D }} />}

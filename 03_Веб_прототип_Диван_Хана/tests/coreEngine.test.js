@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  CAMPAIGN_SCENARIOS,
   IMPERIAL_GENERALS,
   INITIAL_NAIBATES,
   INITIAL_NIZAMS,
   SEASON_CLIMATE_MODIFIERS
 } from '../src/data/campaignData.js';
+import { getInitialEpisodeIdForScenario } from '../src/data/historicalEpisodes.js';
 import {
   INITIAL_IMPERIAL_COLUMNS,
   INITIAL_LIVE_FIELD_UNITS,
@@ -64,6 +66,17 @@ import {
   computeFogPassSectors,
   evaluatePointVisibility
 } from '../src/game/reconIntelEngine.js';
+import {
+  FELT_SHAME_BADGE,
+  HISTORICAL_DILEMMAS_32,
+  KUBACHI_25_ORDERS_CATALOG,
+  applyOrderAwardToNaibate,
+  computeNaibPoliticalProfile,
+  pickNextHistoricalDilemma,
+  resolveDueDelayedConsequences,
+  runScenarioMonteCarloSuite,
+  scheduleDelayedConsequence
+} from '../src/game/naibPoliticsEngine.js';
 
 function createMemoryStorage() {
   const map = new Map();
@@ -1075,4 +1088,194 @@ test('49. buildReadableAiIntentVectors marks imminent strike urgency when turnsU
   assert.equal(primary.urgency, 'imminent');
   assert.equal(primary.generalId, 'freytag');
   assert.equal(primary.intelState, 'confirmed');
+});
+
+// ============================================================================
+// СПРИНТ 7 (ФАЗА 3 / GATE 3): ПОЛИТИКА НАИБОВ, 25 ОРДЕНОВ, 32 ДИЛЕММЫ И 3 СЦЕНАРИЯ
+// ============================================================================
+test('50. KUBACHI_25_ORDERS_CATALOG contains all 25 unique museum orders plus disciplinary Felt Badge', () => {
+  assert.equal(KUBACHI_25_ORDERS_CATALOG.length, 25);
+  const uniqueIds = new Set(KUBACHI_25_ORDERS_CATALOG.map((o) => o.id));
+  assert.equal(uniqueIds.size, 25);
+  for (let tier = 1; tier <= 4; tier += 1) {
+    assert.ok(KUBACHI_25_ORDERS_CATALOG.filter((o) => o.tier === tier).length >= 5);
+  }
+  assert.ok(KUBACHI_25_ORDERS_CATALOG.every((o) => o.silverCost > 0 && o.imanBonus > 0 && o.gloryBonus > 0));
+  assert.equal(FELT_SHAME_BADGE.isDisciplinary, true);
+  assert.equal(FELT_SHAME_BADGE.silverCost, 0);
+  assert.ok(FELT_SHAME_BADGE.ambitionDelta < 0);
+});
+
+test('51. computeNaibPoliticalProfile derives Loyalty, Ambition, Glory, and schismRisk from traits and rivalries', () => {
+  const loyalNaib = {
+    id: 'vedeno',
+    garrison: 900,
+    murtazeks: 120,
+    trustScore: 2,
+    ordersAwarded: ['Большая фестончатая звезда Мудира', 'Серебряный полумесяц «Хиляль»'],
+    traits: { iman: 92, courage: 88, pride: 30 }
+  };
+  const proudRival = {
+    id: 'khunzakh',
+    garrison: 1400,
+    murtazeks: 220,
+    trustScore: -2,
+    estranged: true,
+    ordersAwarded: [],
+    traits: { iman: 48, courage: 92, pride: 90 }
+  };
+  const rivalries = [{ naibAId: 'khunzakh', naibBId: 'teletl', tension: 80, resolved: false }];
+
+  const pLoyal = computeNaibPoliticalProfile(loyalNaib, rivalries);
+  const pRival = computeNaibPoliticalProfile(proudRival, rivalries);
+
+  assert.ok(pLoyal.loyalty >= 80);
+  assert.ok(pLoyal.glory >= 70);
+  assert.equal(pLoyal.stanceId, 'proud_champion');
+  assert.ok(pLoyal.orderExecutionMod > 0);
+
+  assert.ok(pRival.ambition >= 80);
+  assert.ok(pRival.schismRisk >= 55);
+  assert.equal(pRival.stanceId, 'schism_risk');
+  assert.ok(pRival.orderExecutionMod < 0);
+});
+
+test('52. applyOrderAwardToNaibate applies direct gameplay impact for Kubachi orders and Felt Shame Badge', () => {
+  const baseNaib = {
+    ...INITIAL_NAIBATES[0],
+    trustScore: 0,
+    ordersAwarded: [],
+    imperialPressure: 62,
+    traits: { iman: 74, courage: 85, pride: 72 }
+  };
+  const mudirStar = KUBACHI_25_ORDERS_CATALOG.find((o) => o.id === 'order_mudir');
+  const resAward = applyOrderAwardToNaibate(baseNaib, mudirStar);
+  assert.equal(resAward.isDisciplinary, false);
+  assert.ok(resAward.nextNaibate.traits.iman > baseNaib.traits.iman);
+  assert.ok(resAward.nextNaibate.traits.pride < baseNaib.traits.pride);
+  assert.ok(resAward.nextNaibate.garrison > baseNaib.garrison);
+  assert.ok(resAward.nextNaibate.gunpowder > baseNaib.gunpowder);
+  assert.ok(resAward.nextNaibate.imperialPressure < baseNaib.imperialPressure);
+  assert.equal(resAward.squadronVetDelta, 2);
+
+  const profBefore = computeNaibPoliticalProfile(baseNaib);
+  const profAfter = computeNaibPoliticalProfile(resAward.nextNaibate);
+  assert.ok(profAfter.loyalty > profBefore.loyalty);
+  assert.ok(profAfter.glory > profBefore.glory);
+
+  const resFelt = applyOrderAwardToNaibate(baseNaib, FELT_SHAME_BADGE);
+  assert.equal(resFelt.isDisciplinary, true);
+  assert.ok(resFelt.nextNaibate.traits.pride < baseNaib.traits.pride);
+  assert.ok(resFelt.nextNaibate.politicsDeltas.ambition < 0);
+  assert.ok(resFelt.authorityDelta > 0);
+});
+
+test('53. HISTORICAL_DILEMMAS_32 has 32 unique bilingual dilemmas where every choice schedules a 2-4 turn delayed echo', () => {
+  assert.equal(HISTORICAL_DILEMMAS_32.length, 32);
+  const ids = new Set(HISTORICAL_DILEMMAS_32.map((d) => d.id));
+  assert.equal(ids.size, 32);
+  HISTORICAL_DILEMMAS_32.forEach((d) => {
+    assert.ok(d.titleRu && d.titleEn);
+    assert.ok(Array.isArray(d.choices) && d.choices.length >= 2);
+    d.choices.forEach((ch) => {
+      assert.ok(ch.delayedEffect, `Choice ${ch.id} in ${d.id} must have delayedEffect`);
+      assert.ok(ch.delayedEffect.delayTurns >= 2 && ch.delayedEffect.delayTurns <= 4);
+      assert.ok(ch.delayPreviewRu && ch.delayPreviewEn);
+    });
+  });
+});
+
+test('54. scheduleDelayedConsequence and resolveDueDelayedConsequences fire exactly on dueTurn and update state', () => {
+  const dilemma = HISTORICAL_DILEMMAS_32[0]; // delayTurns = 2 on choices[0]
+  const choice = dilemma.choices[0];
+  let queue = scheduleDelayedConsequence([], { turn: 3, packet: dilemma, choice });
+  assert.equal(queue.length, 1);
+  assert.equal(queue[0].dueTurn, 5);
+
+  // Turn 4: not due yet
+  const early = resolveDueDelayedConsequences({
+    queue,
+    nextTurn: 4,
+    naibates: INITIAL_NAIBATES,
+    resources: { gunpowder: 150, provisions: 1000, silver: 500, authority: 80, ottomanSupport: 40 }
+  });
+  assert.equal(early.firedEffects.length, 0);
+  assert.equal(early.remainingQueue.length, 1);
+
+  // Turn 5: fires cleanly
+  const fired = resolveDueDelayedConsequences({
+    queue,
+    nextTurn: 5,
+    naibates: INITIAL_NAIBATES,
+    resources: { gunpowder: 150, provisions: 1000, silver: 500, authority: 80, ottomanSupport: 40 }
+  });
+  assert.equal(fired.firedEffects.length, 1);
+  assert.equal(fired.remainingQueue.length, 0);
+  assert.equal(fired.logs.length, 1);
+  const vedenoBefore = INITIAL_NAIBATES.find((n) => n.id === 'vedeno');
+  const vedenoAfter = fired.nextNaibates.find((n) => n.id === 'vedeno');
+  assert.equal(vedenoAfter.garrison, vedenoBefore.garrison + 140);
+  assert.equal(fired.nextResources.authority, 83);
+});
+
+test('55. pickNextHistoricalDilemma prioritizes scenario-tagged dilemmas and avoids repeating resolved IDs', () => {
+  const first = pickNextHistoricalDilemma({
+    naibates: INITIAL_NAIBATES,
+    resources: { gunpowder: 165, provisions: 1080, silver: 520, authority: 84, ottomanSupport: 42 },
+    turn: 1,
+    resolvedIds: [],
+    activeScenarioId: 'camp_1847'
+  });
+  assert.ok(first.scenarios.includes('camp_1847'));
+
+  const second = pickNextHistoricalDilemma({
+    naibates: INITIAL_NAIBATES,
+    resources: { gunpowder: 165, provisions: 1080, silver: 520, authority: 84, ottomanSupport: 42 },
+    turn: 2,
+    resolvedIds: [first.id],
+    activeScenarioId: 'camp_1847'
+  });
+  assert.notEqual(second.id, first.id);
+});
+
+test('56. CAMPAIGN_SCENARIOS exposes all 3 flagship scenarios (1845 Dargo, 1839 Akhulgo, 1847-1849 Siege War)', () => {
+  const flagships = CAMPAIGN_SCENARIOS.filter((s) => s.flagship).map((s) => s.id);
+  assert.deepEqual(flagships.sort(), ['camp_1839', 'camp_1845', 'camp_1847']);
+  const siege47 = CAMPAIGN_SCENARIOS.find((s) => s.id === 'camp_1847');
+  assert.equal(siege47.generalIdx, 1);
+  assert.equal(selectEpochGeneralIdx({ activeScenarioId: 'camp_1847', nextTurnNum: 3 }), 1);
+  assert.equal(getInitialEpisodeIdForScenario('camp_1847'), 'ep_1847_siege_war');
+});
+
+test('57. saveSystem persists delayedConsequences and resolvedPacketIds through export and migration', () => {
+  const sampleQueue = [{ id: 'echo-1', dueTurn: 6, effect: { titleRu: 'Тест', powderDelta: 15 } }];
+  const payload = buildCampaignSavePayload({
+    turn: 4,
+    activeScenarioId: 'camp_1847',
+    resources: { gunpowder: 165, provisions: 1080, silver: 520, authority: 84, ottomanSupport: 42 },
+    naibates: INITIAL_NAIBATES,
+    delayedConsequences: sampleQueue,
+    resolvedPacketIds: ['dil_01_kubachi_silver']
+  });
+  const checked = validateAndMigrateSavePayload(JSON.stringify(payload));
+  assert.equal(checked.ok, true);
+  assert.equal(checked.data.activeScenarioId, 'camp_1847');
+  assert.equal(checked.data.delayedConsequences.length, 1);
+  assert.equal(checked.data.delayedConsequences[0].dueTurn, 6);
+  assert.deepEqual(checked.data.resolvedPacketIds, ['dil_01_kubachi_silver']);
+});
+
+test('58. runScenarioMonteCarloSuite produces balanced difficulty curves and diversity across 3 flagship scenarios', () => {
+  const mc = runScenarioMonteCarloSuite({
+    scenarios: CAMPAIGN_SCENARIOS,
+    initialNaibates: INITIAL_NAIBATES,
+    runsPerScenario: 300,
+    maxTurns: 12,
+    seed: 18450706
+  });
+  assert.equal(mc.scenariosTested, 3);
+  assert.equal(mc.uniqueOrdersUsed, 25);
+  assert.ok(mc.uniqueDilemmasTriggered >= 24);
+  assert.equal(mc.difficultyOrderingOk, true);
+  assert.equal(mc.varianceOk, true);
 });

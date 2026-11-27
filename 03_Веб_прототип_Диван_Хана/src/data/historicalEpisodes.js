@@ -784,6 +784,125 @@ export const HISTORICAL_EPISODES = [
   },
 
   // ==========================================================================
+  // ЭПИЗОД III-Б. «ВОЙНА ОСАД: ГЕРГЕБИЛЬ, САЛТЫ И НЕПРИСТУПНЫЙ ЧОХ» (1847–1849 ГГ.)
+  // ==========================================================================
+  {
+    id: 'ep_1847_siege_war',
+    scenarioId: 'camp_1847',
+    episodeNumber: 'III-Б',
+    yearsLabelRu: '1847 — 1849 гг. (Ходы 1–12)',
+    yearsLabelEn: '1847 — 1849 (Turns 1–12)',
+    titleRu: 'Эпизод III-Б: «Война осад» — Гергебиль, Салты и неприступный Чох',
+    titleEn: 'Episode III-B: “War of Sieges” — Gergebil, Salty & Unbroken Chokh',
+    subtitleRu: 'Пудовые мортиры, подземная минная война кн. Аргутинского и гений инженера Хаджи-Юсуфа в Центральном Дагестане',
+    subtitleEn: 'Pood mortars, Prince Argutinsky’s subterranean sapping, and Chief Engineer Hajji Yusuf’s bastions in Central Dagestan',
+    capitalNaibateId: 'vedeno',
+    capitalLabelRu: 'Дарго-Ведено',
+    capitalLabelEn: 'Dargo-Vedeno',
+    initialImperialHeldIds: [],
+    nextChainEpisodeId: 'ep_1853_crimean_michik',
+    phases: [
+      {
+        id: 'siege47_p1_salty_bastions',
+        step: 1,
+        dateRu: 'Июль — Сентябрь 1847 г.',
+        dateEn: 'July — September 1847',
+        titleRu: 'Фаза 1/2: 50-дневная оборона Салтов и гергебильских садов',
+        titleEn: 'Phase 1/2: 50-Day Defense of Salty & Gergebil’s Terraced Orchards',
+        art: 'Diorama_Siege_TopDown_Salty_1847.jpg',
+        focusNaibateId: 'gergebil',
+        speakerRu: 'Инженер Хаджи-Юсуф и наиб Гергебиля',
+        speakerEn: 'Chief Engineer Hajji Yusuf & Naib of Gergebil',
+        quoteRu:
+          '«После урока Дарго Воронцов и Аргутинский больше не ходят вслепую в леса — они подкатывают 24 осадные пушки к каменным башням Салтов и бьют шрапнелью по садам. Но пока завалы держат воду и подходы, каждый день осени работает на Имамат!»',
+        quoteEn:
+          '“After Dargo, Vorontsov and Argutinsky no longer march blind into forests—they wheel 24 siege guns against Salty’s stone towers. Yet while our bastions hold water and slopes, every autumn day bleeds the besiegers!”',
+        contextRu:
+          'Лето 1847 года. Осадный корпус развернул траншеи и батареи у Салтов, где хирург Н. И. Пирогов впервые применяет эфирный наркоз. Выберите стратегию защиты Центрального Дагестана.',
+        contextEn:
+          'Summer 1847. The siege corps opened parallels before Salty, where surgeon N. I. Pirogov pioneers ether anesthesia. Choose Central Dagestan’s defense doctrine.',
+        choices: [
+          {
+            id: 's47_c1_stone_casemates',
+            labelRu: 'Перекрыть сакли брёвнами и каменными казематами, выматывая осаду до дождей',
+            labelEn: 'Roof saklyas with timber casemates to bleed the siege until autumn rains',
+            effectRu: 'Натиск Гергебиля -14% | Гарнизон +120 | Порох -12 пуд. | Авторитет +5%',
+            effectEn: 'Gergebil Pressure -14% | Garrison +120 | Powder -12 poods | Authority +5%',
+            powderDelta: -12,
+            silverDelta: -40,
+            provisionsDelta: 80,
+            authorityDelta: 5,
+            targetNaibId: 'gergebil',
+            pressureDelta: -14,
+            murtazeksDelta: 120,
+            chronicleRu:
+              'Салтинские каменные казематы выдержали тысячи ядер — осадная кампания 1847 года завязла в ущелье.',
+            chronicleEn:
+              'Salty’s stone casemates withstood thousands of shells, bogging down the 1847 siege campaign.'
+          },
+          {
+            id: 's47_c2_counter_raid_gunib',
+            labelRu: 'Ударить конницей Хаджи-Мурата по обозам на дороге из Темир-Хан-Шуры',
+            labelEn: 'Unleash Hadji Murad’s riders against supply convoys from Temir-Khan-Shura',
+            effectRu: 'Порох +20 пуд. | Серебро +90 руб. | Натиск Чоха -10% | Авторитет +4%',
+            effectEn: 'Powder +20 poods | Silver +90 rub. | Chokh Pressure -10% | Authority +4%',
+            powderDelta: 20,
+            silverDelta: 90,
+            provisionsDelta: 110,
+            authorityDelta: 4,
+            targetNaibId: 'chokh',
+            pressureDelta: -10,
+            chronicleRu:
+              'Рейд горской конницы сорвал подвоз снарядов к осадным батареям Дагестана и пополнил арсеналы Имамата.',
+            chronicleEn:
+              'Highland cavalry cut off siege-shell convoys in Dagestan and replenished Imamate arsenals.'
+          }
+        ]
+      },
+      {
+        id: 'siege47_p2_chokh_triumph',
+        step: 2,
+        dateRu: 'Июль — Август 1849 г.',
+        dateEn: 'July — August 1849',
+        titleRu: 'Фаза 2/2: Неприступный Чох (1849) — контрмины и бастион Хаджи-Юсуфа',
+        titleEn: 'Phase 2/2: Unbroken Chokh (1849) — Counter-Mines & Hajji Yusuf’s Bastion',
+        art: 'Crisis_Chokh_Siege_1849.jpg',
+        focusNaibateId: 'chokh',
+        speakerRu: 'Комендант Чохской крепости и инженер Хаджи-Юсуф',
+        speakerEn: 'Chokh Fortress Commandant & Chief Engineer Hajji Yusuf',
+        quoteRu:
+          '«Двадцать две тысячи снарядов обрушил князь Аргутинский на Чох! Но наш круглый каменный редут с амбразурами и подземные слуховые галереи выстояли — Чох не сдастся!»',
+        quoteEn:
+          '“Prince Argutinsky rained 22,000 shells on Chokh! Yet our circular embrasured stone redoubt and listening tunnels held—Chokh shall never yield!”',
+        contextRu:
+          'Август 1849 года. Последний осадный штурм Чоха. Победа здесь остановит наступление на Дагестан на годы вперёд.',
+        contextEn:
+          'August 1849. The climactic siege of Chokh. Victory here halts Imperial advances in Dagestan for years.',
+        choices: [
+          {
+            id: 's47_c3_chokh_bastion_victory',
+            labelRu: 'Взорвать контрмину и встретить штурм залпом с Чохского редута!',
+            labelEn: 'Detonate the counter-mine and meet the storm with Chokh Redoubt volleys!',
+            effectRu: 'Триумф под Чохом! | Натиск Чоха -22% | Авторитет +10% | Муртазеки +100',
+            effectEn: 'Triumph at Chokh! | Chokh Pressure -22% | Authority +10% | Murtazeks +100',
+            powderDelta: -15,
+            silverDelta: 120,
+            provisionsDelta: 140,
+            authorityDelta: 10,
+            targetNaibId: 'chokh',
+            pressureDelta: -22,
+            murtazeksDelta: 100,
+            chronicleRu:
+              'ЭПИЗОД III-Б ЗАВЕРШЁН: Осада Чоха 1849 г. снята! Неприступный бастион инженера Хаджи-Юсуфа вошёл в историю военного искусства.',
+            chronicleEn:
+              'EPISODE III-B COMPLETE: The 1849 Siege of Chokh is broken! Engineer Hajji Yusuf’s redoubt entered military history.'
+          }
+        ]
+      }
+    ]
+  },
+
+  // ==========================================================================
   // ЭПИЗОД IV. «КРЫМСКИЙ ШАНС, ЦИНАНДАЛИ И РЕКА МИЧИК» (1853–1856 ГГ.)
   // ==========================================================================
   {
@@ -1297,6 +1416,7 @@ export const HISTORICAL_EPISODES = [
 export function getInitialEpisodeIdForScenario(scenarioId) {
   if (scenarioId === 'camp_1839') return 'ep_1839_akhulgo';
   if (scenarioId === 'camp_1843') return 'ep_1843_shining_ghazawat';
+  if (scenarioId === 'camp_1847') return 'ep_1847_siege_war';
   if (scenarioId === 'camp_1859') return 'ep_1857_gunib';
   return 'ep_1845_dargo';
 }
