@@ -1,0 +1,12 @@
+"DepotBuild"
+{
+	"DepotID" "3481842"
+	"FileMapping"
+	{
+		"LocalPath" "Mac\\*"
+		"DepotPath" "."
+		"recursive" "1"
+	}
+	"FileExclusion" "*.dSYM"
+	"FileExclusion" ".DS_Store"
+}

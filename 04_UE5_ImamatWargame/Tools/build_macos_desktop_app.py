@@ -182,10 +182,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
 
         let contentController = WKUserContentController()
         contentController.add(self, name: "imamatSaveFile")
+        contentController.add(self, name: "imamatSteamCloud")
+        contentController.add(self, name: "imamatSteamAchievement")
 
-        // Intercept blob downloads (<a download="filename" href="blob:...">) so they open a native macOS NSSavePanel
+        // Intercept blob downloads & expose native macOS Steam Cloud + Achievements bridge (Sprint 11)
         let downloadBridgeJS = """
         (function() {
+          window.imamatSteamBridge = {
+            mode: 'macos_native_app',
+            appId: 3481840,
+            cloudEnabled: true,
+            overlayAvailable: false,
+            personaName: 'macOS Commander',
+            writeCloudSave: function(filename, content) {
+              if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.imamatSteamCloud) {
+                window.webkit.messageHandlers.imamatSteamCloud.postMessage({ filename: filename, content: content });
+                return true;
+              }
+              return false;
+            },
+            unlockAchievement: function(apiName) {
+              if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.imamatSteamAchievement) {
+                window.webkit.messageHandlers.imamatSteamAchievement.postMessage({ apiName: apiName });
+                return true;
+              }
+              return false;
+            },
+            setRichPresence: function() { return true; },
+            openSteamOverlay: function() { return false; }
+          };
+
           const origClick = HTMLAnchorElement.prototype.click;
           HTMLAnchorElement.prototype.click = function() {
             if (this.download && this.href && this.href.startsWith('blob:') && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.imamatSaveFile) {
@@ -235,8 +261,47 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
         webView.reload()
     }
 
-    // WKScriptMessageHandler: Save exported files (.html, .md, .json, .srt, .edl) via native macOS Save Panel
+    // WKScriptMessageHandler: Save exported files, Steam Auto-Cloud .imamat-save & achievements locally
+    func steamCloudDirectoryURL() -> URL? {
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        let dir = appSupport.appendingPathComponent("ImamatDivanKhana/SteamCloud", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "imamatSteamCloud",
+           let dict = message.body as? [String: Any],
+           let rawName = dict["filename"] as? String,
+           let content = dict["content"] as? String,
+           let dir = steamCloudDirectoryURL() {
+            let safeName = URL(fileURLWithPath: rawName).lastPathComponent
+            let target = dir.appendingPathComponent(safeName)
+            try? content.write(to: target, atomically: true, encoding: .utf8)
+            return
+        }
+
+        if message.name == "imamatSteamAchievement",
+           let dict = message.body as? [String: Any],
+           let apiName = dict["apiName"] as? String,
+           let dir = steamCloudDirectoryURL() {
+            let achFile = dir.appendingPathComponent("achievements.json")
+            var unlocked: [String] = []
+            if let existing = try? Data(contentsOf: achFile),
+               let parsed = try? JSONSerialization.jsonObject(with: existing) as? [String] {
+                unlocked = parsed
+            }
+            if !unlocked.contains(apiName) {
+                unlocked.append(apiName)
+                if let encoded = try? JSONSerialization.data(withJSONObject: unlocked, options: [.prettyPrinted]) {
+                    try? encoded.write(to: achFile)
+                }
+            }
+            return
+        }
+
         guard message.name == "imamatSaveFile",
               let dict = message.body as? [String: Any],
               let filename = dict["filename"] as? String,
@@ -401,29 +466,130 @@ start "" "%APP_HTML%"
 
 
 ELECTRON_MAIN_CJS = """// ============================================================================
-// IMAMAT: DIVAN-KHANA (1845) — Cross-Platform Electron Desktop Shell (macOS/Win/Linux)
-// Run via: npx electron electron-main.cjs
+// IMAMAT: DIVAN-KHANA (1845) — Commercial Steamworks Electron Desktop Shell
+// Sprint 11 (Phase 6): macOS / Windows / Steam Deck with Steamworks IPC Bridge
+// Supports optional steamworks.js (Cloud Saves, 12 Achievements, Rich Presence, Overlay)
+// with automatic graceful fallback to local userData/SteamCloud/ mirror outside Steam.
 // ============================================================================
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
+const fs = require('fs');
 const path = require('path');
+
+const STEAM_APP_ID = 3481840;
+let steamClient = null;
+let steamMode = 'desktop_cloud_mirror';
+
+try {
+  // Optional Steamworks SDK binding (bundled in Steamworks production builds)
+  const steamworks = require('steamworks.js');
+  steamClient = steamworks.init(STEAM_APP_ID);
+  steamMode = 'steamworks';
+  if (typeof steamworks.electronEnableSteamOverlay === 'function') {
+    steamworks.electronEnableSteamOverlay();
+  }
+} catch {
+  steamClient = null;
+  steamMode = 'desktop_cloud_mirror';
+}
+
+function getCloudDir() {
+  const dir = path.join(app.getPath('userData'), 'SteamCloud');
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+ipcMain.on('steam:getStatusSync', (event) => {
+  event.returnValue = {
+    mode: steamMode,
+    appId: STEAM_APP_ID,
+    connected: Boolean(steamClient),
+    cloudEnabled: true,
+    overlayAvailable: Boolean(steamClient),
+    personaName: steamClient?.localplayer?.getName?.() || 'Desktop Commander'
+  };
+});
+
+ipcMain.on('steam:writeCloudSave', (_event, { filename, content }) => {
+  const safeName = path.basename(String(filename || 'imamat_save_slot_1.imamat-save'));
+  try {
+    if (steamClient?.cloud?.writeFile) {
+      steamClient.cloud.writeFile(safeName, String(content || ''));
+    }
+  } catch {
+    // fallback to local Steam Auto-Cloud directory below
+  }
+  try {
+    fs.writeFileSync(path.join(getCloudDir(), safeName), String(content || ''), 'utf8');
+  } catch {
+    // ignore disk errors
+  }
+});
+
+ipcMain.on('steam:unlockAchievement', (_event, apiName) => {
+  const id = String(apiName || '').trim();
+  if (!id) return;
+  try {
+    if (steamClient?.achievement?.activate) {
+      steamClient.achievement.activate(id);
+    }
+  } catch {
+    // ignore outside Steam client
+  }
+  try {
+    const file = path.join(getCloudDir(), 'achievements.json');
+    const prev = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
+    if (!prev.includes(id)) {
+      prev.push(id);
+      fs.writeFileSync(file, JSON.stringify(prev, null, 2), 'utf8');
+    }
+  } catch {
+    // ignore
+  }
+});
+
+ipcMain.on('steam:setRichPresence', (_event, { key, value }) => {
+  try {
+    if (steamClient?.localplayer?.setRichPresence) {
+      steamClient.localplayer.setRichPresence('steam_display', String(key || '#Status_DivanKhana'));
+      steamClient.localplayer.setRichPresence('status', String(value || ''));
+    }
+  } catch {
+    // ignore
+  }
+});
+
+ipcMain.on('steam:openOverlaySync', (event, target) => {
+  try {
+    if (steamClient?.overlay?.activateDialog) {
+      steamClient.overlay.activateDialog(String(target || 'Achievements'));
+      event.returnValue = true;
+      return;
+    }
+  } catch {
+    // ignore
+  }
+  event.returnValue = false;
+});
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1480,
-    height: 920,
-    minWidth: 1024,
-    minHeight: 680,
+    width: 1540,
+    height: 940,
+    minWidth: 1280,
+    minHeight: 760,
     backgroundColor: '#0c0e12',
-    title: 'ИМАМАТ: ДИВАН-ХАНА (1845) — Desktop Edition (RU / EN)',
+    title: 'IMAMAT: DIVAN-KHANA (1845) — Steam Desktop Edition (RU / EN)',
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      preload: path.join(__dirname, 'electron-preload.cjs')
     }
   });
 
+  const standaloneLocal = path.join(__dirname, 'Imamat_DivanKhana_Standalone_Playtest.html');
   const distIndex = path.join(__dirname, 'dist', 'index.html');
-  win.loadFile(distIndex);
+  win.loadFile(fs.existsSync(distIndex) ? distIndex : standaloneLocal);
 }
 
 app.whenReady().then(() => {
@@ -436,6 +602,116 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+"""
+
+
+ELECTRON_PRELOAD_CJS = """// ============================================================================
+// IMAMAT: DIVAN-KHANA (1845) — Secure Context-Isolated Steamworks Preload Bridge
+// Exposes window.imamatSteamBridge to src/game/steamworksBridge.js
+// ============================================================================
+const { contextBridge, ipcRenderer } = require('electron');
+
+const status = ipcRenderer.sendSync('steam:getStatusSync') || {
+  mode: 'desktop_cloud_mirror',
+  appId: 3481840,
+  connected: false,
+  cloudEnabled: true,
+  overlayAvailable: false,
+  personaName: 'Desktop Commander'
+};
+
+contextBridge.exposeInMainWorld('imamatSteamBridge', {
+  mode: status.mode,
+  appId: status.appId,
+  connected: status.connected,
+  cloudEnabled: status.cloudEnabled,
+  overlayAvailable: status.overlayAvailable,
+  personaName: status.personaName,
+  writeCloudSave: (filename, content) => {
+    ipcRenderer.send('steam:writeCloudSave', { filename, content });
+    return true;
+  },
+  unlockAchievement: (apiName) => {
+    ipcRenderer.send('steam:unlockAchievement', apiName);
+    return true;
+  },
+  setRichPresence: (key, value) => {
+    ipcRenderer.send('steam:setRichPresence', { key, value });
+    return true;
+  },
+  openSteamOverlay: (target) => Boolean(ipcRenderer.sendSync('steam:openOverlaySync', target))
+});
+"""
+
+
+STEAM_DESKTOP_PACKAGE_JSON = """{
+  "name": "imamat-divan-khana-steam",
+  "productName": "IMAMAT: DIVAN-KHANA (1845)",
+  "version": "1.0.0-rc1",
+  "description": "Historical Grand Strategy & 3D Mountain Warfare Wargame (1834-1859)",
+  "main": "electron-main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis portable --x64",
+    "dist:mac": "electron-builder --mac dmg zip --universal",
+    "stage:steam": "bash ./stage_steam_depots.sh"
+  },
+  "optionalDependencies": {
+    "steamworks.js": "^0.3.1"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.imamat.divankhana.steam",
+    "productName": "ImamatDivanKhana",
+    "files": [
+      "electron-main.cjs",
+      "electron-preload.cjs",
+      "steam_appid.txt",
+      "Imamat_DivanKhana_Standalone_Playtest.html",
+      "Workshop_Mods/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.strategy-games",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "target": ["dmg", "zip"]
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    }
+  }
+}
+"""
+
+
+STAGE_STEAM_DEPOTS_SH = """#!/usr/bin/env bash
+set -euo pipefail
+# Stage Windows (Depot 3481841) and macOS (Depot 3481842) builds for Valve SteamPipe upload
+PKG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KIT_DIR="$(cd "$PKG_DIR/.." && pwd)"
+STAGE_DIR="$KIT_DIR/StagedBuilds"
+
+rm -rf "$STAGE_DIR"
+mkdir -p "$STAGE_DIR/Windows" "$STAGE_DIR/Mac"
+
+# Stage Windows Depot (3481841)
+cp "$KIT_DIR/Imamat_DivanKhana_Standalone_Playtest.html" "$STAGE_DIR/Windows/"
+cp "$KIT_DIR/Launch_Imamat_Windows_Desktop.bat" "$STAGE_DIR/Windows/"
+cp "$PKG_DIR/electron-main.cjs" "$PKG_DIR/electron-preload.cjs" "$PKG_DIR/steam_appid.txt" "$STAGE_DIR/Windows/"
+cp -R "$KIT_DIR/Workshop_Mods" "$STAGE_DIR/Windows/Workshop_Mods"
+
+# Stage macOS Depot (3481842)
+cp -R "$KIT_DIR/Imamat_DivanKhana_macOS.app" "$STAGE_DIR/Mac/"
+cp "$PKG_DIR/steam_appid.txt" "$STAGE_DIR/Mac/"
+
+echo "[OK] SteamPipe depots staged at: $STAGE_DIR"
+echo "     Run: steamcmd +login <partner_account> +run_app_build ../Steamworks_Partner_Config/app_build_imamat_vertical_slice.vdf +quit"
 """
 
 
@@ -515,12 +791,45 @@ def main() -> int:
     )
     print(f"  -> Signed Native macOS Bundle: {app_bundle.name}")
 
-    # 6. Create Windows App-Mode Launcher (.bat) & Electron Shell (electron-main.cjs)
+    # 6. Create Windows App-Mode Launcher (.bat), Electron+Steamworks IPC Shell & Steam Desktop Package
     win_bat = kit_dir / "Launch_Imamat_Windows_Desktop.bat"
     win_bat.write_text(WINDOWS_BAT_LAUNCHER, encoding="utf-8")
     electron_path = web_dir / "electron-main.cjs"
     electron_path.write_text(ELECTRON_MAIN_CJS, encoding="utf-8")
-    print(f"  -> Created Windows Desktop Launcher ({win_bat.name}) & Electron Shell ({electron_path.name})")
+    preload_path = web_dir / "electron-preload.cjs"
+    preload_path.write_text(ELECTRON_PRELOAD_CJS, encoding="utf-8")
+
+    steam_pkg_dir = kit_dir / "Steam_Desktop_Package"
+    steam_pkg_dir.mkdir(parents=True, exist_ok=True)
+    (steam_pkg_dir / "electron-main.cjs").write_text(ELECTRON_MAIN_CJS, encoding="utf-8")
+    (steam_pkg_dir / "electron-preload.cjs").write_text(ELECTRON_PRELOAD_CJS, encoding="utf-8")
+    (steam_pkg_dir / "package.json").write_text(STEAM_DESKTOP_PACKAGE_JSON, encoding="utf-8")
+    (steam_pkg_dir / "steam_appid.txt").write_text("3481840\n", encoding="utf-8")
+    stage_sh = steam_pkg_dir / "stage_steam_depots.sh"
+    stage_sh.write_text(STAGE_STEAM_DEPOTS_SH, encoding="utf-8")
+    os.chmod(stage_sh, 0o755)
+
+    # Package portable Windows Steam/Desktop ZIP
+    win_zip = kit_dir / "Imamat_DivanKhana_Windows_Portable.zip"
+    with zipfile.ZipFile(win_zip, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for src, arc in [
+            (kit_dir / "Imamat_DivanKhana_Standalone_Playtest.html", "Imamat_DivanKhana_Windows/Imamat_DivanKhana_Standalone_Playtest.html"),
+            (win_bat, "Imamat_DivanKhana_Windows/Launch_Imamat_Windows_Desktop.bat"),
+            (steam_pkg_dir / "electron-main.cjs", "Imamat_DivanKhana_Windows/electron-main.cjs"),
+            (steam_pkg_dir / "electron-preload.cjs", "Imamat_DivanKhana_Windows/electron-preload.cjs"),
+            (steam_pkg_dir / "package.json", "Imamat_DivanKhana_Windows/package.json"),
+            (steam_pkg_dir / "steam_appid.txt", "Imamat_DivanKhana_Windows/steam_appid.txt"),
+        ]:
+            if src.exists():
+                zf.write(src, arcname=arc)
+        if mods_src.exists():
+            for mf in sorted(mods_src.glob("*.json")):
+                zf.write(mf, arcname=f"Imamat_DivanKhana_Windows/Workshop_Mods/{mf.name}")
+
+    print(
+        f"  -> Created Windows Desktop Launcher ({win_bat.name}), Electron+Steamworks IPC ({electron_path.name} + preload) "
+        f"& Windows Portable ZIP ({win_zip.stat().st_size:,} bytes)"
+    )
 
     # 7. Package Imamat_DivanKhana_macOS_App.zip preserving Unix permissions & copy to root workspace
     mac_zip = kit_dir / "Imamat_DivanKhana_macOS_App.zip"

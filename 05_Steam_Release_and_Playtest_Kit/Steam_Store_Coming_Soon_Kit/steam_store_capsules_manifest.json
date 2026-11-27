@@ -1,0 +1,93 @@
+{
+  "appId": 3481840,
+  "specVersion": "Valve-Steamworks-2026",
+  "capsules": [
+    {
+      "id": "header_capsule",
+      "filename": "header_capsule_920x430.png",
+      "width": 920,
+      "height": 430,
+      "bytes": 577513
+    },
+    {
+      "id": "small_capsule",
+      "filename": "small_capsule_462x174.png",
+      "width": 462,
+      "height": 174,
+      "bytes": 153555
+    },
+    {
+      "id": "main_capsule",
+      "filename": "main_capsule_1232x706.png",
+      "width": 1232,
+      "height": 706,
+      "bytes": 1182773
+    },
+    {
+      "id": "vertical_capsule",
+      "filename": "vertical_capsule_748x896.png",
+      "width": 748,
+      "height": 896,
+      "bytes": 1021096
+    },
+    {
+      "id": "library_capsule",
+      "filename": "library_capsule_600x900.png",
+      "width": 600,
+      "height": 900,
+      "bytes": 836825
+    },
+    {
+      "id": "library_hero",
+      "filename": "library_hero_3840x1240.png",
+      "width": 3840,
+      "height": 1240,
+      "bytes": 6172451
+    },
+    {
+      "id": "library_logo",
+      "filename": "library_logo_1280x720.png",
+      "width": 1280,
+      "height": 720,
+      "bytes": 37848
+    }
+  ],
+  "screenshots1080p": [
+    {
+      "filename": "screenshot_01_3d_map_table_1920x1080.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 1588400,
+      "source": "sprint10_4_wide_1920x1080_en.png"
+    },
+    {
+      "filename": "screenshot_02_siege_cutaway_1920x1080.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 1680578,
+      "source": "sprint10_2_siege_en_zero_leaks.png"
+    },
+    {
+      "filename": "screenshot_03_naib_politics_25orders_1920x1080.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 1324005,
+      "source": "sprint10_3_diplomacy_25orders_en.png"
+    },
+    {
+      "filename": "screenshot_04_forest_ambush_3d_1920x1080.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 3214260,
+      "source": "sprint5_3_forest_ambush_blender.png"
+    },
+    {
+      "filename": "screenshot_05_steamdeck_verified_1920x1080.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 1854409,
+      "source": "sprint10_1_steamdeck_1280x800_en.png"
+    }
+  ],
+  "trailer60s": null
+}

@@ -1,0 +1,33 @@
+"SteamAutoCloudConfig"
+{
+	"AppID" "3481840"
+	"QuotaBytes" "104857600"
+	"MaxFiles" "64"
+	"RootOverrides"
+	{
+		"0"
+		{
+			"root" "WinAppDataRoaming"
+			"os" "Windows"
+			"path" "ImamatDivanKhana\\SteamCloud"
+			"pattern" "*.imamat-save"
+			"recursive" "0"
+		}
+		"1"
+		{
+			"root" "MacAppSupport"
+			"os" "MacOS"
+			"path" "ImamatDivanKhana/SteamCloud"
+			"pattern" "*.imamat-save"
+			"recursive" "0"
+		}
+		"2"
+		{
+			"root" "LinuxXdgDataHome"
+			"os" "Linux"
+			"path" "ImamatDivanKhana/SteamCloud"
+			"pattern" "*.imamat-save"
+			"recursive" "0"
+		}
+	}
+}

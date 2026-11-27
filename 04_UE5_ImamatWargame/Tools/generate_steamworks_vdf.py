@@ -25,10 +25,17 @@ DEPOT_MACOS_ID = 3481842
 
 
 def generate_steampipe_app_build_vdf() -> Path:
-    vdf_content = f'''"AppBuild"
+    vdf_content = f'''// ============================================================================
+// Valve SteamPipe Master AppBuild Script — IMAMAT: DIVAN-KHANA (1845)
+// Upload command:
+//   steamcmd +login <partner_account> +run_app_build app_build_imamat_vertical_slice.vdf +quit
+// Depots: Win64 x64 (3481841) & macOS Apple Silicon/Universal (3481842)
+// Auto-Cloud Rules: steam_cloud_autocloud.vdf (*.imamat-save, 100 MB quota)
+// ============================================================================
+"AppBuild"
 {{
 \t"AppID" "{STEAM_APP_ID}"
-\t"Desc" "THE IMAMAT: DIVAN-KHANA (1845) — Vertical Slice v0.9 (UE 5.5 DX12/Metal)"
+\t"Desc" "THE IMAMAT: DIVAN-KHANA (1845) — Sprint 11 Steam Desktop RC1 (macOS arm64 + Windows x64 + Steamworks)"
 \t"BuildOutput" "..\\\\BuildOutput\\\\SteamPipe"
 \t"ContentRoot" "..\\\\StagedBuilds"
 \t"SetLive" "playtest_beta"
@@ -37,34 +44,86 @@ def generate_steampipe_app_build_vdf() -> Path:
 
 \t"Depots"
 \t{{
-\t\t// Windows 64-bit DirectX 12 (SM6: Lumen + Nanite + 16-bit SRTM)
-\t\t"{DEPOT_WIN64_ID}"
-\t\t{{
-\t\t\t"FileMapping"
-\t\t\t{{
-\t\t\t\t"LocalPath" "Windows\\\\*"
-\t\t\t\t"DepotPath" "."
-\t\t\t\t"recursive" "1"
-\t\t\t}}
-\t\t\t"FileExclusion" "*.pdb"
-\t\t\t"FileExclusion" "ImamatWargame\\\\Saved\\\\*"
-\t\t}}
-
-\t\t// macOS Apple Silicon (M1/M2/M3/M4 Universal Binary, Metal SM6)
-\t\t"{DEPOT_MACOS_ID}"
-\t\t{{
-\t\t\t"FileMapping"
-\t\t\t{{
-\t\t\t\t"LocalPath" "Mac\\\\*"
-\t\t\t\t"DepotPath" "."
-\t\t\t\t"recursive" "1"
-\t\t\t}}
-\t\t\t"FileExclusion" "*.dSYM"
-\t\t}}
+\t\t"{DEPOT_WIN64_ID}" "depot_build_win64_{DEPOT_WIN64_ID}.vdf"
+\t\t"{DEPOT_MACOS_ID}" "depot_build_macos_{DEPOT_MACOS_ID}.vdf"
 \t}}
 }}
 '''
     out_path = OUTPUT_DIR / "app_build_imamat_vertical_slice.vdf"
+    out_path.write_text(vdf_content, encoding="utf-8")
+    return out_path
+
+
+def generate_depot_vdfs() -> tuple[Path, Path]:
+    win_vdf = f'''"DepotBuild"
+{{
+\t"DepotID" "{DEPOT_WIN64_ID}"
+\t"FileMapping"
+\t{{
+\t\t"LocalPath" "Windows\\\\*"
+\t\t"DepotPath" "."
+\t\t"recursive" "1"
+\t}}
+\t"FileExclusion" "*.pdb"
+\t"FileExclusion" "*.log"
+}}
+'''
+    mac_vdf = f'''"DepotBuild"
+{{
+\t"DepotID" "{DEPOT_MACOS_ID}"
+\t"FileMapping"
+\t{{
+\t\t"LocalPath" "Mac\\\\*"
+\t\t"DepotPath" "."
+\t\t"recursive" "1"
+\t}}
+\t"FileExclusion" "*.dSYM"
+\t"FileExclusion" ".DS_Store"
+}}
+'''
+    p_win = OUTPUT_DIR / f"depot_build_win64_{DEPOT_WIN64_ID}.vdf"
+    p_mac = OUTPUT_DIR / f"depot_build_macos_{DEPOT_MACOS_ID}.vdf"
+    p_win.write_text(win_vdf, encoding="utf-8")
+    p_mac.write_text(mac_vdf, encoding="utf-8")
+    return p_win, p_mac
+
+
+def generate_steam_cloud_autocloud_vdf() -> Path:
+    vdf_content = f'''"SteamAutoCloudConfig"
+{{
+\t"AppID" "{STEAM_APP_ID}"
+\t"QuotaBytes" "104857600"
+\t"MaxFiles" "64"
+\t"RootOverrides"
+\t{{
+\t\t"0"
+\t\t{{
+\t\t\t"root" "WinAppDataRoaming"
+\t\t\t"os" "Windows"
+\t\t\t"path" "ImamatDivanKhana\\\\SteamCloud"
+\t\t\t"pattern" "*.imamat-save"
+\t\t\t"recursive" "0"
+\t\t}}
+\t\t"1"
+\t\t{{
+\t\t\t"root" "MacAppSupport"
+\t\t\t"os" "MacOS"
+\t\t\t"path" "ImamatDivanKhana/SteamCloud"
+\t\t\t"pattern" "*.imamat-save"
+\t\t\t"recursive" "0"
+\t\t}}
+\t\t"2"
+\t\t{{
+\t\t\t"root" "LinuxXdgDataHome"
+\t\t\t"os" "Linux"
+\t\t\t"path" "ImamatDivanKhana/SteamCloud"
+\t\t\t"pattern" "*.imamat-save"
+\t\t\t"recursive" "0"
+\t\t}}
+\t}}
+}}
+'''
+    out_path = OUTPUT_DIR / "steam_cloud_autocloud.vdf"
     out_path.write_text(vdf_content, encoding="utf-8")
     return out_path
 
@@ -214,12 +273,16 @@ def generate_steam_input_manifest_vdf() -> Path:
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     p1 = generate_steampipe_app_build_vdf()
+    p_win, p_mac = generate_depot_vdfs()
+    p_cloud = generate_steam_cloud_autocloud_vdf()
     p2 = generate_achievements_schema_json()
     p3 = generate_steam_input_manifest_vdf()
     print("========================================================================================")
-    print(" STEAMWORKS PARTNER CONFIG GENERATOR — ИМАМАТ: ДИВАН-ХАНА (MILESTONE M9)")
+    print(" STEAMWORKS PARTNER CONFIG GENERATOR — ИМАМАТ: ДИВАН-ХАНА (SPRINT 11 / STEAM COMING SOON)")
     print("========================================================================================")
     print(f"[OK] SteamPipe AppBuild VDF     -> {p1.name} ({p1.stat().st_size:,} байт)")
+    print(f"[OK] Win64 / macOS Depot VDFs   -> {p_win.name}, {p_mac.name}")
+    print(f"[OK] Steam Auto-Cloud Rules VDF -> {p_cloud.name} ({p_cloud.stat().st_size:,} байт)")
     print(f"[OK] Achievements Schema JSON   -> {p2.name} ({p2.stat().st_size:,} байт, 12 достижений RU/EN)")
     print(f"[OK] Steam Input Deck Manifest  -> {p3.name} ({p3.stat().st_size:,} байт, 2 Action Sets RU/EN)")
     print("========================================================================================")

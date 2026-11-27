@@ -149,6 +149,16 @@ import {
 } from './data/imamatRelics.js';
 import { HERO_STORY_ARCS, createInitialHeroArcsState } from './data/heroArcs.js';
 import {
+  STEAM_APP_ID,
+  STEAM_CLOUD_QUOTA_BYTES,
+  buildSteamRichPresence,
+  detectSteamRuntimeEnvironment,
+  loadSteamCloudManifest,
+  syncAchievementsToSteam,
+  syncSaveToSteamCloud,
+  triggerSteamOverlay
+} from './game/steamworksBridge.js';
+import {
   HISTORICAL_EPISODES,
   createInitialEpisodesState,
   getInitialEpisodeIdForScenario
@@ -8134,6 +8144,8 @@ export default function App() {
     );
     if (writeSaveSlot('autosave', autoPayload, { updateLatest: true, onlyInitLatestIfMissing: true }).ok) {
       setSaveSlotsRefreshTick((v) => v + 1);
+      syncSaveToSteamCloud('imamat_save_autosave', autoPayload);
+      setSteamCloudStatus(loadSteamCloudManifest());
     }
   };
 
@@ -11025,6 +11037,9 @@ struct FImamatCampaignSnapshot
     const res = writeSaveSlot(slotId, payload, { updateLatest: true });
     if (res.ok) {
       setSaveSlotsRefreshTick((v) => v + 1);
+      const cloudSlotKey = slotId === 'autosave' ? 'imamat_save_autosave' : `imamat_save_slot_${slotId}`;
+      syncSaveToSteamCloud(cloudSlotKey, payload);
+      setSteamCloudStatus(loadSteamCloudManifest());
       playHistoricalSound('seal', soundEnabled, { volume: audioMixerConfig.masterVolume });
       alertMsg(
         t(
@@ -11430,6 +11445,41 @@ struct FImamatCampaignSnapshot
     () => steamAchievementsStatus.filter((a) => a.unlocked).length,
     [steamAchievementsStatus]
   );
+
+  // СПРИНТ 11 (Фаза 6): Steamworks Runtime Bridge (Cloud Saves, 12 Achievements, Rich Presence & Overlay)
+  const steamRuntimeStatus = useMemo(() => detectSteamRuntimeEnvironment(), []);
+  const [steamCloudStatus, setSteamCloudStatus] = useState(() => loadSteamCloudManifest());
+  const steamRichPresence = useMemo(
+    () =>
+      buildSteamRichPresence({
+        activeScenarioId,
+        turn,
+        authority: resources.authority,
+        underSiegeCount: naibates.filter((n) => n.underSiege).length,
+        activeTab,
+        lang
+      }),
+    [activeScenarioId, turn, resources.authority, naibates, activeTab, lang]
+  );
+
+  useEffect(() => {
+    syncAchievementsToSteam(steamAchievementsStatus);
+  }, [steamAchievementsStatus]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.imamatSteamBridge?.setRichPresence) {
+      try {
+        window.imamatSteamBridge.setRichPresence(steamRichPresence.steamDisplayKey, steamRichPresence.text);
+      } catch {
+        // ignore bridge errors outside Steam client
+      }
+    }
+  }, [steamRichPresence]);
+
+  const handleOpenSteamOverlay = (target = 'Achievements') => {
+    const res = triggerSteamOverlay(target);
+    showNotice(t(res.hintRu, res.hintEn), res.opened ? 'ok' : 'info');
+  };
 
   // ===== ИГРОВОЙ ФРОНТ-ЭНД (GameHUD): титульный экран, меню паузы, алерты, подсказки ресурсов, горячие клавиши =====
   const [showTitleScreen, setShowTitleScreen] = useState(true);
@@ -12919,7 +12969,22 @@ struct FImamatCampaignSnapshot
       {showTelemetryModal && <TelemetryModal {...{ buildPlaytestTelemetryPayload, handleDownloadPlaytestTelemetryJson, setShowTelemetryModal, t }} />}
 
       {/* МОДАЛЬНОЕ ОКНО: 12 ИСТОРИЧЕСЧЕСКИХ ДОСТИЖЕНИЙ STEAMWORKS (DT_SteamAchievements) */}
-      {showAchievementsModal && <AchievementsModal {...{ setShowAchievementsModal, steamAchievementsStatus, t, unlockedAchievementsCount }} />}
+      {showAchievementsModal && (
+        <AchievementsModal
+          {...{
+            handleOpenSteamOverlay,
+            setShowAchievementsModal,
+            steamAchievementsStatus,
+            steamAppId: STEAM_APP_ID,
+            steamCloudQuotaBytes: STEAM_CLOUD_QUOTA_BYTES,
+            steamCloudStatus,
+            steamRichPresence,
+            steamRuntimeStatus,
+            t,
+            unlockedAchievementsCount
+          }}
+        />
+      )}
 
       {/* МОДАЛЬНОЕ ОКНО: ПРОЦЕДУРНЫЙ ДИЕГЕТИЧЕСКИЙ ПУЛЬТ АДАПТИВНОГО ЗВУКА 4.0 (Спринт 8 / Gate 4) */}
       {showAudioMixerModal && <AudioMixerModal {...{ adaptiveMusicState, audioMixerConfig, lastActionLatencyMs, setAudioMixerConfig, setShowAudioMixerModal, setSoundEnabled, siegeState, soundEnabled, t }} />}
@@ -12943,7 +13008,30 @@ struct FImamatCampaignSnapshot
       {showDispatchesModal && <DispatchesModal {...{ diplomaticTone, executedDispatchesIds, feluccaEscortLevel, getDispatchResolutionPreview, handleExecuteDiplomaticDispatch, handleExportDiplomaticDispatchMd, selectedDispatchId, setDiplomaticTone, setFeluccaEscortLevel, setSelectedDispatchId, setShowDispatchesModal, soundEnabled, t }} />}
 
       {/* СПРИНТ 20 (M20): ЕДИНЫЙ КОМАНДНЫЙ ЦЕНТР ЗОЛОТОГО РЕЛИЗА v2.0 (MILESTONES M1–M20 • PASS 7/7) */}
-      {showReleaseHubModal && <ReleaseHubModal {...{ handleExportCommanderSealHtml, handleExportSteamAnnouncementMd, handleTogglePitchTour, setShowAchievementsModal, setShowAudioMixerModal, setShowDispatchesModal, setShowFieldManualModal, setShowModBuilderModal, setShowMuseumCodexModal, setShowReleaseHubModal, setShowReplayModal, setShowTrailerPrevizModal, t }} />}
+      {showReleaseHubModal && (
+        <ReleaseHubModal
+          {...{
+            handleExportCommanderSealHtml,
+            handleExportSteamAnnouncementMd,
+            handleOpenSteamOverlay,
+            handleTogglePitchTour,
+            setShowAchievementsModal,
+            setShowAudioMixerModal,
+            setShowDispatchesModal,
+            setShowFieldManualModal,
+            setShowModBuilderModal,
+            setShowMuseumCodexModal,
+            setShowReleaseHubModal,
+            setShowReplayModal,
+            setShowTrailerPrevizModal,
+            steamCloudStatus,
+            steamRichPresence,
+            steamRuntimeStatus,
+            t,
+            unlockedAchievementsCount
+          }}
+        />
+      )}
 
       {/* СПРИНТ 9 (ФАЗА 5): ВСТРОЕННЫЙ РЕПОРТ БАГОВ И ИДЕЙ ДЛЯ СЛЕПЫХ ПЛЕЙТЕСТОВ (ВОЛНЫ 1–2) */}
       {showPlaytestFeedbackModal && (

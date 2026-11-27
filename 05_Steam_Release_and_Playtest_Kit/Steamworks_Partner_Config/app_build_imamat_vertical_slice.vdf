@@ -1,7 +1,14 @@
+// ============================================================================
+// Valve SteamPipe Master AppBuild Script — IMAMAT: DIVAN-KHANA (1845)
+// Upload command:
+//   steamcmd +login <partner_account> +run_app_build app_build_imamat_vertical_slice.vdf +quit
+// Depots: Win64 x64 (3481841) & macOS Apple Silicon/Universal (3481842)
+// Auto-Cloud Rules: steam_cloud_autocloud.vdf (*.imamat-save, 100 MB quota)
+// ============================================================================
 "AppBuild"
 {
 	"AppID" "3481840"
-	"Desc" "THE IMAMAT: DIVAN-KHANA (1845) — Vertical Slice v0.9 (UE 5.5 DX12/Metal)"
+	"Desc" "THE IMAMAT: DIVAN-KHANA (1845) — Sprint 11 Steam Desktop RC1 (macOS arm64 + Windows x64 + Steamworks)"
 	"BuildOutput" "..\\BuildOutput\\SteamPipe"
 	"ContentRoot" "..\\StagedBuilds"
 	"SetLive" "playtest_beta"
@@ -10,29 +17,7 @@
 
 	"Depots"
 	{
-		// Windows 64-bit DirectX 12 (SM6: Lumen + Nanite + 16-bit SRTM)
-		"3481841"
-		{
-			"FileMapping"
-			{
-				"LocalPath" "Windows\\*"
-				"DepotPath" "."
-				"recursive" "1"
-			}
-			"FileExclusion" "*.pdb"
-			"FileExclusion" "ImamatWargame\\Saved\\*"
-		}
-
-		// macOS Apple Silicon (M1/M2/M3/M4 Universal Binary, Metal SM6)
-		"3481842"
-		{
-			"FileMapping"
-			{
-				"LocalPath" "Mac\\*"
-				"DepotPath" "."
-				"recursive" "1"
-			}
-			"FileExclusion" "*.dSYM"
-		}
+		"3481841" "depot_build_win64_3481841.vdf"
+		"3481842" "depot_build_macos_3481842.vdf"
 	}
 }

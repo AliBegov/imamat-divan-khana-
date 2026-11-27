@@ -94,9 +94,12 @@
   - Оптимизирована адаптивная вёрстка верхней шапки и контейнера под **Steam Deck `1280×800`** (единая компактная верхняя полоса без переноса строк, `headerHeight <= 84px`, `0px` горизонтального скролла) и **Full HD / 4K UHD `3840×2160`** (`2xl:max-w-[1880px]`).
 - **Gate 5 (✅ ПРОЙДЕН):** `0` утечек кириллицы во всех экранах и модальных окнах в EN-режиме; `0px` overflowX и компактный HUD от Steam Deck `1280×800` до 4K `3840×2160`; `0` критических/мажорных багов и JS-ошибок в живом Chrome WebGL2; **80/80 юнит-тестов**, ESLint `0/0` и **PASS 7/7**.
 
-### ФАЗА 6 — Steam-упаковка (Mac/Win), Next Fest и релиз v1.0 (Спринты 11–12)
-- **Спринт 11 — Десктопная сборка (Tauri 2 / Electron) + Steamworks + страница Steam:**
-  - Подписанные сборки Windows/macOS, достижения, Cloud Saves, Steam Overlay, 60-сек геймплейный трейлер и публикация страницы «Coming Soon».
+### ФАЗА 6 — Steam-упаковка (Mac/Win), Next Fest и релиз v1.0 (Спринты 11–12) — 🔄 В РАБОТЕ (Спринт 11 PASS)
+- **Спринт 11 — Десктопная сборка (macOS/Windows) + Steamworks SDK Bridge + страница Steam «Coming Soon» (✅ PASS):**
+  - Создан чистый игровой адаптер `src/game/steamworksBridge.js` (+8 юнит-тестов `#81–#88`, итого **88/88 PASS**): автоматическая синхронизация **12 исторических достижений**, **Steam Cloud Saves (`.imamat-save`, квота 100 МБ, детерминированное разрешение конфликтов)**, двуязычный **Steam Rich Presence** и вызов **Steam Overlay (`Shift+Tab`)**, интегрированный в `App.jsx`, `AchievementsModal.jsx` и `ReleaseHubModal.jsx`.
+  - Обновлён упаковщик `build_macos_desktop_app.py`: нативный подписанный **macOS arm64 `.app`** с встроенным мостом `window.imamatSteamBridge` и Auto-Cloud контейнером, коммерческая оболочка **Electron + `electron-preload.cjs` + `steamworks.js`**, пакет `Steam_Desktop_Package/` (`electron-builder` macOS/Windows + `stage_steam_depots.sh` + `steam_appid.txt`) и портативный архив **`Imamat_DivanKhana_Windows_Portable.zip`**.
+  - Обновлён генератор `generate_steamworks_vdf.py`: полная линейка **6 манифестов Steamworks Partner** (`app_build`, `depot_build_win64_3481841`, `depot_build_macos_3481842`, `steam_cloud_autocloud.vdf`, `steam_achievements_schema.json`, `steam_input_action_manifest.vdf`).
+  - Создан генератор `build_steam_store_capsules.py`: собраны все **7 пиксельно-точных графических капсул Valve** (`920×430`, `462×174`, `1232×706`, `748×896`, `600×900`, `3840×1240`, `1280×720` RGBA), **5 официальных геймплейных скриншотов `1920×1080`**, **60-секундный трейлер `1920×1080` H.264/AAC** с дорийской партитурой Кавказа и обновлённая страница `01_Steam_Store_Page_RU_EN.md` + чек-лист `STEAM_COMING_SOON_LAUNCH_CHECKLIST_RU_EN.md`.
 - **Спринт 12 — Steam Next Fest Playable Demo → Релиз v1.0:**
   - Публичное демо (Дарго 1845, 8 ходов + 1 засада), аутрич стримерам и кураторам стратегий, набор вишлистов (цель 5 000–10 000+) и запуск v1.0.
 - **Gate 6:** успешная валидация Steamworks QA, >85% положительных отзывов на демо.

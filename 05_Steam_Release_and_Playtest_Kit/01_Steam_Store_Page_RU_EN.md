@@ -1,8 +1,8 @@
 # Steam Storefront Package (RU / EN) — «Имамат: Диван-хана и Горная Война (1834–1859)»
 
-> **AppID Classification:** Historical Grand Strategy / Tactical Wargame (Singleplayer)  
-> **Target Engine:** Unreal Engine 5.5 (Nanite / Lumen / Chaos Destruction / MassEntity) + Web Companion Demo  
-> **Release Pipeline:** Steam Next Fest Demo (Vertical Slice) $\rightarrow$ Steam Playtest $\rightarrow$ Full Release (Windows DX12 SM6 & macOS Apple Silicon Metal SM6)
+> **AppID Classification:** Historical Grand Strategy / Tactical 3D Wargame (Singleplayer, RU / EN)  
+> **Runtime Engine:** Three.js WebGL2 PBR + Blender 4.2 Sculpted 3D Assets + NASA SRTM Relief (Native macOS arm64 / Windows x64 / Steam Deck Verified `1280×800` → 4K UHD)  
+> **Release Pipeline:** Steam «Coming Soon» Storefront (Sprint 11) → Steam Next Fest Playable Demo (Sprint 12) → Commercial v1.0 Release
 
 ---
 
@@ -68,13 +68,15 @@ There is no instant radio command and no guaranteed obedience. Every order you i
 
 ---
 
-## 💻 СИСТЕМНЫЕ ТРЕБОВАНИЯ (SYSTEM REQUIREMENTS)
+## 💻 СИСТЕМНЫЕ ТРЕБОВАНИЯ (SYSTEM REQUIREMENTS — DESKTOP WEBGL2 EDITION)
 
-| Параметр | Минимальные (Minimum — 1080p @ 60 FPS) | Рекомендуемые (Recommended — 1440p/4K @ 60+ FPS, Nanite & Lumen) |
+| Параметр | Минимальные (Minimum — Steam Deck `1280×800` / 1080p @ 60 FPS) | Рекомендуемые (Recommended — 1440p / 4K Retina @ 60 FPS) |
 | :--- | :--- | :--- |
-| **ОС (Windows)** | Windows 10 / 11 (64-bit, DirectX 12 Agility SDK, SM6) | Windows 11 (64-bit, DirectX 12 Ultimate, SM6) |
-| **ОС (macOS)** | macOS Sonoma 14.5+ (Apple Silicon M1 / M2, Metal 3 SM6) | macOS Sequoia 15.0+ (Apple Silicon M3 Pro / Max, Metal 3 SM6) |
-| **Процессор (CPU)** | Intel Core i5-10400F / AMD Ryzen 5 3600 / Apple M1 | Intel Core i7-12700K / AMD Ryzen 7 5800X3D / Apple M3 Pro |
-| **Оперативная память** | 16 GB RAM | 32 GB RAM |
-| **Видеокарта (GPU)** | NVIDIA RTX 2060 (6 GB) / AMD RX 6600 (8 GB) | NVIDIA RTX 3080 / RTX 4070 (12 GB) / AMD RX 7800 XT |
-| **Место на диске** | 25 GB SSD (NVMe рекомендуется для стриминга 16-bit SRTM) | 25 GB NVMe SSD |
+| **ОС (Windows)** | Windows 10 / 11 (64-bit) | Windows 11 (64-bit) |
+| **ОС (macOS)** | macOS Monterey 12.0+ (Apple Silicon M1 / Intel) | macOS Sonoma / Sequoia (Apple Silicon M2 / M3 / M4) |
+| **Steam Deck / Linux** | SteamOS 3.5+ (`1280×800` Verified HUD, 0px overflow) | SteamOS 3.5+ / Ubuntu 22.04+ |
+| **Процессор (CPU)** | Dual-Core 2.4 GHz (Intel i3 / Ryzen 3 / Apple M1) | Quad-Core 3.0 GHz+ (Intel i5 / Ryzen 5 / Apple M2+) |
+| **Оперативная память** | 4 GB RAM | 8 GB RAM |
+| **Видеокарта (GPU)** | Любая видеокарта с поддержкой WebGL2 / Metal / DX11 | NVIDIA GTX 1060 / AMD RX 580 / Apple Silicon GPU |
+| **Место на диске** | 250 MB свободного места | 500 MB SSD |
+| **Steamworks** | Steam Cloud Saves (100 MB), 12 Achievements, Rich Presence, Steam Overlay | Steam Cloud Saves, Achievements, Steam Input (Deck) |

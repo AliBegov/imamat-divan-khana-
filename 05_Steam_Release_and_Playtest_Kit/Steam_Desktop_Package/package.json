@@ -1,0 +1,43 @@
+{
+  "name": "imamat-divan-khana-steam",
+  "productName": "IMAMAT: DIVAN-KHANA (1845)",
+  "version": "1.0.0-rc1",
+  "description": "Historical Grand Strategy & 3D Mountain Warfare Wargame (1834-1859)",
+  "main": "electron-main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis portable --x64",
+    "dist:mac": "electron-builder --mac dmg zip --universal",
+    "stage:steam": "bash ./stage_steam_depots.sh"
+  },
+  "optionalDependencies": {
+    "steamworks.js": "^0.3.1"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.imamat.divankhana.steam",
+    "productName": "ImamatDivanKhana",
+    "files": [
+      "electron-main.cjs",
+      "electron-preload.cjs",
+      "steam_appid.txt",
+      "Imamat_DivanKhana_Standalone_Playtest.html",
+      "Workshop_Mods/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.strategy-games",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "target": ["dmg", "zip"]
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    }
+  }
+}

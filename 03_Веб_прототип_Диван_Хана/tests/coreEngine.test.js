@@ -8,6 +8,19 @@ import {
   evaluateResolutionMatrixGate5,
   localizeLogEntry
 } from '../src/game/localizationQaEngine.js';
+import {
+  STEAM_APP_ID,
+  STEAM_CLOUD_MAX_SLOT_BYTES,
+  STEAM_STORE_CAPSULE_SPECS,
+  buildSteamRichPresence,
+  detectSteamRuntimeEnvironment,
+  loadSteamCloudManifest,
+  resolveCloudSaveConflict,
+  syncAchievementsToSteam,
+  syncSaveToSteamCloud,
+  triggerSteamOverlay,
+  validateSteamCapsuleManifest
+} from '../src/game/steamworksBridge.js';
 
 import {
   CAMPAIGN_SCENARIOS,
@@ -1682,4 +1695,153 @@ test('80. localizeLogEntry resolves bilingual siege/ambush log objects cleanly i
   assert.equal(localizeLogEntry(bilingual, tEn), 'Siege Day 14');
   assert.equal(localizeLogEntry('Plain fallback', tEn), 'Plain fallback');
   assert.equal(localizeLogEntry(null, tEn), '');
+});
+
+// ============================================================================
+// СПРИНТ 11 (ФАЗА 6): STEAM-УПАКОВКА MAC/WIN, STEAMWORKS SDK И СТРАНИЦА STEAM
+// ============================================================================
+test('81. detectSteamRuntimeEnvironment distinguishes Steamworks Electron, Desktop Cloud Mirror, macOS App & Web', () => {
+  const web = detectSteamRuntimeEnvironment({});
+  assert.equal(web.mode, 'web_standalone');
+  assert.equal(web.connected, false);
+  assert.equal(web.appId, STEAM_APP_ID);
+
+  const mac = detectSteamRuntimeEnvironment({ imamatSteamBridge: { mode: 'macos_native_app' } });
+  assert.equal(mac.mode, 'macos_native_app');
+  assert.equal(mac.cloudEnabled, true);
+
+  const steam = detectSteamRuntimeEnvironment({
+    imamatSteamBridge: { mode: 'steamworks', appId: 3481840, personaName: 'Shamil1845', overlayAvailable: true }
+  });
+  assert.equal(steam.mode, 'steamworks_electron');
+  assert.equal(steam.connected, true);
+  assert.equal(steam.overlayAvailable, true);
+  assert.equal(steam.personaName, 'Shamil1845');
+});
+
+test('82. buildSteamRichPresence formats localized RU and EN presence for Divan-Khana and 3D Tactical Battles', () => {
+  const mapRu = buildSteamRichPresence({
+    activeScenarioId: 'camp_1847',
+    turn: 5,
+    authority: 82,
+    underSiegeCount: 2,
+    activeTab: 'map',
+    lang: 'ru'
+  });
+  assert.equal(mapRu.steamDisplayKey, '#Status_DivanKhana');
+  assert.ok(mapRu.text.includes('Салты и Чох 1847') && mapRu.text.includes('Ход 5') && mapRu.text.includes('Осад: 2'));
+
+  const battleEn = buildSteamRichPresence({
+    activeScenarioId: 'camp_1845',
+    turn: 3,
+    authority: 79,
+    activeTab: 'siege',
+    lang: 'en'
+  });
+  assert.equal(battleEn.steamDisplayKey, '#Status_TacticalBattle');
+  assert.ok(battleEn.text.includes('Dargo 1845') && battleEn.text.includes('3D Tactical Battle'));
+});
+
+test('83. syncAchievementsToSteam deduplicates synced unlocks and pushes newly earned IDs to native Steamworks bridge', () => {
+  const storage = createMemoryStorage();
+  const pushed = [];
+  const fakeBridge = {
+    mode: 'steamworks',
+    unlockAchievement: (id) => pushed.push(id)
+  };
+  const achs = [
+    { id: 'ACH_BISCUIT_EXPEDITION_1845', titleRu: 'Сухарная', titleEn: 'Biscuit', unlocked: true },
+    { id: 'ACH_COPPER_BASIN_SAFAROV', titleRu: 'Таз', titleEn: 'Basin', unlocked: false }
+  ];
+
+  const first = syncAchievementsToSteam(achs, { bridge: fakeBridge, storage });
+  assert.equal(first.newlyUnlocked.length, 1);
+  assert.deepEqual(pushed, ['ACH_BISCUIT_EXPEDITION_1845']);
+
+  const second = syncAchievementsToSteam(achs, { bridge: fakeBridge, storage });
+  assert.equal(second.newlyUnlocked.length, 0);
+  assert.equal(second.totalSynced, 1);
+  assert.equal(pushed.length, 1);
+
+  achs[1].unlocked = true;
+  const third = syncAchievementsToSteam(achs, { bridge: fakeBridge, storage });
+  assert.equal(third.newlyUnlocked.length, 1);
+  assert.equal(third.totalSynced, 2);
+  assert.deepEqual(pushed, ['ACH_BISCUIT_EXPEDITION_1845', 'ACH_COPPER_BASIN_SAFAROV']);
+});
+
+test('84. syncSaveToSteamCloud writes .imamat-save via bridge, updates manifest, and tracks Steam Cloud quota', () => {
+  const storage = createMemoryStorage();
+  const written = [];
+  const fakeBridge = {
+    mode: 'macos_native_app',
+    writeCloudSave: (filename, json) => written.push({ filename, len: json.length })
+  };
+  const payload = buildCampaignSavePayload({
+    turn: 6,
+    activeScenarioId: 'camp_1845',
+    resources: { gunpowder: 180, provisions: 1200, silver: 540, authority: 85, ottomanSupport: 44 },
+    naibates: INITIAL_NAIBATES
+  });
+
+  const res = syncSaveToSteamCloud('imamat_save_slot_1', payload, { bridge: fakeBridge, storage });
+  assert.equal(res.ok, true);
+  assert.equal(res.filename, 'imamat_save_slot_1.imamat-save');
+  assert.equal(res.transport, 'macos_native_app');
+  assert.ok(res.bytes > 200);
+  assert.equal(written.length, 1);
+
+  const manifest = loadSteamCloudManifest(storage);
+  assert.equal(manifest.slots.imamat_save_slot_1.turn, 6);
+  assert.equal(manifest.totalBytes, res.bytes);
+});
+
+test('85. syncSaveToSteamCloud rejects oversized or invalid payloads safely', () => {
+  assert.equal(syncSaveToSteamCloud('', null).ok, false);
+  const giant = { turn: 1, blob: 'x'.repeat(STEAM_CLOUD_MAX_SLOT_BYTES + 100) };
+  const over = syncSaveToSteamCloud('slot_over', giant, { bridge: null, storage: createMemoryStorage() });
+  assert.equal(over.ok, false);
+  assert.equal(over.reason, 'slot_exceeds_limit');
+});
+
+test('86. resolveCloudSaveConflict deterministically chooses newer timestamp or higher campaign turn', () => {
+  const older = { turn: 4, savedIso: '2026-11-27T10:00:00.000Z' };
+  const newer = { turn: 5, savedIso: '2026-11-27T11:30:00.000Z' };
+  assert.equal(resolveCloudSaveConflict(older, newer).winner, 'cloud');
+  assert.equal(resolveCloudSaveConflict(newer, older).winner, 'local');
+
+  const sameTsLow = { turn: 3, savedIso: '2026-11-27T12:00:00.000Z' };
+  const sameTsHigh = { turn: 7, savedIso: '2026-11-27T12:00:00.000Z' };
+  assert.equal(resolveCloudSaveConflict(sameTsLow, sameTsHigh).winner, 'cloud');
+  assert.equal(resolveCloudSaveConflict(sameTsHigh, sameTsHigh).winner, 'equal');
+});
+
+test('87. triggerSteamOverlay activates Steamworks overlay when connected and returns clean RU/EN fallback on web', () => {
+  const called = [];
+  const openRes = triggerSteamOverlay('Achievements', {
+    bridge: { openSteamOverlay: (t) => { called.push(t); return true; } }
+  });
+  assert.equal(openRes.opened, true);
+  assert.deepEqual(called, ['Achievements']);
+
+  const webRes = triggerSteamOverlay('Store', { bridge: null });
+  assert.equal(webRes.opened, false);
+  assert.ok(webRes.hintRu.includes('Shift+Tab') && webRes.hintEn.includes('Shift+Tab'));
+});
+
+test('88. validateSteamCapsuleManifest verifies exact pixel dimensions of all 7 Valve Steam Store capsules', () => {
+  const validList = STEAM_STORE_CAPSULE_SPECS.map((s) => ({
+    id: s.id,
+    width: s.width,
+    height: s.height
+  }));
+  const pass = validateSteamCapsuleManifest(validList);
+  assert.equal(pass.pass, true);
+  assert.equal(pass.checkedCount, 7);
+
+  const badList = validList.slice(0, 6).map((c) => (c.id === 'header_capsule' ? { ...c, width: 460 } : c));
+  const fail = validateSteamCapsuleManifest(badList);
+  assert.equal(fail.pass, false);
+  assert.ok(fail.missing.includes('library_logo'));
+  assert.ok(fail.wrongDimensions.some((e) => e.includes('header_capsule')));
 });
