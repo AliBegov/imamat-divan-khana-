@@ -1141,6 +1141,7 @@ function MapTab({
   episodesState = {},
   eraObjectivesProgress = null,
   fieldHospitals,
+  first5TurnsFunnel = null,
   floatingCombatPopups,
   forestClearings,
   fortBuildMode,
@@ -1274,6 +1275,7 @@ function MapTab({
   setSelectedNaibateId,
   setSelectedOrderType,
   setSelectedUnitId,
+  setShowPlaytestFeedbackModal = null,
   setShowSchematicLabels,
   setShowThreatRadarOverlay,
   setTableQuickDrawer,
@@ -1845,6 +1847,25 @@ function MapTab({
                       {step3Done ? '✓ ' : '③ '}
                       {t('Новый ход', 'Next Turn')}
                     </button>
+                    {first5TurnsFunnel && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPlaytestFeedbackModal && setShowPlaytestFeedbackModal(true)}
+                        title={t(first5TurnsFunnel.nextHintRu, first5TurnsFunnel.nextHintEn)}
+                        className={`px-2 py-0.5 rounded border cursor-pointer transition font-mono font-bold text-[10px] ${
+                          first5TurnsFunnel.reachedTurn5
+                            ? 'bg-emerald-500/25 border-emerald-400 text-emerald-200'
+                            : 'bg-stone-900/90 border-amber-500/35 text-amber-200/90 hover:border-amber-400'
+                        }`}
+                      >
+                        {first5TurnsFunnel.reachedTurn5
+                          ? t('🎯 5 ходов! Оценить', '🎯 Turn 5! Review')
+                          : t(
+                              `🧭 Путь: ${first5TurnsFunnel.completedCount}/${first5TurnsFunnel.totalCount}`,
+                              `🧭 Path: ${first5TurnsFunnel.completedCount}/${first5TurnsFunnel.totalCount}`
+                            )}
+                      </button>
+                    )}
                     {allPrologueDone && handleClaimPrologueReward && (
                       <button
                         onClick={handleClaimPrologueReward}

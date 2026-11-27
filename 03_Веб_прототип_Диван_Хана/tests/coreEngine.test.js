@@ -89,6 +89,18 @@ import {
   resolveTactileCueForAction,
   saveAudioMixerConfig
 } from '../src/game/adaptiveAudioEngine.js';
+import {
+  FEEDBACK_CATEGORIES,
+  FIRST_5_TURNS_MILESTONES,
+  PLAYTEST_BUILD_TAG,
+  buildGitHubIssuePrefillUrl,
+  buildPlaytestBugReportSnapshot,
+  computeFirst5TurnsFunnel,
+  evaluateWaveReadiness,
+  formatPlaytestReportMarkdown,
+  loadLocalFeedbackReports,
+  saveLocalFeedbackReport
+} from '../src/game/playtestFeedbackEngine.js';
 
 function createMemoryStorage() {
   const map = new Map();
@@ -1395,4 +1407,150 @@ test('66. Adaptive music & tactile resolution executes well under Gate 4 50ms la
   }
   const avgMs = (performance.now() - t0) / 200;
   assert.ok(avgMs < 1.0, `Expected <1ms per decision, got ${avgMs}`);
+});
+
+// ============================================================================
+// СПРИНТ 9 (ФАЗА 5): ИНФРАСТРУКТУРА «СЛЕПЫХ» ПЛЕЙТЕСТОВ ВОЛН 1–2 И ВОРОНКА 5 ХОДОВ
+// ============================================================================
+test('67. FIRST_5_TURNS_MILESTONES and FEEDBACK_CATEGORIES define complete blind playtest taxonomy', () => {
+  assert.equal(FIRST_5_TURNS_MILESTONES.length, 5);
+  assert.equal(FEEDBACK_CATEGORIES.length, 4);
+  assert.ok(FEEDBACK_CATEGORIES.some((c) => c.id === 'bug'));
+  assert.ok(FEEDBACK_CATEGORIES.some((c) => c.id === 'ux_clarity'));
+});
+
+test('68. computeFirst5TurnsFunnel tracks step-by-step progress from Turn 1 to Turn 5 milestone', () => {
+  const fresh = computeFirst5TurnsFunnel({ turn: 1, sessionStartMs: 1000, nowMs: 19000 });
+  assert.equal(fresh.completedCount, 0);
+  assert.equal(fresh.reachedTurn5, false);
+  assert.equal(fresh.progressPct, 0);
+  assert.equal(fresh.sessionDurationSec, 18);
+
+  const mid = computeFirst5TurnsFunnel({
+    turn: 2,
+    reconActivated: true,
+    envoysSentCount: 1,
+    resolvedDilemmasCount: 1,
+    sessionStartMs: 1000,
+    nowMs: 301000
+  });
+  assert.equal(mid.completedCount, 4);
+  assert.equal(mid.reachedTurn5, false);
+  assert.equal(mid.sessionDurationMin, 5);
+
+  const complete = computeFirst5TurnsFunnel({
+    turn: 5,
+    reconActivated: true,
+    envoysSentCount: 2,
+    ordersAwardedCount: 1
+  });
+  assert.equal(complete.completedCount, 5);
+  assert.equal(complete.reachedTurn5, true);
+  assert.equal(complete.allOnboardingDone, true);
+  assert.equal(complete.progressPct, 100);
+});
+
+test('69. buildPlaytestBugReportSnapshot captures full diagnostic state without PII', () => {
+  const funnel = computeFirst5TurnsFunnel({ turn: 3, reconActivated: true, envoysSentCount: 1 });
+  const snap = buildPlaytestBugReportSnapshot({
+    category: 'ux_clarity',
+    severity: 'major',
+    summary: 'Не сразу заметил контрмину под Чохом',
+    details: 'Хотелось бы более яркую стрелку',
+    ratingClarity: 4,
+    ratingFun: 5,
+    lang: 'ru',
+    activeScenarioId: 'camp_1847',
+    turn: 3,
+    resources: { gunpowder: 140, provisions: 980, silver: 410, authority: 82 },
+    naibates: INITIAL_NAIBATES,
+    delayedConsequences: [{ id: 'e1', dueTurn: 5 }],
+    resolvedPacketIds: ['dil_01_kubachi_silver', 'dil_02_pirogov_salty'],
+    funnel,
+    lastActionLatencyMs: 2.4,
+    recentErrors: []
+  });
+  assert.equal(snap.buildVersion, PLAYTEST_BUILD_TAG);
+  assert.equal(snap.category, 'ux_clarity');
+  assert.equal(snap.context.scenarioId, 'camp_1847');
+  assert.equal(snap.context.dilemmasResolved, 2);
+  assert.equal(snap.context.delayedEchoesQueued, 1);
+  assert.equal(snap.context.runtimeErrorsCount, 0);
+  assert.equal(snap.ratings.first5MinClarity, 4);
+  assert.equal(snap.ratings.funAndImmersion, 5);
+});
+
+test('70. formatPlaytestReportMarkdown and buildGitHubIssuePrefillUrl generate valid shareable GitHub Issue URLs', () => {
+  const snap = buildPlaytestBugReportSnapshot({
+    category: 'bug',
+    severity: 'blocker',
+    summary: 'Тестовый репорт',
+    activeScenarioId: 'camp_1845',
+    turn: 4,
+    resources: { gunpowder: 150, provisions: 1200, silver: 500, authority: 85 }
+  });
+  const md = formatPlaytestReportMarkdown(snap);
+  assert.ok(md.includes('camp_1845'));
+  assert.ok(md.includes('Runtime JS Errors: `0`'));
+  const url = buildGitHubIssuePrefillUrl(snap);
+  assert.ok(url.startsWith('https://github.com/AliBegov/imamat-divan-khana-/issues/new?'));
+  assert.ok(url.includes('labels=bug'));
+  assert.ok(url.length < 4000);
+});
+
+test('71. saveLocalFeedbackReport and loadLocalFeedbackReports persist tester notes cleanly in storage', () => {
+  const storage = createMemoryStorage();
+  const r1 = buildPlaytestBugReportSnapshot({ category: 'idea', summary: 'Добавить шорткат на разведку' });
+  const r2 = buildPlaytestBugReportSnapshot({ category: 'balance', summary: 'Ахульго напряжённое и классное' });
+  saveLocalFeedbackReport(r1, storage);
+  const after = saveLocalFeedbackReport(r2, storage);
+  assert.equal(after.length, 2);
+  const loaded = loadLocalFeedbackReports(storage);
+  assert.equal(loaded[0].summary, 'Ахульго напряжённое и классное');
+  assert.equal(loaded[1].summary, 'Добавить шорткат на разведку');
+});
+
+test('72. evaluateWaveReadiness computes Gate 5 KPIs (Turn 5 rate, blockers, clarity & fun averages)', () => {
+  const reports = [
+    buildPlaytestBugReportSnapshot({
+      severity: 'minor',
+      ratingClarity: 5,
+      ratingFun: 5,
+      funnel: { completedCount: 5, totalCount: 5, reachedTurn5: true, sessionDurationMin: 28 }
+    }),
+    buildPlaytestBugReportSnapshot({
+      severity: 'minor',
+      ratingClarity: 4,
+      ratingFun: 5,
+      funnel: { completedCount: 5, totalCount: 5, reachedTurn5: true, sessionDurationMin: 32 }
+    }),
+    buildPlaytestBugReportSnapshot({
+      severity: 'minor',
+      ratingClarity: 3,
+      ratingFun: 4,
+      funnel: { completedCount: 3, totalCount: 5, reachedTurn5: false, sessionDurationMin: 18 }
+    })
+  ];
+  const kpi = evaluateWaveReadiness(reports);
+  assert.equal(kpi.totalReports, 3);
+  assert.equal(kpi.blockerCount, 0);
+  assert.equal(kpi.turn5CompletionPct, 66.7);
+  assert.equal(kpi.avgClarity, 4);
+  assert.equal(kpi.avgFun, 4.67);
+  assert.equal(kpi.avgSessionMin, 26);
+});
+
+test('73. buildPlaytestBugReportSnapshot captures runtime JS error stack entries capped to last 5', () => {
+  const errs = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7'];
+  const snap = buildPlaytestBugReportSnapshot({ recentErrors: errs });
+  assert.equal(snap.context.runtimeErrorsCount, 7);
+  assert.equal(snap.context.recentErrors.length, 5);
+  assert.equal(snap.context.recentErrors[4], 'e7');
+});
+
+test('74. computeFirst5TurnsFunnel handles missing or zero session timestamps safely', () => {
+  const safe = computeFirst5TurnsFunnel({ turn: 1, sessionStartMs: 0, nowMs: 5000 });
+  assert.equal(safe.sessionDurationSec, 0);
+  assert.equal(safe.sessionDurationMin, 0);
+  assert.ok(safe.nextHintRu.length > 10 && safe.nextHintEn.length > 10);
 });

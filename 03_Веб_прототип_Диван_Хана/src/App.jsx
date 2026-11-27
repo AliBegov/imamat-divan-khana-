@@ -29,6 +29,12 @@ import {
   resolveTactileCueForAction,
   saveAudioMixerConfig
 } from './game/adaptiveAudioEngine.js';
+import {
+  PLAYTEST_BUILD_TAG,
+  computeFirst5TurnsFunnel,
+  loadLocalFeedbackReports,
+  saveLocalFeedbackReport
+} from './game/playtestFeedbackEngine.js';
 import { clientToMapPoint } from './game/mapProjection.js';
 import {
   computeBaseTurnEconomy,
@@ -158,6 +164,7 @@ import TrailerPrevizModal from './views/modals/TrailerPrevizModal.jsx';
 import MuseumCodexModal from './views/modals/MuseumCodexModal.jsx';
 import DispatchesModal from './views/modals/DispatchesModal.jsx';
 import ReleaseHubModal from './views/modals/ReleaseHubModal.jsx';
+import PlaytestFeedbackModal from './views/modals/PlaytestFeedbackModal.jsx';
 import MapTab from './views/tabs/MapTab.jsx';
 import NizamsTab from './views/tabs/NizamsTab.jsx';
 import DiplomacyTab from './views/tabs/DiplomacyTab.jsx';
@@ -200,6 +207,10 @@ export default function App() {
   const [showTelemetryModal, setShowTelemetryModal] = useState(false);
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showAudioMixerModal, setShowAudioMixerModal] = useState(false);
+  const [showPlaytestFeedbackModal, setShowPlaytestFeedbackModal] = useState(false);
+  const [localFeedbackReports, setLocalFeedbackReports] = useState(() => loadLocalFeedbackReports());
+  const [recentRuntimeErrors, setRecentRuntimeErrors] = useState([]);
+  const sessionStartMsRef = useRef(Date.now());
   const [audioMixerConfig, setAudioMixerConfig] = useState(() => loadAudioMixerConfig());
   const [tactileFeedback, setTactileFeedback] = useState(null);
   const [lastActionLatencyMs, setLastActionLatencyMs] = useState(null);
@@ -11130,8 +11141,16 @@ struct FImamatCampaignSnapshot
 
     return {
       sessionId: playtestTelemetry.sessionId,
-      buildVersion: '0.5.0-M5-PlaytestReady',
+      buildVersion: PLAYTEST_BUILD_TAG,
       platform: 'Web_Vite_React_Companion',
+      first5TurnsFunnel: {
+        completedCount: first5TurnsFunnel.completedCount,
+        totalCount: first5TurnsFunnel.totalCount,
+        progressPct: first5TurnsFunnel.progressPct,
+        reachedTurn5: first5TurnsFunnel.reachedTurn5,
+        sessionDurationMin: first5TurnsFunnel.sessionDurationMin
+      },
+      localFeedbackReportsCount: localFeedbackReports.length,
       scenarioId: activeScenarioId,
       turnsSurvived: turn,
       campaignOutcome:
@@ -11533,6 +11552,63 @@ struct FImamatCampaignSnapshot
       ),
     [weatherOverlayEnabled, liveWeatherFronts]
   );
+  const totalOrdersAwardedCount = useMemo(
+    () => naibates.reduce((s, n) => s + (Array.isArray(n.ordersAwarded) ? n.ordersAwarded.length : 0), 0),
+    [naibates]
+  );
+  const first5TurnsFunnel = useMemo(
+    () =>
+      computeFirst5TurnsFunnel({
+        turn,
+        reconActivated: kunakSpyRings.some((r) => r.active) || Boolean(imperialAi?.scouted),
+        envoysSentCount: playtestTelemetry.totalEnvoysDispatched + activeEnvoys.length,
+        convoyCutOrBattleDone:
+          liveImperialColumns.some((c) => c.supplyCut) ||
+          playtestTelemetry.dioramasEntered > 0 ||
+          advisorBattleCompleted,
+        resolvedDilemmasCount: resolvedPacketIds.length,
+        enactedNizamsCount: nizams.filter((n) => n.enacted).length,
+        ordersAwardedCount: totalOrdersAwardedCount,
+        sessionStartMs: sessionStartMsRef.current
+      }),
+    [
+      turn,
+      kunakSpyRings,
+      imperialAi?.scouted,
+      playtestTelemetry.totalEnvoysDispatched,
+      playtestTelemetry.dioramasEntered,
+      activeEnvoys.length,
+      liveImperialColumns,
+      advisorBattleCompleted,
+      resolvedPacketIds.length,
+      nizams,
+      totalOrdersAwardedCount
+    ]
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const onErr = (e) => {
+      const msg = e?.message || String(e?.error || 'Runtime error');
+      setRecentRuntimeErrors((prev) => [...prev.slice(-9), msg]);
+    };
+    const onRej = (e) => {
+      const msg = String(e?.reason || 'Unhandled promise rejection');
+      setRecentRuntimeErrors((prev) => [...prev.slice(-9), msg]);
+    };
+    window.addEventListener('error', onErr);
+    window.addEventListener('unhandledrejection', onRej);
+    return () => {
+      window.removeEventListener('error', onErr);
+      window.removeEventListener('unhandledrejection', onRej);
+    };
+  }, []);
+
+  const handleSavePlaytestFeedback = (snapshot) => {
+    const next = saveLocalFeedbackReport(snapshot);
+    setLocalFeedbackReports(next);
+  };
+
   const siegesActiveCount = useMemo(
     () => naibates.filter((n) => n.underSiege).length,
     [naibates]
@@ -11967,6 +12043,21 @@ struct FImamatCampaignSnapshot
                   ? t(adaptiveMusicState.meta.shortRu, adaptiveMusicState.meta.shortEn)
                   : t('Без звука', 'Muted')}
               </span>
+            </button>
+
+            {/* СПРИНТ 9 (Фаза 5): Кнопка репорта багов и идей для «слепых» плейтестов Волн 1–2 */}
+            <button
+              type="button"
+              onClick={() => setShowPlaytestFeedbackModal(true)}
+              title={t(
+                `Сообщить о баге или идее (Воронка 5 ходов: ${first5TurnsFunnel.completedCount}/${first5TurnsFunnel.totalCount})`,
+                `Report a bug or idea (First-5-Turns Funnel: ${first5TurnsFunnel.completedCount}/${first5TurnsFunnel.totalCount})`
+              )}
+              className="px-2 py-1 rounded-lg text-[10.5px] font-serif font-bold border transition cursor-pointer inline-flex items-center gap-1 bg-amber-500/15 hover:bg-amber-500/30 border-amber-400/55 text-amber-200"
+            >
+              <span>💬</span>
+              <span className="hidden xl:inline">{t('Отзыв / Баг', 'Feedback')}</span>
+              <span className="xl:hidden">{t('Баг', 'Bug')}</span>
             </button>
 
             {/* Единое меню «Кодекс, Архив и Настройки» (чистый HUD без служебного шума) */}
@@ -12827,10 +12918,33 @@ struct FImamatCampaignSnapshot
       {/* СПРИНТ 20 (M20): ЕДИНЫЙ КОМАНДНЫЙ ЦЕНТР ЗОЛОТОГО РЕЛИЗА v2.0 (MILESTONES M1–M20 • PASS 7/7) */}
       {showReleaseHubModal && <ReleaseHubModal {...{ handleExportCommanderSealHtml, handleExportSteamAnnouncementMd, handleTogglePitchTour, setShowAchievementsModal, setShowAudioMixerModal, setShowDispatchesModal, setShowFieldManualModal, setShowModBuilderModal, setShowMuseumCodexModal, setShowReleaseHubModal, setShowReplayModal, setShowTrailerPrevizModal, t }} />}
 
+      {/* СПРИНТ 9 (ФАЗА 5): ВСТРОЕННЫЙ РЕПОРТ БАГОВ И ИДЕЙ ДЛЯ СЛЕПЫХ ПЛЕЙТЕСТОВ (ВОЛНЫ 1–2) */}
+      {showPlaytestFeedbackModal && (
+        <PlaytestFeedbackModal
+          {...{
+            activeScenarioId,
+            activeTab,
+            delayedConsequences,
+            first5TurnsFunnel,
+            lang,
+            lastActionLatencyMs,
+            localFeedbackReports,
+            naibates,
+            onSaveFeedbackReport: handleSavePlaytestFeedback,
+            recentRuntimeErrors,
+            resolvedPacketIds,
+            resources,
+            setShowPlaytestFeedbackModal,
+            t,
+            turn
+          }}
+        />
+      )}
+
       {/* ОСНОВНОЙ КОНТЕЙНЕР ВКЛАДОК */}
       <main className="max-w-[1640px] mx-auto px-2.5 mt-1.5">
         {/* ---------------- ВКЛАДКА 1: СТРАТЕГИЧЕСКАЯ КАРТА КАВКАЗА И УПРАВЛЕНИЕ НАИБАМИ ---------------- */}
-        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, delayedConsequences, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleActivateSingleKunakRing, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, hapticsEnabled: audioMixerConfig.hapticsEnabled, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconIntel, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, tactileFeedback, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, triggerTactileCue, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
+        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, delayedConsequences, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, first5TurnsFunnel, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleActivateSingleKunakRing, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, hapticsEnabled: audioMixerConfig.hapticsEnabled, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconIntel, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowPlaytestFeedbackModal, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, tactileFeedback, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, triggerTactileCue, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
 
         {/* ---------------- ВКЛАДКА 2: КОДЕКС НИЗАМОВ ИМАМА ШАМИЛЯ ---------------- */}
         {activeTab === 'nizams' && <NizamsTab {...{ courtCases, filteredNizams, handleEnactNizam, handleMediateNaibRivalry, handleResolveCourtCase, naibRivalries, selectedPillar, setSelectedPillar, t, turn, turnActionQuota }} />}
