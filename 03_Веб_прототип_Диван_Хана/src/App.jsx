@@ -54,6 +54,11 @@ import {
   getTacticalStanceById,
   resolveConvoyStrikeOutcome
 } from './game/tacticalBattleEngine.js';
+import {
+  activateSingleKunakRing,
+  buildReadableAiIntentVectors,
+  buildReconSources
+} from './game/reconIntelEngine.js';
 import { HighlandEagleIcon, WaxSealIcon } from './views/hud/PeriodIcons.jsx';
 import {
   CAMPAIGN_SCENARIOS,
@@ -2552,25 +2557,17 @@ export default function App() {
   // ============================================================================
   // ПОШАГОВО-ОПЕРАТИВНАЯ МОДЕЛЬ (ВАРИАНТ Б): ОЧКИ МАРША (MP), ТУМАН ВОЙНЫ И ЛИНИИ СНАБЖЕНИЯ
   // ============================================================================
-  const reconSources = useMemo(() => {
-    const sources = [{ x: 225, y: 195, r: 86 }];
-    naibates.forEach((n) => {
-      if (n.coords) sources.push({ x: n.coords.x, y: n.coords.y, r: 66 });
-    });
-    liveFieldUnits.forEach((u) => {
-      sources.push({ x: u.x, y: u.y, r: u.id === 'unit_chapar_vedeno' ? 92 : 76 });
-    });
-    liveMuhtasibPatrols.forEach((p) => {
-      sources.push({ x: p.x, y: p.y, r: 62 });
-    });
-    signalBeacons.forEach((b) => {
-      if (b.isLit) sources.push({ x: b.x, y: b.y, r: 108 });
-    });
-    kunakSpyRings.forEach((s) => {
-      if (s.active) sources.push({ x: s.x, y: s.y, r: 96 });
-    });
-    return sources;
-  }, [naibates, liveFieldUnits, liveMuhtasibPatrols, signalBeacons, kunakSpyRings]);
+  const reconSources = useMemo(
+    () =>
+      buildReconSources({
+        naibates,
+        liveFieldUnits,
+        liveMuhtasibPatrols,
+        signalBeacons,
+        kunakSpyRings
+      }),
+    [naibates, liveFieldUnits, liveMuhtasibPatrols, signalBeacons, kunakSpyRings]
+  );
 
   const enrichedLiveFieldUnits = useMemo(
     () =>
@@ -2621,6 +2618,20 @@ export default function App() {
         };
       }),
     [liveImperialColumns, reconSources]
+  );
+
+  // СПРИНТ 6: Читаемый ИИ и война разведки (3D-стрелки намерений генералов РИ + туман за перевалами)
+  const reconIntel = useMemo(
+    () =>
+      buildReadableAiIntentVectors({
+        imperialAi,
+        imperialGenerals: IMPERIAL_GENERALS,
+        liveImperialColumns: enrichedImperialColumns,
+        naibates,
+        reconSources,
+        kunakSpyRings
+      }),
+    [imperialAi, enrichedImperialColumns, naibates, reconSources, kunakSpyRings]
   );
 
   const selectedFieldUnit = useMemo(
@@ -5172,6 +5183,49 @@ export default function App() {
       `📯 Засада по наводке кунаков → ${targetCourier.nameRu}`,
       `📯 Kunak Intelligence Ambush → ${targetCourier.nameEn}`
     );
+  };
+
+  // СПРИНТ 6: Активация отдельной сети тайных кунаков прямо на 3D-карте (рассеивает туман и вскрывает колонны РИ)
+  const handleActivateSingleKunakRing = (ringId) => {
+    const res = activateSingleKunakRing({
+      kunakSpyRings,
+      ringId,
+      silver: resources.silver,
+      costSilver: 45
+    });
+    if (!res.ok) {
+      if (res.reason === 'insufficient_silver') {
+        alertMsg(
+          t(
+            'Недостаточно серебра (нужно 45 руб.) для подкупа и поднятия сети кунаков!',
+            'Insufficient silver (45 rub. needed) to activate this kunak spy ring!'
+          )
+        );
+      }
+      return;
+    }
+    playHistoricalSound('seal', soundEnabled);
+    setKunakSpyRings(res.nextRings);
+    setResources((prevR) => ({
+      ...prevR,
+      silver: Math.max(0, prevR.silver - res.spentSilver)
+    }));
+    setImperialAi((prevAi) => ({ ...prevAi, scouted: true }));
+    if (res.ring) {
+      spawnFloatingCombatPopup(
+        res.ring.x,
+        res.ring.y,
+        `🕵️ ${t(res.ring.badgeRu, res.ring.badgeEn)}`,
+        t('Туман рассеян! Планы и колонны РИ вскрыты (-45₽)', 'Fog lifted! Imperial plans & columns revealed (-45r)'),
+        '#2dd4bf'
+      );
+      showNotice(
+        t(
+          `🕵️ Сеть «${res.ring.badgeRu}» активирована (-45₽): туман за перевалами рассеян, скрытые колонны РИ и стрелки намерений вскрыты!`,
+          `🕵️ Ring “${res.ring.badgeEn}” activated (-45r): mountain fog lifted, hidden Imperial columns & intent arrows revealed!`
+        )
+      );
+    }
   };
 
   // СПРИНТ 33 (M33): Задействовать всю сеть тайных кунаков (Грозная, Андреево, Темир-Хан-Шура) для перехвата депеш и срыва планов РИ
@@ -12581,7 +12635,7 @@ struct FImamatCampaignSnapshot
       {/* ОСНОВНОЙ КОНТЕЙНЕР ВКЛАДОК */}
       <main className="max-w-[1640px] mx-auto px-2.5 mt-1.5">
         {/* ---------------- ВКЛАДКА 1: СТРАТЕГИЧЕСКАЯ КАРТА КАВКАЗА И УПРАВЛЕНИЕ НАИБАМИ ---------------- */}
-        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
+        {activeTab === 'map' && <MapTab {...{ activeDivanPacket, activeEnvoys, activeEpisodeId, activeEpisodeModal, activeHeroArcModal, activeRelicIds, activeScenarioId, activeTacticalEncounter, animatedBattleVfx, arsenalItems, attachedPowder, attachedSilver, battleMemorials, capitalLabelEn, capitalLabelRu, capitalNaibateId, commandDockTab, cordonFortresses, crises, deepRaidTargets, dioramaTimeOfDay, episodesState, eraObjectivesProgress, fieldHospitals, floatingCombatPopups, forestClearings, fortBuildMode, fullScreenTableMode, gameCameraTilt, handleActivateKunakSpyNetwork, handleActivateSingleKunakRing, handleArmSapperMine, handleAutoResolveEncounter, handleAwardOrder, handleBlowBridgesAheadOfColumns, handleBoostPowderMill, handleBuildFortificationAheadOfColumn, handleClaimPrologueReward, handleCommandUnitMoveToPoint, handleConcentrateArtilleryFire, handleCraftArsenalItem, handleCycleTimeOfDay, handleDefendForestClearing, handleDeployBatteryToRidge, handleDetonateAllSapperMines, handleDispatchAllUnitsDemo, handleDispatchMuhtasibToNaibate, handleDispatchPrisonerExchange, handleDisruptImperialColumn, handleEnactNizam, handleEnterTacticalDiorama, handleEnterTacticalEncounter, handleEscortDiplomaticMission, handleEscortMuhajirCaravan, handleEscortSupplyCaravan, handleEvacuateWoundedToHospitals, handleExecuteMichikGrandExchange, handleExecuteRadialCommand, handleFocusThreatHotspot, handleIgniteAllSignalBeacons, handleInterceptImperialColumn, handleInterceptImperialCourier, handleLaunchDeepCavalryRaid, handleLaunchGeneralCordonAssault, handleLaunchGeneralForestAmbush, handleLaunchNightSortie, handleMediateNaibRivalry, handleNextTurn, handleOpenBattlePrelude, handleOpenHeroArcModal, handleOrganizeMuhajirRelief, handleOttomanDiplomacy, handleOverdriveAllPowderMills, handleProclaimEraTriumph, handleProtectTranshumanceFlock, handleResolveDivanPacket, handleResolveEpisodePhase, handleResolveHeroArcChoice, handleResolveHistoricalCrisis, handleRetreatFromEncounter, handleSendEnvoy, handleSeverColumnSupplyLine, handleStrategicMapClick, handleStrategicMapMouseMove, handleSummonDivanPacket, handleToggleActiveRelic, handleToggleRiverBridge, handleToggleSignalBeacon, handleTriggerArtillerySmokeVfx, handleUpgradeFieldHospital, heroArcsState, hoveredMapInfo, imperialAi, imperialHeldIds, kunakSpyRings, lastBattleAfterActionReport, leaderStressData, liveCannonSmokePlumes, liveDiplomaticMissions, liveFieldUnits: enrichedLiveFieldUnits, liveImperialColumns: enrichedImperialColumns, liveImperialCouriers, liveMapFortifications, liveMountainBatteries, liveMuhajirCaravans, liveMuhtasibPatrols, livePrisonerConvoys, liveSkirmishBursts, liveSupplyCaravans, liveTranshumanceFlocks, liveWeatherFronts, mapLayer, naibRivalries, naibates, nizams, orderExecutionCalc, powderMills, prologueRewardClaimed, radialWheelTarget, real3DTableMode, reconIntel, reconSources, resources, riverBridges, routeMode, sapperMines, selectedFieldUnit, selectedFortBlueprintId, selectedNaibate, selectedNaibateId, selectedOrderType, selectedUnitId, setActiveDivanPacket, setActiveEpisodeId, setActiveEpisodeModal, setActiveHeroArcModal, setActiveTab, setActiveTacticalEncounter, setAnimatedBattleVfx, setAttachedPowder, setAttachedSilver, setCommandDockTab, setFortBuildMode, setFullScreenTableMode, setGameCameraTilt, setHoveredMapInfo, setImperialAi, setLastBattleAfterActionReport, setMapLayer, setRadialWheelTarget, setReal3DTableMode, setRouteMode, setSelectedFortBlueprintId, setSelectedNaibateId, setSelectedOrderType, setSelectedUnitId, setShowSchematicLabels, setShowThreatRadarOverlay, setTableQuickDrawer, setTerrainSimSpeed, setWeatherOverlayEnabled, showSchematicLabels, showThreatRadarOverlay, signalBeacons, soundEnabled, t, tableQuickDrawer, terrainProbe, terrainSimSpeed, totalBatterySalvos, totalCaravansDelivered, totalCouriersIntercepted, totalDeepRaidsCompleted, totalDiplomaticMissionsArrived, totalFlockMigrations, totalForestAmbushesTriggered, totalFortressesStormed, totalMapInterceptions, totalMillBatchesProduced, totalMinesDetonatedOnMap, totalMuhajirCaravansSaved, totalMuhtasibInspections, totalPrisonerExchangesCompleted, totalWoundedRecoveredOnMap, turn, turnActionQuota, turnFocusEvent, unitMovementLog, unlockedRelicIds, weatherOverlayEnabled }} />}
 
         {/* ---------------- ВКЛАДКА 2: КОДЕКС НИЗАМОВ ИМАМА ШАМИЛЯ ---------------- */}
         {activeTab === 'nizams' && <NizamsTab {...{ courtCases, filteredNizams, handleEnactNizam, handleMediateNaibRivalry, handleResolveCourtCase, naibRivalries, selectedPillar, setSelectedPillar, t, turn, turnActionQuota }} />}

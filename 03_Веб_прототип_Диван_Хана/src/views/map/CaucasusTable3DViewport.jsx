@@ -130,9 +130,12 @@ export default function CaucasusTable3DViewport({
   dioramaTimeOfDay = 'day',
   externalCameraCmd = null,
   fullScreenTableMode = false,
+  handleActivateKunakSpyNetwork,
+  handleActivateSingleKunakRing,
   handleCycleSeason3D,
   handleCycleTimeOfDay,
   handleEnterTacticalDiorama,
+  handleIgniteAllSignalBeacons,
   handleInterceptImperialColumn,
   handleSendEnvoy,
   handleSeverColumnSupplyLine,
@@ -140,10 +143,13 @@ export default function CaucasusTable3DViewport({
   handleToggleRiverBridge,
   handleToggleSignalBeacon,
   imperialHeldIds = [],
+  kunakSpyRings = [],
   liveFieldUnits = [],
   liveImperialColumns = [],
   naibates = [],
   orderExecutionCalc = null,
+  reconIntel = null,
+  reconSources = [],
   riverBridges = [],
   seasonPhase = 'summer',
   selectedNaibate = null,
@@ -166,6 +172,8 @@ export default function CaucasusTable3DViewport({
   const trackedNatureIdxRef = useRef(0);
   const [cameraPresetLabel, setCameraPresetLabel] = useState('theatre');
   const [cameraMenuOpen, setCameraMenuOpen] = useState(false);
+  const [showIntelOverlay3D, setShowIntelOverlay3D] = useState(true);
+  const [intelPanelOpen, setIntelPanelOpen] = useState(false);
   const [showAllLabels3D, setShowAllLabels3D] = useState(false);
   const [weatherMode3D, setWeatherMode3D] = useState('auto');
   const [hudLabels, setHudLabels] = useState([]);
@@ -242,9 +250,14 @@ export default function CaucasusTable3DViewport({
     imperialHeldIds,
     seasonPhase,
     showAllLabels3D,
+    showIntelOverlay3D,
+    intelPanelOpen,
     weatherMode3D,
     liveFieldUnits,
     liveImperialColumns,
+    kunakSpyRings,
+    reconIntel,
+    reconSources,
     cordonFortresses,
     riverBridges,
     signalBeacons,
@@ -257,6 +270,7 @@ export default function CaucasusTable3DViewport({
     setSelectedNaibateId,
     setSelectedUnitId,
     setHoveredMapInfo,
+    handleActivateSingleKunakRing,
     handleInterceptImperialColumn,
     handleSeverColumnSupplyLine,
     handleToggleRiverBridge,
@@ -273,9 +287,14 @@ export default function CaucasusTable3DViewport({
       imperialHeldIds,
       seasonPhase,
       showAllLabels3D,
+      showIntelOverlay3D,
+      intelPanelOpen,
       weatherMode3D,
       liveFieldUnits,
       liveImperialColumns,
+      kunakSpyRings,
+      reconIntel,
+      reconSources,
       cordonFortresses,
       riverBridges,
       signalBeacons,
@@ -288,6 +307,7 @@ export default function CaucasusTable3DViewport({
       setSelectedNaibateId,
       setSelectedUnitId,
       setHoveredMapInfo,
+      handleActivateSingleKunakRing,
       handleInterceptImperialColumn,
       handleSeverColumnSupplyLine,
       handleToggleRiverBridge,
@@ -1383,6 +1403,267 @@ export default function CaucasusTable3DViewport({
     hoverReticleMesh.visible = false;
 
     routeLayer.add(activeRouteLine, routeTargetBeacon, hoverArcLine, hoverReticleMesh);
+
+    // =========================================================================
+    // СПРИНТ 6: СЛОЙ РАЗВЕДКИ — 3D-СТРЕЛКИ НАМЕРЕНИЙ ГЕНЕРАЛОВ РИ, ТУМАН ВОЙНЫ И КУНАКИ
+    // =========================================================================
+    const intelLayer = new THREE.Group();
+    intelLayer.userData.excludeFromGtao = true;
+    scene.add(intelLayer);
+
+    const aiIntentGroup = new THREE.Group();
+    aiIntentGroup.userData.excludeFromGtao = true;
+    const fogOfWarGroup = new THREE.Group();
+    fogOfWarGroup.userData.excludeFromGtao = true;
+    const kunakReconGroup = new THREE.Group();
+    kunakReconGroup.userData.excludeFromGtao = true;
+    intelLayer.add(aiIntentGroup, fogOfWarGroup, kunakReconGroup);
+
+    // Мягкая текстура плотного горного тумана войны за северными перевалами
+    const fogCloudCanvas = document.createElement('canvas');
+    fogCloudCanvas.width = 128;
+    fogCloudCanvas.height = 128;
+    const fCtx = fogCloudCanvas.getContext('2d');
+    const fGrad = fCtx.createRadialGradient(64, 64, 8, 64, 64, 62);
+    fGrad.addColorStop(0.0, 'rgba(20, 31, 48, 0.94)');
+    fGrad.addColorStop(0.42, 'rgba(38, 54, 78, 0.72)');
+    fGrad.addColorStop(0.75, 'rgba(71, 92, 118, 0.28)');
+    fGrad.addColorStop(1.0, 'rgba(100, 116, 139, 0.0)');
+    fCtx.fillStyle = fGrad;
+    fCtx.fillRect(0, 0, 128, 128);
+    const fogCloudTex = new THREE.CanvasTexture(fogCloudCanvas);
+    fogCloudTex.colorSpace = THREE.SRGBColorSpace;
+
+    const sharedFogPlaneGeo = new THREE.PlaneGeometry(1, 1);
+    const sharedIntentPulseGeo = new THREE.SphereGeometry(0.2, 8, 8);
+    const sharedIntentTargetRingGeo = new THREE.RingGeometry(1.45, 1.88, 36);
+    const sharedKunakOrbGeo = new THREE.OctahedronGeometry(0.3, 0);
+    const sharedKunakRingGeo = new THREE.RingGeometry(0.75, 0.96, 28);
+    const sharedReconRadiusGeo = new THREE.RingGeometry(0.95, 1.0, 48);
+
+    const aiIntentDisposables = [];
+    const aiIntentAnimItems = [];
+    const kunakDisposables = [];
+    const fogPassRegistry = new Map();
+    let lastIntentSig = '';
+    let lastKunakSig = '';
+    const intentLabels = [];
+
+    const clearGroupDisposables = (grp, arr) => {
+      while (grp.children.length > 0) {
+        grp.remove(grp.children[0]);
+      }
+      while (arr.length > 0) {
+        const d = arr.pop();
+        if (d && typeof d.dispose === 'function') d.dispose();
+      }
+    };
+
+    const syncIntelOverlays = () => {
+      const p = latestPropsRef.current;
+      const intel = p.reconIntel;
+      const showOn = Boolean(p.showIntelOverlay3D);
+      const vectors = intel?.vectors || [];
+      const intentSig = [
+        showOn ? 1 : 0,
+        vectors
+          .map(
+            (v) =>
+              `${v.id}:${Math.round(v.fromX)},${Math.round(v.fromY)}->${Math.round(v.toX)},${Math.round(v.toY)}:${v.turnsUntilStrike}:${v.urgency}:${v.supplyCut ? 1 : 0}`
+          )
+          .join('|')
+      ].join('#');
+
+      if (intentSig !== lastIntentSig) {
+        lastIntentSig = intentSig;
+        clearGroupDisposables(aiIntentGroup, aiIntentDisposables);
+        aiIntentAnimItems.length = 0;
+        intentLabels.length = 0;
+
+        if (showOn) {
+          vectors.forEach((v, vIdx) => {
+            const pts = [];
+            const segs = 18;
+            const startW = mapToWorld(v.fromX, v.fromY);
+            const endW = mapToWorld(v.toX, v.toY);
+            const distW = Math.hypot(endW.wx - startW.wx, endW.wz - startW.wz);
+            const arcLift = Math.min(4.2, Math.max(1.6, distW * 0.16));
+
+            for (let s = 0; s <= segs; s++) {
+              const u = s / segs;
+              const mx = v.fromX + (v.toX - v.fromX) * u;
+              const my = v.fromY + (v.toY - v.fromY) * u;
+              const w = mapToWorld(mx, my);
+              const elev = w.wy + 0.95 + Math.sin(u * Math.PI) * arcLift;
+              pts.push(new THREE.Vector3(w.wx, elev, w.wz));
+            }
+
+            const curve = new THREE.CatmullRomCurve3(pts);
+            const isPrim = Boolean(v.isPrimaryDirective);
+            const isImminent = v.urgency === 'imminent';
+            const tubeGeo = new THREE.TubeGeometry(curve, 32, isPrim ? 0.145 : 0.085, 8, false);
+            const tubeMat = new THREE.MeshStandardMaterial({
+              color: isPrim ? (isImminent ? '#ef4444' : '#f97316') : '#f43f5e',
+              emissive: isPrim ? (isImminent ? '#dc2626' : '#ea580c') : '#be123c',
+              emissiveIntensity: isPrim ? 0.92 : 0.65,
+              transparent: true,
+              opacity: isPrim ? 0.9 : 0.74,
+              roughness: 0.35
+            });
+            aiIntentDisposables.push(tubeGeo, tubeMat);
+            const tubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+            tubeMesh.userData.excludeFromGtao = true;
+            aiIntentGroup.add(tubeMesh);
+
+            // Скульптурный 3D-наконечник стрелы намерения ИИ, направленный по касательной к цели
+            const tipGeo = new THREE.ConeGeometry(isPrim ? 0.44 : 0.28, isPrim ? 1.1 : 0.72, 12);
+            const tipMat = new THREE.MeshStandardMaterial({
+              color: isPrim ? '#fde047' : '#fda4af',
+              emissive: isPrim ? '#ef4444' : '#e11d48',
+              emissiveIntensity: 0.95,
+              roughness: 0.28
+            });
+            aiIntentDisposables.push(tipGeo, tipMat);
+            const tipMesh = new THREE.Mesh(tipGeo, tipMat);
+            const tipPos = curve.getPointAt(0.95);
+            const tipTan = curve.getTangentAt(0.95).normalize();
+            tipMesh.position.copy(tipPos);
+            tipMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tipTan);
+            tipMesh.userData.excludeFromGtao = true;
+            aiIntentGroup.add(tipMesh);
+
+            // Бегущие световые импульсы вдоль дуги (показывают направление и темп марша РИ!)
+            const pulseCount = isPrim ? 3 : 2;
+            const pulseMat = new THREE.MeshBasicMaterial({
+              color: isPrim ? '#fef08a' : '#fecdd3',
+              transparent: true,
+              opacity: 0.95
+            });
+            aiIntentDisposables.push(pulseMat);
+            const pulses = [];
+            for (let k = 0; k < pulseCount; k++) {
+              const pm = new THREE.Mesh(sharedIntentPulseGeo, pulseMat);
+              pm.scale.setScalar(isPrim ? 1.15 : 0.78);
+              pm.userData.excludeFromGtao = true;
+              aiIntentGroup.add(pm);
+              pulses.push(pm);
+            }
+
+            // Пульсирующее кольцо угрозы на целевом наибстве главной директивы
+            let targetRing = null;
+            if (isPrim) {
+              const trMat = new THREE.MeshBasicMaterial({
+                color: isImminent ? '#ef4444' : '#fb923c',
+                transparent: true,
+                opacity: 0.85,
+                side: THREE.DoubleSide,
+                depthWrite: false
+              });
+              aiIntentDisposables.push(trMat);
+              targetRing = new THREE.Mesh(sharedIntentTargetRingGeo, trMat);
+              targetRing.rotation.x = -Math.PI / 2;
+              targetRing.position.set(endW.wx, endW.wy + 0.14, endW.wz);
+              targetRing.userData.excludeFromGtao = true;
+              aiIntentGroup.add(targetRing);
+            }
+
+            aiIntentAnimItems.push({
+              curve,
+              pulses,
+              targetRing,
+              speed: isImminent ? 0.52 : 0.34,
+              phase: vIdx * 0.37
+            });
+
+            const midPt = curve.getPointAt(0.52);
+            const shortGenRu = (v.generalNameRu || '').replace(/^\d{4}(?:\/\d{2})?:\s*/, '');
+            const shortGenEn = (v.generalNameEn || '').replace(/^\d{4}(?:\/\d{2})?:\s*/, '');
+            const tgtRu = (v.targetNameRu || '').split(' ')[0];
+            const tgtEn = (v.targetNameEn || '').split(' ')[0];
+            intentLabels.push({
+              key: `intent-lb-${v.id}`,
+              wx: midPt.x,
+              wy: midPt.y + (isPrim ? 0.85 : 0.55),
+              wz: midPt.z,
+              priority: isPrim ? 1 : 2,
+              tone: isPrim ? 'ai_intent' : 'ai_col_intent',
+              textRu: isPrim
+                ? `🎯 ${shortGenRu} → ${tgtRu} • ${isImminent ? 'УДАР!' : `${v.turnsUntilStrike}х`} (${v.bayonets})`
+                : `↗ ${shortGenRu} → ${tgtRu} (~${v.turnsUntilStrike}х)`,
+              textEn: isPrim
+                ? `🎯 ${shortGenEn} → ${tgtEn} • ${isImminent ? 'STRIKE!' : `${v.turnsUntilStrike}t`} (${v.bayonets})`
+                : `↗ ${shortGenEn} → ${tgtEn} (~${v.turnsUntilStrike}t)`,
+              onClick: () => {
+                if (v.targetNaibateId && p.setSelectedNaibateId) {
+                  p.setSelectedNaibateId(v.targetNaibateId);
+                }
+                const o = orbitRef.current;
+                o.targetX = Math.max(-24, Math.min(24, endW.wx));
+                o.targetZ = Math.max(-18, Math.min(18, endW.wz));
+                o.radius = Math.min(o.radius, 30);
+              }
+            });
+          });
+        }
+      }
+
+      // 3D-маркеры сети тайных кунаков и радиусов разведки
+      const kunaks = p.kunakSpyRings || [];
+      const kunakSig = [
+        showOn ? 1 : 0,
+        p.intelPanelOpen ? 1 : 0,
+        kunaks.map((k) => `${k.id}:${k.active ? 1 : 0}`).join(','),
+        (p.signalBeacons || []).map((b) => `${b.id}:${b.isLit ? 1 : 0}`).join(',')
+      ].join('#');
+      if (kunakSig !== lastKunakSig) {
+        lastKunakSig = kunakSig;
+        clearGroupDisposables(kunakReconGroup, kunakDisposables);
+        if (showOn) {
+          kunaks.forEach((k) => {
+            const kw = mapToWorld(k.x, k.y);
+            const ringMat = new THREE.MeshBasicMaterial({
+              color: k.active ? '#2dd4bf' : '#fbbf24',
+              transparent: true,
+              opacity: k.active ? 0.68 : 0.55,
+              side: THREE.DoubleSide,
+              depthWrite: false
+            });
+            const orbMat = new THREE.MeshStandardMaterial({
+              color: k.active ? '#14b8a6' : '#f59e0b',
+              emissive: k.active ? '#0d9488' : '#b45309',
+              emissiveIntensity: 0.85,
+              roughness: 0.3
+            });
+            kunakDisposables.push(ringMat, orbMat);
+            const kRing = new THREE.Mesh(sharedKunakRingGeo, ringMat);
+            kRing.rotation.x = -Math.PI / 2;
+            kRing.position.set(kw.wx, kw.wy + 0.12, kw.wz);
+            kRing.userData.excludeFromGtao = true;
+            const kOrb = new THREE.Mesh(sharedKunakOrbGeo, orbMat);
+            kOrb.position.set(kw.wx, kw.wy + 0.85, kw.wz);
+            kOrb.userData.excludeFromGtao = true;
+            kunakReconGroup.add(kRing, kOrb);
+
+            if (k.active && p.intelPanelOpen) {
+              const radMat = new THREE.MeshBasicMaterial({
+                color: '#2dd4bf',
+                transparent: true,
+                opacity: 0.32,
+                side: THREE.DoubleSide,
+                depthWrite: false
+              });
+              kunakDisposables.push(radMat);
+              const radMesh = new THREE.Mesh(sharedReconRadiusGeo, radMat);
+              radMesh.rotation.x = -Math.PI / 2;
+              radMesh.scale.setScalar(10.4);
+              radMesh.position.set(kw.wx, kw.wy + 0.14, kw.wz);
+              radMesh.userData.excludeFromGtao = true;
+              kunakReconGroup.add(radMesh);
+            }
+          });
+        }
+      }
+    };
 
     const precipSys = createCaucasusPrecipitationSystem({
       spanX: 72,
@@ -2970,6 +3251,95 @@ export default function CaucasusTable3DViewport({
         if (registryChanged) {
           rebuildPickablesList();
         }
+
+        // 4.5. Спринт 6: Анимация 3D-стрелок намерений ИИ и объёмного тумана войны за перевалами
+        syncIntelOverlays();
+        const showIntel = Boolean(p.showIntelOverlay3D);
+        aiIntentAnimItems.forEach((item) => {
+          item.pulses.forEach((pm, kIdx) => {
+            const u = (elapsed * item.speed + item.phase + kIdx / item.pulses.length) % 1;
+            const pt = item.curve.getPointAt(u);
+            pm.position.copy(pt);
+          });
+          if (item.targetRing) {
+            const pulseSc = 0.88 + Math.sin(elapsed * 4.4 + item.phase) * 0.16;
+            item.targetRing.scale.setScalar(pulseSc);
+          }
+        });
+
+        const fogPasses = p.reconIntel?.fogPassSectors || [];
+        fogPasses.forEach((fp, fpIdx) => {
+          let bank = fogPassRegistry.get(fp.id);
+          if (!bank) {
+            const fw = mapToWorld(fp.x, fp.y);
+            const mat = new THREE.MeshBasicMaterial({
+              map: fogCloudTex,
+              transparent: true,
+              opacity: 0,
+              depthWrite: false,
+              side: THREE.DoubleSide
+            });
+            const puffs = [];
+            [
+              { dx: 0, dz: 0, dy: 2.15, sc: fp.radius * 0.195 },
+              { dx: -2.1, dz: 1.05, dy: 2.48, sc: fp.radius * 0.155 },
+              { dx: 2.2, dz: -0.95, dy: 2.35, sc: fp.radius * 0.165 }
+            ].forEach((cfg, pIdx) => {
+              const mesh = new THREE.Mesh(sharedFogPlaneGeo, mat);
+              mesh.rotation.x = -Math.PI / 2;
+              mesh.rotation.z = fpIdx * 0.8 + pIdx * 1.4;
+              mesh.scale.set(cfg.sc, cfg.sc * 0.86, 1);
+              mesh.position.set(fw.wx + cfg.dx, fw.wy + cfg.dy, fw.wz + cfg.dz);
+              mesh.userData.excludeFromGtao = true;
+              fogOfWarGroup.add(mesh);
+              puffs.push({ mesh, baseX: fw.wx + cfg.dx, baseZ: fw.wz + cfg.dz, phase: fpIdx * 1.3 + pIdx * 2.1 });
+            });
+            bank = { mat, puffs, fw, curOpacity: 0 };
+            fogPassRegistry.set(fp.id, bank);
+          }
+          const targetOp = showIntel && orbitRef.current.radius > 16 ? fp.fogOpacity * 0.64 : 0;
+          bank.curOpacity += (targetOp - bank.curOpacity) * Math.min(1, dt * 3.5);
+          bank.mat.opacity = bank.curOpacity;
+          const visNow = bank.curOpacity > 0.02;
+          bank.puffs.forEach((pf) => {
+            pf.mesh.visible = visNow;
+            if (visNow) {
+              pf.mesh.position.x = pf.baseX + Math.sin(elapsed * 0.24 + pf.phase) * 0.72;
+              pf.mesh.position.z = pf.baseZ + Math.cos(elapsed * 0.19 + pf.phase) * 0.55;
+            }
+          });
+          if (showIntel && !fp.revealed && fp.hasHiddenThreat) {
+            dynamicLabels.push({
+              key: `fog-warn-${fp.id}`,
+              wx: bank.fw.wx,
+              wy: bank.fw.wy + 2.75,
+              wz: bank.fw.wz,
+              priority: 2,
+              tone: 'fog_warn',
+              textRu: `🌫️ ? Скрытая колонна (${fp.nameRu.split(' ')[0]})`,
+              textEn: `🌫️ ? Hidden Column (${fp.nameEn.split(' ')[0]})`,
+              onClick: () => setIntelPanelOpen(true)
+            });
+          }
+        });
+
+        if (showIntel && p.intelPanelOpen) {
+          (p.kunakSpyRings || []).forEach((k) => {
+            if (k.active) return;
+            const kw = mapToWorld(k.x, k.y);
+            dynamicLabels.push({
+              key: `kunak-dormant-${k.id}`,
+              wx: kw.wx,
+              wy: kw.wy + 1.9,
+              wz: kw.wz,
+              priority: 1,
+              tone: 'kunak',
+              textRu: `🕵️ ${k.badgeRu} (45₽)`,
+              textEn: `🕵️ ${k.badgeEn} (45r)`,
+              onClick: () => p.handleActivateSingleKunakRing && p.handleActivateSingleKunakRing(k.id)
+            });
+          });
+        }
       }
 
       // 5. Полёт живых 3D-ядер между батареями и взрывы с клубами порохового дыма
@@ -3420,7 +3790,7 @@ export default function CaucasusTable3DViewport({
 
       // 9. Умная LOD-проекция тактических шильдиков без визуальной каши (каждые 3 кадра)
       if (frameNum % 3 === 0) {
-        const allAnchors = [...staticLabels, ...dynamicLabels];
+        const allAnchors = [...staticLabels, ...dynamicLabels, ...intentLabels];
         if (allAnchors.length > 0) {
           const w = renderer.domElement.clientWidth || width;
           const h = renderer.domElement.clientHeight || height;
@@ -3510,6 +3880,17 @@ export default function CaucasusTable3DViewport({
       hoverArcMat.dispose();
       hoverReticleGeo.dispose();
       hoverReticleMat.dispose();
+      clearGroupDisposables(aiIntentGroup, aiIntentDisposables);
+      clearGroupDisposables(kunakReconGroup, kunakDisposables);
+      fogPassRegistry.forEach((b) => b.mat.dispose());
+      fogPassRegistry.clear();
+      fogCloudTex.dispose();
+      sharedFogPlaneGeo.dispose();
+      sharedIntentPulseGeo.dispose();
+      sharedIntentTargetRingGeo.dispose();
+      sharedKunakOrbGeo.dispose();
+      sharedKunakRingGeo.dispose();
+      sharedReconRadiusGeo.dispose();
       riverGeos.forEach((rg) => rg.dispose());
       riverMat.dispose();
       bumpTex.dispose();
@@ -3620,6 +4001,14 @@ export default function CaucasusTable3DViewport({
             className={`pointer-events-auto absolute left-0 top-0 px-1.5 py-0.5 rounded text-[9.5px] font-serif font-bold tracking-tight whitespace-nowrap border shadow-md backdrop-blur-[2px] cursor-pointer transition ${
               lb.tone === 'siege'
                 ? 'bg-red-950/90 border-red-400 text-red-100'
+                : lb.tone === 'ai_intent'
+                ? 'bg-gradient-to-r from-red-950/95 via-rose-900/95 to-amber-950/95 border-amber-400 text-amber-100 ring-1 ring-red-500/70 font-extrabold shadow-xl'
+                : lb.tone === 'ai_col_intent'
+                ? 'bg-rose-950/88 border-rose-400/75 text-rose-200'
+                : lb.tone === 'fog_warn'
+                ? 'bg-slate-900/92 border-sky-400/65 text-sky-200'
+                : lb.tone === 'kunak'
+                ? 'bg-teal-950/95 border-teal-400 text-teal-100 font-extrabold shadow-lg'
                 : lb.tone === 'legend_hero'
                 ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-stone-950 border-amber-100 ring-1 ring-amber-300 font-extrabold shadow-lg'
                 : lb.tone === 'selected'
@@ -3794,8 +4183,32 @@ export default function CaucasusTable3DViewport({
           </div>
         )}
 
-        {/* Правый угол: только смена времени суток и быстрый залп батарей */}
-        <div className="pointer-events-auto flex items-center gap-1.5">
+        {/* Правый угол: Разведка и Намерения ИИ (Спринт 6), смена времени суток и быстрый залп батарей */}
+        <div className="pointer-events-auto relative flex items-center gap-1.5">
+          {reconIntel && (
+            <button
+              type="button"
+              onClick={() => setIntelPanelOpen((v) => !v)}
+              className={`relative px-2.5 py-1 rounded-lg font-serif font-bold text-[10.5px] cursor-pointer transition border backdrop-blur-md shadow-lg flex items-center gap-1 ${
+                intelPanelOpen
+                  ? 'bg-teal-500 text-stone-950 border-teal-200'
+                  : reconIntel.hiddenColumnsCount > 0
+                  ? 'bg-[#1a1012]/90 hover:bg-[#261418]/95 text-amber-200 border-rose-400/65'
+                  : 'bg-[#0e1918]/88 hover:bg-[#132624]/95 text-teal-200 border-teal-400/55'
+              }`}
+              title={t(
+                'Штаб разведки ИИ: намерения генералов РИ, туман войны за перевалами и сеть кунаков',
+                'AI Intelligence HQ: Imperial general intents, mountain fog of war & kunak spy rings'
+              )}
+            >
+              <span>👁️ {t(`Разведка ${reconIntel.coveragePct}%`, `Intel ${reconIntel.coveragePct}%`)}</span>
+              {reconIntel.hiddenColumnsCount > 0 && (
+                <span className="px-1 rounded bg-rose-600 text-white text-[9px] hud-num font-extrabold">
+                  ?{reconIntel.hiddenColumnsCount}
+                </span>
+              )}
+            </button>
+          )}
           {handleCycleTimeOfDay && (
             <button
               type="button"
@@ -3818,6 +4231,134 @@ export default function CaucasusTable3DViewport({
           >
             💥 {t('Залп (3D)', '3D Salvo')}
           </button>
+
+          {/* Выпадающий «Штаб разведки ИИ» (Спринт 6): директива генерала РИ, туман перевалов и кунаки */}
+          {intelPanelOpen && reconIntel && (
+            <div className="absolute right-0 top-9 w-[min(90vw,345px)] bg-[#0f1318]/96 backdrop-blur-xl border border-teal-400/50 rounded-xl p-3 shadow-2xl space-y-2.5 text-[10.5px] z-30">
+              <div className="flex items-center justify-between border-b border-stone-800 pb-1.5">
+                <span className="font-serif uppercase tracking-wider text-teal-300 font-bold">
+                  👁️ {t('Штаб разведки ИИ и туман перевалов', 'AI Intelligence & Mountain Fog HQ')}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIntelPanelOpen(false)}
+                  className="text-stone-400 hover:text-white text-[11px] px-1 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {reconIntel.vectors[0] && (
+                <div className="bg-rose-950/55 border border-rose-400/45 rounded-lg p-2 space-y-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-serif font-bold text-amber-200 truncate">
+                      🎯 {t(reconIntel.vectors[0].generalNameRu, reconIntel.vectors[0].generalNameEn)}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-red-600/90 text-white text-[9.5px] hud-num font-extrabold shrink-0">
+                      {reconIntel.vectors[0].turnsUntilStrike <= 1
+                        ? t('УДАР НА ХОДУ!', 'IMMINENT!')
+                        : t(`Через ${reconIntel.vectors[0].turnsUntilStrike} х.`, `In ${reconIntel.vectors[0].turnsUntilStrike}t`)}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-rose-100">
+                    {t('Цель удара:', 'Target:')}{' '}
+                    <strong className="text-amber-300">
+                      {t(reconIntel.vectors[0].targetNameRu, reconIntel.vectors[0].targetNameEn)}
+                    </strong>{' '}
+                    • <span className="hud-num">{reconIntel.vectors[0].bayonets} {t('шт.', 'bay.')}</span>
+                  </div>
+                  <div className="text-[9.5px] text-stone-300 italic">
+                    {t(reconIntel.vectors[0].doctrineRu, reconIntel.vectors[0].doctrineEn)}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-1.5 text-center hud-num">
+                <div className="bg-stone-900/90 border border-stone-800 rounded-lg px-2 py-1">
+                  <div className="text-[9px] text-stone-400 font-sans">{t('Колонны раскрыты', 'Columns Scouted')}</div>
+                  <div className="font-bold text-emerald-300">
+                    {reconIntel.revealedColumnsCount}/{reconIntel.revealedColumnsCount + reconIntel.hiddenColumnsCount}
+                  </div>
+                </div>
+                <div className="bg-stone-900/90 border border-stone-800 rounded-lg px-2 py-1">
+                  <div className="text-[9px] text-stone-400 font-sans">{t('В тумане перевалов', 'Hidden in Fog')}</div>
+                  <div className={`font-bold ${reconIntel.hiddenColumnsCount > 0 ? 'text-rose-300' : 'text-teal-300'}`}>
+                    {reconIntel.hiddenColumnsCount > 0
+                      ? `${reconIntel.hiddenColumnsCount} ${t('скрыто', 'hidden')}`
+                      : t('0 • Ясно', '0 • Clear')}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="text-[9.5px] font-serif uppercase tracking-wider text-amber-300 font-bold">
+                  🕵️ {t('Сети тайных кунаков (рассеивают туман):', 'Kunak Spy Rings (lift mountain fog):')}
+                </div>
+                <div className="space-y-1">
+                  {(kunakSpyRings || []).map((ring) => (
+                    <div
+                      key={ring.id}
+                      className="flex items-center justify-between gap-2 bg-stone-900/80 border border-stone-800 rounded-lg px-2 py-1"
+                    >
+                      <span className="truncate text-stone-200 font-serif font-semibold">
+                        {ring.active ? '✅' : '🌫️'} {t(ring.badgeRu, ring.badgeEn)}
+                      </span>
+                      {ring.active ? (
+                        <span className="text-[9.5px] text-teal-300 font-mono shrink-0">
+                          {t('Активна', 'Active')}
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleActivateSingleKunakRing && handleActivateSingleKunakRing(ring.id)}
+                          className="px-2 py-0.5 rounded bg-amber-500 hover:bg-amber-400 text-stone-950 font-serif font-extrabold text-[9.5px] cursor-pointer shrink-0 transition"
+                        >
+                          {t('Поднять (45₽)', 'Activate (45r)')}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-1.5 border-t border-stone-800 flex flex-wrap items-center justify-between gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setShowIntelOverlay3D((v) => !v)}
+                  className={`px-2 py-1 rounded font-serif font-bold text-[10px] cursor-pointer border transition ${
+                    showIntelOverlay3D
+                      ? 'bg-teal-500/25 border-teal-400 text-teal-200'
+                      : 'bg-stone-900 border-stone-700 text-stone-400'
+                  }`}
+                >
+                  {showIntelOverlay3D
+                    ? t('👁️ 3D-стрелки и туман: ВКЛ', '👁️ 3D Arrows & Fog: ON')
+                    : t('👁️ 3D-стрелки и туман: ВЫКЛ', '👁️ 3D Arrows & Fog: OFF')}
+                </button>
+                <div className="flex items-center gap-1">
+                  {handleIgniteAllSignalBeacons && (
+                    <button
+                      type="button"
+                      onClick={handleIgniteAllSignalBeacons}
+                      className="px-2 py-1 rounded bg-orange-500/20 hover:bg-orange-500/35 border border-orange-400/55 text-orange-200 font-serif font-bold text-[10px] cursor-pointer transition"
+                      title={t('Зажечь сигнальные маяки на перевалах', 'Ignite ridge signal beacons')}
+                    >
+                      🔥 {t('Маяки', 'Beacons')}
+                    </button>
+                  )}
+                  {handleActivateKunakSpyNetwork && reconIntel.activeKunaksCount < reconIntel.totalKunaksCount && (
+                    <button
+                      type="button"
+                      onClick={handleActivateKunakSpyNetwork}
+                      className="px-2 py-1 rounded bg-teal-500 hover:bg-teal-400 text-stone-950 font-serif font-extrabold text-[10px] cursor-pointer transition"
+                    >
+                      🕵️ {t('Все сети', 'All Rings')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1146,6 +1146,7 @@ function MapTab({
   fullScreenTableMode,
   gameCameraTilt,
   handleActivateKunakSpyNetwork,
+  handleActivateSingleKunakRing,
   handleArmSapperMine,
   handleAutoResolveEncounter,
   handleAwardOrder,
@@ -1235,6 +1236,7 @@ function MapTab({
   prologueRewardClaimed = false,
   radialWheelTarget,
   real3DTableMode = false,
+  reconIntel = null,
   reconSources = [],
   resources,
   riverBridges,
@@ -2782,6 +2784,9 @@ function MapTab({
                     fullScreenTableMode={fullScreenTableMode}
                     liveFieldUnits={liveFieldUnits}
                     liveImperialColumns={liveImperialColumns}
+                    kunakSpyRings={kunakSpyRings}
+                    reconIntel={reconIntel}
+                    reconSources={reconSources}
                     cordonFortresses={cordonFortresses}
                     riverBridges={riverBridges}
                     signalBeacons={signalBeacons}
@@ -2791,6 +2796,9 @@ function MapTab({
                     selectedUnitId={selectedUnitId}
                     orderExecutionCalc={orderExecutionCalc}
                     dioramaTimeOfDay={dioramaTimeOfDay}
+                    handleActivateKunakSpyNetwork={handleActivateKunakSpyNetwork}
+                    handleActivateSingleKunakRing={handleActivateSingleKunakRing}
+                    handleIgniteAllSignalBeacons={handleIgniteAllSignalBeacons}
                     handleCycleTimeOfDay={handleCycleTimeOfDay}
                     handleCycleSeason3D={() =>
                       setSeason3DOverride((prev) => {

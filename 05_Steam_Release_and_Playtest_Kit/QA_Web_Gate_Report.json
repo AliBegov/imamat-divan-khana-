@@ -1,13 +1,13 @@
 {
-  "sources_sha256": "8d3fad1542d16784c61e1b8a7ad8c8fdbb47f929c62bd8108780cf483e89eeba",
+  "sources_sha256": "3b2b79f111638a0f86081ee638b59e4a814f0a47c42957bab47fa0a4aafe0380",
   "stages": {
     "lint": {
       "passed": true,
-      "files": 64,
+      "files": 65,
       "errors": 0,
       "warnings": 0,
       "error_list": [],
-      "finished_at": "2026-11-27T18:19:48.629Z"
+      "finished_at": "2026-11-27T18:38:15.092Z"
     },
     "static_routes": {
       "passed": true,
@@ -29,7 +29,7 @@
         }
       },
       "problems": [],
-      "finished_at": "2026-11-27T18:19:48.777Z"
+      "finished_at": "2026-11-27T18:38:15.270Z"
     },
     "runtime_smoke": {
       "passed": true,
@@ -58,8 +58,8 @@
         "OK  Инструменты и слои",
         "OK  ЗАВЕРШИТЬ ХОД",
         "OK  ЗАВЕРШИТЬ ХОД",
-        "OK  Точность клика 3D-карты ×1.0 (погрешность 0.23 ед., сводок: 1)",
-        "OK  Зум Ctrl+колесо + панорама + точность клика (погрешность 1.59 ед.)",
+        "OK  Точность клика 3D-карты ×1.0 (погрешность 0.22 ед., сводок: 1)",
+        "OK  Зум Ctrl+колесо + панорама + точность клика (погрешность 1.6 ед.)",
         "OK  Время суток (3 нажатия)",
         "OK  Колесо → В поход сюда",
         "OK  Колесо → Залп батарей",
@@ -87,9 +87,9 @@
       "tabs_studio": 11,
       "problems": [],
       "screenshot": "QA_Web_Gate_Screenshot.png",
-      "finished_at": "2026-11-27T18:21:27.411Z"
+      "finished_at": "2026-11-27T18:39:52.902Z"
     }
   },
-  "source_files": 64,
+  "source_files": 65,
   "passed": true
 }

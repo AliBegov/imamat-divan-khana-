@@ -56,6 +56,14 @@ import {
   getTacticalStanceById,
   resolveConvoyStrikeOutcome
 } from '../src/game/tacticalBattleEngine.js';
+import {
+  NORTHERN_FOG_PASSES,
+  activateSingleKunakRing,
+  buildReadableAiIntentVectors,
+  buildReconSources,
+  computeFogPassSectors,
+  evaluatePointVisibility
+} from '../src/game/reconIntelEngine.js';
 
 function createMemoryStorage() {
   const map = new Map();
@@ -913,4 +921,158 @@ test('42. computeAutoResolveForecast propagates convoy supply severance on flank
   assert.ok(res.totalCapturedPowder > 0);
   assert.ok(res.totalCapturedSilver > 0);
   assert.equal(res.remainingGazyrs, 12 - res.gazyrsSpent);
+});
+
+test('43. buildReconSources aggregates naibates, cavalry, lit beacons and active kunak rings only', () => {
+  const sources = buildReconSources({
+    naibates: [INITIAL_NAIBATES[0]],
+    liveFieldUnits: [INITIAL_LIVE_FIELD_UNITS[0]],
+    signalBeacons: [
+      { id: 'b1', x: 300, y: 120, isLit: true, badgeRu: 'Маяк 1' },
+      { id: 'b2', x: 400, y: 120, isLit: false, badgeRu: 'Маяк 2' }
+    ],
+    kunakSpyRings: [
+      { id: 'k1', x: 364, y: 96, active: true, badgeRu: 'Кунаки 1' },
+      { id: 'k2', x: 526, y: 136, active: false, badgeRu: 'Кунаки 2' }
+    ]
+  });
+  assert.ok(sources.some((s) => s.kind === 'beacon' && s.id === 'b1'));
+  assert.equal(sources.some((s) => s.id === 'b2'), false);
+  assert.ok(sources.some((s) => s.kind === 'kunak' && s.id === 'k1'));
+  assert.equal(sources.some((s) => s.id === 'k2'), false);
+});
+
+test('44. evaluatePointVisibility reveals points inside scout radius and shrouds northern passes beyond range', () => {
+  const sources = [{ x: 225, y: 195, r: 86, kind: 'capital' }];
+  const near = evaluatePointVisibility(230, 190, sources);
+  const farPass = evaluatePointVisibility(545, 94, sources);
+  assert.equal(near.revealed, true);
+  assert.ok(near.clarity > 0.8);
+  assert.equal(farPass.revealed, false);
+  assert.equal(farPass.fogOpacity, 1.0);
+});
+
+test('45. computeFogPassSectors detects hidden enemy column movement behind shrouded passes', () => {
+  const sources = [{ x: 132, y: 66, r: 90, kind: 'kunak' }];
+  const cols = [
+    { id: 'col_vorontsov', x: 356, y: 96, fogHidden: true, status: 'advancing' },
+    { id: 'col_freitag', x: 124, y: 68, fogHidden: false, status: 'advancing' }
+  ];
+  const passes = computeFogPassSectors(sources, cols);
+  assert.equal(passes.length, NORTHERN_FOG_PASSES.length);
+  const grozPass = passes.find((p) => p.id === 'pass_sunzha_groznaya');
+  const vnezPass = passes.find((p) => p.id === 'pass_vnezapnaya_andi');
+  assert.equal(grozPass.revealed, true);
+  assert.equal(vnezPass.revealed, false);
+  assert.equal(vnezPass.hasHiddenThreat, true);
+});
+
+test('46. buildReadableAiIntentVectors produces primary general directive and scouted column thrust arrows', () => {
+  const kunaks = [
+    { id: 'spy_groznaya_ring', x: 196, y: 94, active: true },
+    { id: 'spy_vnezapnaya_ring', x: 364, y: 96, active: false }
+  ];
+  const sources = buildReconSources({
+    naibates: INITIAL_NAIBATES,
+    liveFieldUnits: INITIAL_LIVE_FIELD_UNITS,
+    kunakSpyRings: kunaks
+  });
+  const cols = INITIAL_IMPERIAL_COLUMNS.map((c) => ({
+    ...c,
+    fogHidden: !evaluatePointVisibility(c.x, c.y, sources).revealed
+  }));
+  const intel = buildReadableAiIntentVectors({
+    imperialAi: {
+      generalIdx: 0,
+      targetNaibateId: 'karata',
+      turnsUntilStrike: 2,
+      columnStrength: 4200,
+      scouted: true
+    },
+    imperialGenerals: IMPERIAL_GENERALS,
+    liveImperialColumns: cols,
+    naibates: INITIAL_NAIBATES,
+    reconSources: sources,
+    kunakSpyRings: kunaks
+  });
+  const primary = intel.vectors.find((v) => v.isPrimaryDirective);
+  assert.ok(primary);
+  assert.equal(primary.generalId, 'vorontsov');
+  assert.equal(primary.targetNaibateId, 'karata');
+  assert.equal(primary.turnsUntilStrike, 2);
+  assert.ok(intel.vectors.length >= 2);
+  assert.ok(intel.hiddenColumnsCount >= 1);
+  assert.ok(intel.coveragePct >= 12 && intel.coveragePct <= 100);
+});
+
+test('47. buildReadableAiIntentVectors lifts fog and increases coverage when kunak spy rings activate', () => {
+  const dormantKunaks = [
+    { id: 'k1', x: 196, y: 94, active: false },
+    { id: 'k2', x: 364, y: 96, active: false },
+    { id: 'k3', x: 526, y: 136, active: false }
+  ];
+  const activeKunaks = dormantKunaks.map((k) => ({ ...k, active: true }));
+  const srcBefore = buildReconSources({ naibates: INITIAL_NAIBATES, kunakSpyRings: dormantKunaks });
+  const srcAfter = buildReconSources({ naibates: INITIAL_NAIBATES, kunakSpyRings: activeKunaks });
+  const colsBefore = INITIAL_IMPERIAL_COLUMNS.map((c) => ({
+    ...c,
+    fogHidden: !evaluatePointVisibility(c.x, c.y, srcBefore).revealed
+  }));
+  const colsAfter = INITIAL_IMPERIAL_COLUMNS.map((c) => ({
+    ...c,
+    fogHidden: !evaluatePointVisibility(c.x, c.y, srcAfter).revealed
+  }));
+  const before = buildReadableAiIntentVectors({
+    imperialAi: { generalIdx: 0, targetNaibateId: 'karata', turnsUntilStrike: 1, scouted: false },
+    imperialGenerals: IMPERIAL_GENERALS,
+    liveImperialColumns: colsBefore,
+    naibates: INITIAL_NAIBATES,
+    reconSources: srcBefore,
+    kunakSpyRings: dormantKunaks
+  });
+  const after = buildReadableAiIntentVectors({
+    imperialAi: { generalIdx: 0, targetNaibateId: 'karata', turnsUntilStrike: 1, scouted: false },
+    imperialGenerals: IMPERIAL_GENERALS,
+    liveImperialColumns: colsAfter,
+    naibates: INITIAL_NAIBATES,
+    reconSources: srcAfter,
+    kunakSpyRings: activeKunaks
+  });
+  assert.ok(after.coveragePct > before.coveragePct);
+  assert.ok(after.revealedColumnsCount > before.revealedColumnsCount);
+  assert.equal(after.hiddenColumnsCount, 0);
+});
+
+test('48. activateSingleKunakRing enforces silver cost and activates dormant spy ring cleanly', () => {
+  const rings = [
+    { id: 'r1', active: false, badgeRu: 'Кунаки' },
+    { id: 'r2', active: true, badgeRu: 'Грозная' }
+  ];
+  const lowSilver = activateSingleKunakRing({ kunakSpyRings: rings, ringId: 'r1', silver: 20, costSilver: 45 });
+  assert.equal(lowSilver.ok, false);
+  assert.equal(lowSilver.reason, 'insufficient_silver');
+
+  const already = activateSingleKunakRing({ kunakSpyRings: rings, ringId: 'r2', silver: 200, costSilver: 45 });
+  assert.equal(already.ok, false);
+  assert.equal(already.reason, 'already_active');
+
+  const ok = activateSingleKunakRing({ kunakSpyRings: rings, ringId: 'r1', silver: 200, costSilver: 45 });
+  assert.equal(ok.ok, true);
+  assert.equal(ok.spentSilver, 45);
+  assert.equal(ok.nextRings.find((r) => r.id === 'r1').active, true);
+});
+
+test('49. buildReadableAiIntentVectors marks imminent strike urgency when turnsUntilStrike <= 1', () => {
+  const intel = buildReadableAiIntentVectors({
+    imperialAi: { generalIdx: 2, targetNaibateId: 'shali', turnsUntilStrike: 1, columnStrength: 4500, scouted: true },
+    imperialGenerals: IMPERIAL_GENERALS,
+    liveImperialColumns: [],
+    naibates: INITIAL_NAIBATES,
+    reconSources: [{ x: 115, y: 40, r: 100, kind: 'kunak' }],
+    kunakSpyRings: []
+  });
+  const primary = intel.vectors[0];
+  assert.equal(primary.urgency, 'imminent');
+  assert.equal(primary.generalId, 'freytag');
+  assert.equal(primary.intelState, 'confirmed');
 });
