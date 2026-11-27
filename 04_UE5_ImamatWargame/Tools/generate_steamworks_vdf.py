@@ -128,6 +128,50 @@ def generate_steam_cloud_autocloud_vdf() -> Path:
     return out_path
 
 
+def generate_nextfest_demo_app_build_vdf() -> Path:
+    vdf_content = f'''// ============================================================================
+// Valve SteamPipe Steam Next Fest Playable Demo AppBuild (Sprint 12 / Gate 6)
+// Demo Content: Dargo 1845 ("The Biscuit Expedition") — 8 Turns + 1 Forest Ambush
+// Save Carry-Over: *.imamat-save (demoCarryOver=true -> v1.0 Full Edition)
+// ============================================================================
+"AppBuild"
+{{
+\t"AppID" "{STEAM_PLAYTEST_APP_ID}"
+\t"Desc" "THE IMAMAT: DIVAN-KHANA (1845) — Steam Next Fest Playable Demo v1.0 (Dargo 1845, 8 Turns + 1 Ambush)"
+\t"BuildOutput" "..\\\\BuildOutput\\\\SteamPipe_Demo"
+\t"ContentRoot" "..\\\\StagedBuilds"
+\t"SetLive" "default"
+\t"Preview" "0"
+\t"Local" ""
+
+\t"Depots"
+\t{{
+\t\t"{STEAM_PLAYTEST_APP_ID + 1}"
+\t\t{{
+\t\t\t"FileMapping"
+\t\t\t{{
+\t\t\t\t"LocalPath" "Windows\\\\*"
+\t\t\t\t"DepotPath" "."
+\t\t\t\t"recursive" "1"
+\t\t\t}}
+\t\t}}
+\t\t"{STEAM_PLAYTEST_APP_ID + 2}"
+\t\t{{
+\t\t\t"FileMapping"
+\t\t\t{{
+\t\t\t\t"LocalPath" "Mac\\\\*"
+\t\t\t\t"DepotPath" "."
+\t\t\t\t"recursive" "1"
+\t\t\t}}
+\t\t}}
+\t}}
+}}
+'''
+    out_path = OUTPUT_DIR / "app_build_imamat_nextfest_demo.vdf"
+    out_path.write_text(vdf_content, encoding="utf-8")
+    return out_path
+
+
 def generate_achievements_schema_json() -> Path:
     ach_path = DATATABLES_DIR / "DT_SteamAchievements.json"
     rows = json.loads(ach_path.read_text(encoding="utf-8"))
@@ -275,12 +319,14 @@ def main():
     p1 = generate_steampipe_app_build_vdf()
     p_win, p_mac = generate_depot_vdfs()
     p_cloud = generate_steam_cloud_autocloud_vdf()
+    p_demo = generate_nextfest_demo_app_build_vdf()
     p2 = generate_achievements_schema_json()
     p3 = generate_steam_input_manifest_vdf()
     print("========================================================================================")
-    print(" STEAMWORKS PARTNER CONFIG GENERATOR — ИМАМАТ: ДИВАН-ХАНА (SPRINT 11 / STEAM COMING SOON)")
+    print(" STEAMWORKS PARTNER CONFIG GENERATOR — ИМАМАТ: ДИВАН-ХАНА (SPRINT 12 / v1.0 GOLD MASTER)")
     print("========================================================================================")
     print(f"[OK] SteamPipe AppBuild VDF     -> {p1.name} ({p1.stat().st_size:,} байт)")
+    print(f"[OK] Next Fest Demo Build VDF   -> {p_demo.name} ({p_demo.stat().st_size:,} байт, AppID {STEAM_PLAYTEST_APP_ID})")
     print(f"[OK] Win64 / macOS Depot VDFs   -> {p_win.name}, {p_mac.name}")
     print(f"[OK] Steam Auto-Cloud Rules VDF -> {p_cloud.name} ({p_cloud.stat().st_size:,} байт)")
     print(f"[OK] Achievements Schema JSON   -> {p2.name} ({p2.stat().st_size:,} байт, 12 достижений RU/EN)")

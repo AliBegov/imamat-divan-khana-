@@ -21,6 +21,13 @@ import {
   triggerSteamOverlay,
   validateSteamCapsuleManifest
 } from '../src/game/steamworksBridge.js';
+import {
+  NEXT_FEST_DEMO_CONFIG,
+  detectNextFestDemoMode,
+  evaluateGate6LaunchReadiness,
+  evaluateNextFestDemoProgress,
+  tagDemoSaveForFullVersionCarryOver
+} from '../src/game/nextFestDemoEngine.js';
 
 import {
   CAMPAIGN_SCENARIOS,
@@ -1844,4 +1851,146 @@ test('88. validateSteamCapsuleManifest verifies exact pixel dimensions of all 7 
   assert.equal(fail.pass, false);
   assert.ok(fail.missing.includes('library_logo'));
   assert.ok(fail.wrongDimensions.some((e) => e.includes('header_capsule')));
+});
+
+// ============================================================================
+// СПРИНТ 12 (ФАЗА 6 / QUALITY GATE 6): STEAM NEXT FEST DEMO -> РЕЛИЗ v1.0
+// ============================================================================
+test('89. NEXT_FEST_DEMO_CONFIG defines Dargo 1845 8-turn playable demo & wishlist KPI targets', () => {
+  assert.equal(NEXT_FEST_DEMO_CONFIG.scenarioId, 'camp_1845');
+  assert.equal(NEXT_FEST_DEMO_CONFIG.maxTurns, 8);
+  assert.equal(NEXT_FEST_DEMO_CONFIG.demoAppId, 3481850);
+  assert.equal(NEXT_FEST_DEMO_CONFIG.releaseVersion, '1.0.0');
+  assert.ok(NEXT_FEST_DEMO_CONFIG.wishlistTargetMin >= 5000);
+  assert.ok(NEXT_FEST_DEMO_CONFIG.positiveRatingTargetPct >= 85);
+});
+
+test('90. detectNextFestDemoMode activates cleanly via URL query flags or Steam Demo AppID 3481850', () => {
+  assert.equal(detectNextFestDemoMode('?demo=nextfest', null), true);
+  assert.equal(detectNextFestDemoMode('?lang=en&mode=demo', null), true);
+  assert.equal(detectNextFestDemoMode('', 3481850), true);
+  assert.equal(detectNextFestDemoMode('', 3481840), false);
+  assert.equal(detectNextFestDemoMode('?lang=en', null), false);
+});
+
+test('91. evaluateNextFestDemoProgress tracks 8-turn cap, 4 milestones, and S/A/B/C commander grade', () => {
+  const start = evaluateNextFestDemoProgress({ demoActive: true, turn: 1, authority: 86, naibates: INITIAL_NAIBATES });
+  assert.equal(start.demoComplete, false);
+  assert.equal(start.turnsRemaining, 8);
+  assert.equal(start.totalMilestones, 4);
+
+  const triumph = evaluateNextFestDemoProgress({
+    demoActive: true,
+    turn: 9,
+    ambushCompleted: true,
+    envoysSentCount: 5,
+    ordersAwardedCount: 2,
+    resolvedDilemmasCount: 2,
+    authority: 92,
+    naibates: INITIAL_NAIBATES.map((n) => ({ ...n, underSiege: false })),
+    unlockedAchievementsCount: 7
+  });
+  assert.equal(triumph.demoComplete, true);
+  assert.equal(triumph.clampedTurn, 8);
+  assert.equal(triumph.completedMilestones, 4);
+  assert.equal(triumph.commanderGrade, 'S');
+  assert.ok(triumph.finalScore >= 85);
+  assert.equal(triumph.rankTitleEn, 'Mudir of the Dargo Victory');
+});
+
+test('92. evaluateNextFestDemoProgress grades lower scores cleanly into A, B, and C tiers', () => {
+  const gradeA = evaluateNextFestDemoProgress({
+    demoActive: true,
+    turn: 8,
+    ambushCompleted: true,
+    authority: 72,
+    ordersAwardedCount: 1,
+    naibates: INITIAL_NAIBATES
+  });
+  assert.equal(gradeA.commanderGrade, 'A');
+
+  const gradeC = evaluateNextFestDemoProgress({
+    demoActive: true,
+    turn: 2,
+    ambushCompleted: false,
+    authority: 40,
+    naibates: INITIAL_NAIBATES
+  });
+  assert.equal(gradeC.commanderGrade, 'C');
+});
+
+test('93. tagDemoSaveForFullVersionCarryOver tags .imamat-save for lossless migration into full v1.0', () => {
+  const base = buildCampaignSavePayload({
+    turn: 8,
+    activeScenarioId: 'camp_1845',
+    resources: { gunpowder: 175, provisions: 1120, silver: 590, authority: 88, ottomanSupport: 46 },
+    naibates: INITIAL_NAIBATES
+  });
+  const tagged = tagDemoSaveForFullVersionCarryOver(base, new Date('2026-11-28T00:00:00.000Z'));
+  assert.equal(tagged.demoCarryOver, true);
+  assert.equal(tagged.carryOverCompatibleWith, 'v1.0');
+  assert.equal(tagged.demoSource, 'steam_next_fest_dargo_1845_8turns');
+
+  // Must pass canonical saveSystem v2 validator seamlessly!
+  const migrated = validateAndMigrateSavePayload(serializeImamatSaveFile(tagged));
+  assert.equal(migrated.ok, true);
+  assert.equal(migrated.data.turn, 8);
+  assert.equal(migrated.data.demoCarryOver, true);
+});
+
+test('94. evaluateGate6LaunchReadiness passes all 12 criteria when v1.0 launch conditions are met', () => {
+  const pass = evaluateGate6LaunchReadiness({
+    unitTestsPassed: 96,
+    unitTestsTotal: 96,
+    eslintErrors: 0,
+    chromeJsErrors: 0,
+    enCyrillicLeaks: 0,
+    resolutionMatrixPass: true,
+    steamCapsulesValid: true,
+    steamVdfsReady: true,
+    desktopMacReady: true,
+    desktopWinReady: true,
+    trailer60sReady: true,
+    nextFestDemoReady: true,
+    creatorKitReady: true
+  });
+  assert.equal(pass.pass, true);
+  assert.equal(pass.passedCount, 12);
+  assert.equal(pass.totalCount, 12);
+  assert.equal(pass.verdict, 'GATE_6_PASS_V1_LAUNCH_READY');
+});
+
+test('95. evaluateGate6LaunchReadiness blocks v1.0 launch verdict on any single failing quality criterion', () => {
+  const fail = evaluateGate6LaunchReadiness({
+    unitTestsPassed: 95,
+    unitTestsTotal: 96,
+    eslintErrors: 0,
+    chromeJsErrors: 0,
+    enCyrillicLeaks: 1,
+    resolutionMatrixPass: true,
+    steamCapsulesValid: true,
+    steamVdfsReady: true,
+    desktopMacReady: true,
+    desktopWinReady: true,
+    trailer60sReady: true,
+    nextFestDemoReady: true,
+    creatorKitReady: true
+  });
+  assert.equal(fail.pass, false);
+  assert.equal(fail.passedCount, 10);
+  assert.equal(fail.verdict, 'GATE_6_INCOMPLETE');
+});
+
+test('96. Next Fest Demo bilingual labels and Gate 6 check items contain zero Cyrillic leaks in English', () => {
+  const prog = evaluateNextFestDemoProgress({ demoActive: true, turn: 8, ambushCompleted: true, authority: 90 });
+  const gate6 = evaluateGate6LaunchReadiness({ unitTestsPassed: 96, unitTestsTotal: 96 });
+  const enBundle = [
+    NEXT_FEST_DEMO_CONFIG.scenarioTitleEn,
+    NEXT_FEST_DEMO_CONFIG.includedAmbushTitleEn,
+    prog.rankTitleEn,
+    ...prog.milestones.map((m) => m.labelEn),
+    ...gate6.checks.map((c) => c.labelEn)
+  ].join('\n');
+  const audit = detectCyrillicLeaksInEnglishText(enBundle);
+  assert.equal(audit.ok, true, `EN leaks in Next Fest Demo: ${JSON.stringify(audit.leakedLines)}`);
 });

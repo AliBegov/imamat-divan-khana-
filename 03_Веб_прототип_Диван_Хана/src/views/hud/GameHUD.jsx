@@ -736,7 +736,8 @@ export function TitleScreen({
   activeScenarioId = 'camp_1845',
   onSelectScenario = null,
   difficultyWeight = 1.0,
-  onChangeDifficulty = null
+  onChangeDifficulty = null,
+  onStartNextFestDemo = null
 }) {
   const activeScenario = scenarios.find((s) => s.id === activeScenarioId) || scenarios[2] || scenarios[0];
   const DIFFICULTY_TIERS = [
@@ -788,6 +789,14 @@ export function TitleScreen({
                 </span>
               )}
             </button>
+            {onStartNextFestDemo && (
+              <button
+                onClick={onStartNextFestDemo}
+                className="hud-menu-item border-amber-400/70 bg-amber-950/55 text-amber-200 hover:bg-amber-900/65"
+              >
+                🎮 {t('Steam Next Fest Demo (Дарго 1845 • 8 ходов)', 'Steam Next Fest Demo (Dargo 1845 • 8 Turns)')}
+              </button>
+            )}
             {onStartSpectator && (
               <button onClick={onStartSpectator} className="hud-menu-item border-emerald-500/60 bg-emerald-950/50 text-emerald-200 hover:bg-emerald-900/60">
                 <HighlandEagleIcon className="w-4 h-4 inline mr-1.5 text-emerald-300" />

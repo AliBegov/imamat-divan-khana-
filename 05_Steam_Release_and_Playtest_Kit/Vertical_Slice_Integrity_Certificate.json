@@ -1,7 +1,7 @@
 {
   "projectTitle": "ИМАМАТ: ДИВАН-ХАНА / IMAMAT: DIVAN-KHANA (Gold Master Release v2.4 — Milestones M1–M24 Complete)",
   "milestone": "M24 — Realistic 3D SRTM Physical Relief Map of the Eastern Caucasus + 60 FPS Real-Time Terrain-Aware Unit Command & Movement Engine (PASS 7/7)",
-  "generatedAtUtc": "2026-11-27T21:21:26.447985+00:00",
+  "generatedAtUtc": "2026-11-27T21:39:41.861600+00:00",
   "overallIntegrityStatus": "PASS",
   "totalChecksRun": 7,
   "totalChecksPassed": 7,
@@ -16,13 +16,13 @@
       "category": "02_GDD_and_Math_Models",
       "name": "11 Game Design, Math Model & UE5 Architecture Docs",
       "status": "PASS",
-      "details": "15 GDD Markdown files verified (265,037 bytes total)"
+      "details": "15 GDD Markdown files verified (266,808 bytes total)"
     },
     {
       "category": "03_Web_Vertical_Slice",
       "name": "React 18 + Vite 6 Bilingual (11/11 RU/EN Tabs + Pitch Auto-Tour + WebAudio 2.0 + Mod Builder + Replay Chronograph + 4 AI Doctrines + Field Manual + Ironman & Seal + 60s Trailer Previz + SRT/EDL + Steam Announcement + Archive Museum + Diplomatic Chancellery + Release Hub v2.0) + Web QA Gate",
       "status": "PASS",
-      "details": "71 source modules (75,237 lines total; App.jsx 13,307 lines), 122/122 core architecture tokens present; QA gate PASS (ESLint errors=0, JS errors=0, tabs player/studio=8/11, report matches current sources)"
+      "details": "73 source modules (75,726 lines total; App.jsx 13,487 lines), 122/122 core architecture tokens present; QA gate PASS (ESLint errors=0, JS errors=0, tabs player/studio=8/11, report matches current sources)"
     },
     {
       "category": "04_UE5_Engineering_Package",
@@ -46,13 +46,13 @@
       "category": "05_Steam_and_Publisher_Kit",
       "name": "Store Page, 13-Slide Interactive Pitch Deck ($240k ROI + Steam Next Fest Funnel), Press Kit, Tactician's Field Manual, Creator/Curator Kit, Master Release Manifest, Trailer SRT/EDL Post-Prod Kit, Telemetry KPIs, Steamworks VDFs, 3 Workshop Mods, 10 Key Art/Portrait/3D Relief Assets & Native macOS (.app) / Windows Desktop Bundles",
       "status": "PASS",
-      "details": "7 Pitch/Store/Manual/Creator docs + Master Manifest (15,185 bytes), 10 KeyArt/Portrait/3D SRTM Relief Assets, Native macOS App (107,184B arm64 Mach-O + 100,740B .icns, ZIP 35,332,384B), Windows Launcher, Standalone HTML (8,328,513B), Playtest v1.0 ZIP (35,322,890B)"
+      "details": "7 Pitch/Store/Manual/Creator docs + Master Manifest (15,185 bytes), 10 KeyArt/Portrait/3D SRTM Relief Assets, Native macOS App (107,184B arm64 Mach-O + 100,740B .icns, ZIP 35,337,250B), Windows Launcher, Standalone HTML (8,343,108B), Playtest v1.0 ZIP (35,327,757B)"
     }
   ],
   "summaryMetrics": {
     "historicalArchiveChapters": 32,
     "gddDocuments": 15,
-    "webPrototypeLinesOfCode": 75237,
+    "webPrototypeLinesOfCode": 75726,
     "bilingualTabsCovered": "11/11 (RU/EN)",
     "publisherAutoTourStops": 5,
     "steamTrailerPrevizShots": 6,

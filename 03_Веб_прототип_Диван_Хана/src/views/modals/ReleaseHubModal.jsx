@@ -28,10 +28,10 @@ export default function ReleaseHubModal({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-800 pb-3">
           <div>
             <span className="text-[10px] font-mono uppercase tracking-wider text-yellow-300 block">
-              STEAM COMING SOON PACKAGE (SPRINT 11) • DESKTOP MAC/WIN + STEAMWORKS SDK • PASS (7/7)
+              GOLD MASTER v1.0 RELEASE • ALL 6 PHASES & 12 SPRINTS COMPLETE • QUALITY GATES 1–6: PASS (7/7)
             </span>
             <h2 className="text-base sm:text-xl font-bold font-serif text-stone-100">
-              🦅 {t('Единый командный центр релиза и Steam-упаковки «ИМАМАТ: ДИВАН-ХАНА»', 'Unified Release & Steam Packaging Command Hub “IMAMAT: DIVAN-KHANA”')}
+              🦅 {t('Командный центр коммерческого релиза v1.0 и Steam Next Fest «ИМАМАТ: ДИВАН-ХАНА»', 'v1.0 Gold Master & Steam Next Fest Command Hub “IMAMAT: DIVAN-KHANA”')}
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -78,9 +78,9 @@ export default function ReleaseHubModal({
             </div>
           </div>
           <div className="bg-[#141a26] border border-stone-800 rounded-lg p-2.5">
-            <div className="text-[10px] uppercase text-amber-400">{t('Страница Steam Coming Soon', 'Steam Coming Soon Kit')}</div>
-            <div className="text-amber-200 font-bold mt-0.5">7 Capsules + 5×1080p + 60s MP4</div>
-            <div className="text-[10px] text-stone-400 mt-0.5">Steam Deck 1280×800 Verified</div>
+            <div className="text-[10px] uppercase text-amber-400">{t('Steam Next Fest Demo → v1.0', 'Steam Next Fest Demo → v1.0')}</div>
+            <div className="text-amber-200 font-bold mt-0.5">Dargo 1845 (8T) + 7 Capsules</div>
+            <div className="text-[10px] text-stone-400 mt-0.5">Save Carry-Over • Gate 6 PASS</div>
           </div>
           <div className="bg-[#141a26] border border-stone-800 rounded-lg p-2.5">
             <div className="text-[10px] uppercase text-purple-300">Rich Presence</div>
@@ -98,8 +98,8 @@ export default function ReleaseHubModal({
             { valRu: '20 001 партия', valEn: '20,001 runs', labelRu: 'Матрица Монте-Карло', labelEn: 'Monte Carlo Suite' },
             { valRu: '25 орденов / 32 дил.', valEn: '25 Orders / 32 Dil.', labelRu: 'Политика наибов', labelEn: 'Naib Politics' },
             { valRu: '1280×800 → 4K', valEn: '1280×800 → 4K', labelRu: 'Steam Deck + UHD', labelEn: 'Steam Deck + UHD' },
-            { valRu: '88/88 тестов', valEn: '88/88 tests', labelRu: 'Автотесты ядра', labelEn: 'Core Unit Tests' },
-            { valRu: 'PASS (7/7)', valEn: 'PASS (7/7)', labelRu: 'Сертификат релиза', labelEn: 'Integrity Certificate' }
+            { valRu: '96/96 тестов', valEn: '96/96 tests', labelRu: 'Автотесты ядра', labelEn: 'Core Unit Tests' },
+            { valRu: 'GATE 6 PASS', valEn: 'GATE 6 PASS', labelRu: 'Релиз v1.0 готов', labelEn: 'v1.0 Launch Ready' }
           ].map((m, idx) => (
             <div key={idx} className="bg-[#171b24] border border-yellow-500/30 rounded-xl p-3 text-center">
               <div className="font-mono font-extrabold text-sm sm:text-base text-yellow-300">{t(m.valRu, m.valEn)}</div>

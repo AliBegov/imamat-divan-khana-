@@ -1,0 +1,37 @@
+// ============================================================================
+// Valve SteamPipe Steam Next Fest Playable Demo AppBuild (Sprint 12 / Gate 6)
+// Demo Content: Dargo 1845 ("The Biscuit Expedition") — 8 Turns + 1 Forest Ambush
+// Save Carry-Over: *.imamat-save (demoCarryOver=true -> v1.0 Full Edition)
+// ============================================================================
+"AppBuild"
+{
+	"AppID" "3481850"
+	"Desc" "THE IMAMAT: DIVAN-KHANA (1845) — Steam Next Fest Playable Demo v1.0 (Dargo 1845, 8 Turns + 1 Ambush)"
+	"BuildOutput" "..\\BuildOutput\\SteamPipe_Demo"
+	"ContentRoot" "..\\StagedBuilds"
+	"SetLive" "default"
+	"Preview" "0"
+	"Local" ""
+
+	"Depots"
+	{
+		"3481851"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "Windows\\*"
+				"DepotPath" "."
+				"recursive" "1"
+			}
+		}
+		"3481852"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "Mac\\*"
+				"DepotPath" "."
+				"recursive" "1"
+			}
+		}
+	}
+}

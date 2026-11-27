@@ -159,6 +159,13 @@ import {
   triggerSteamOverlay
 } from './game/steamworksBridge.js';
 import {
+  NEXT_FEST_DEMO_CONFIG,
+  detectNextFestDemoMode,
+  evaluateNextFestDemoProgress,
+  tagDemoSaveForFullVersionCarryOver
+} from './game/nextFestDemoEngine.js';
+import NextFestDemoOutroModal from './views/modals/NextFestDemoOutroModal.jsx';
+import {
   HISTORICAL_EPISODES,
   createInitialEpisodesState,
   getInitialEpisodeIdForScenario
@@ -7867,6 +7874,10 @@ export default function App() {
   // ГЛОБАЛЬНЫЙ ПЕРЕХОД ХОДА (СИМУЛЯЦИЯ ГОНЦОВ, ТЕРРАС, ПОРОХА И НАТИСКА ИМПЕРИИ — turnEngine.js + aiGenerals.js)
   // ============================================================================
   const handleNextTurn = () => {
+    if (nextFestDemoMode && turn >= NEXT_FEST_DEMO_CONFIG.maxTurns) {
+      setShowNextFestOutroModal(true);
+      return;
+    }
     playHistoricalSound('horn', soundEnabled);
     const nextTurnNum = turn + 1;
     setTurn(nextTurnNum);
@@ -11481,6 +11492,116 @@ struct FImamatCampaignSnapshot
     showNotice(t(res.hintRu, res.hintEn), res.opened ? 'ok' : 'info');
   };
 
+  // СПРИНТ 12 (Фаза 6 / Gate 6): Режим публичного демо Steam Next Fest (Дарго 1845 • 8 ходов + 1 засада)
+  const [nextFestDemoMode, setNextFestDemoMode] = useState(() =>
+    detectNextFestDemoMode('', steamRuntimeStatus?.appId)
+  );
+  const [showNextFestOutroModal, setShowNextFestOutroModal] = useState(false);
+
+  const nextFestDemoProgress = useMemo(
+    () =>
+      evaluateNextFestDemoProgress({
+        demoActive: nextFestDemoMode,
+        turn,
+        ambushCompleted:
+          ambushStep > 1 || totalForestAmbushesTriggered > 0 || advisorBattleCompleted,
+        envoysSentCount: playtestTelemetry.totalEnvoysDispatched || activeEnvoys.length,
+        ordersAwardedCount: naibates.reduce(
+          (acc, n) => acc + Math.max(0, (n.ordersAwarded?.length || 0) - 1),
+          0
+        ),
+        resolvedDilemmasCount: resolvedPacketIds.length,
+        authority: resources.authority,
+        naibates,
+        unlockedAchievementsCount
+      }),
+    [
+      nextFestDemoMode,
+      turn,
+      ambushStep,
+      totalForestAmbushesTriggered,
+      advisorBattleCompleted,
+      playtestTelemetry.totalEnvoysDispatched,
+      activeEnvoys.length,
+      naibates,
+      resolvedPacketIds.length,
+      resources.authority,
+      unlockedAchievementsCount
+    ]
+  );
+
+  const handleStartNextFestDemo = () => {
+    const dargoScen = CAMPAIGN_SCENARIOS.find((s) => s.id === 'camp_1845') || CAMPAIGN_SCENARIOS[0];
+    if (dargoScen) handleSelectScenario(dargoScen);
+    setNextFestDemoMode(true);
+    setShowNextFestOutroModal(false);
+    setShowTitleScreen(false);
+    setActiveTab('map');
+    showNotice(
+      t(
+        '🎮 Запущено публичное демо Steam Next Fest: Дарго 1845 (8 ходов + 1 лесная засада в Ичкерии). Прогресс переносится в v1.0!',
+        '🎮 Steam Next Fest Playable Demo launched: Dargo 1845 (8 Turns + 1 Ichkeria Forest Ambush). Save carries over to v1.0!'
+      ),
+      'ok'
+    );
+  };
+
+  const handleOpenDemoForestAmbush = () => {
+    setTacticalMode('forest_spline');
+    setActiveTab('siege');
+  };
+
+  const handleExportDemoCarryOverSave = () => {
+    const basePayload = buildCurrentCampaignSnapshot();
+    const carryPayload = tagDemoSaveForFullVersionCarryOver(basePayload);
+    const jsonStr = serializeImamatSaveFile(carryPayload);
+    const filename = `Imamat_NextFest_Demo_CarryOver_Turn${carryPayload.turn}.imamat-save`;
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    syncSaveToSteamCloud('imamat_nextfest_demo_carryover', carryPayload);
+    setSteamCloudStatus(loadSteamCloudManifest());
+    showNotice(
+      t(
+        `💾 Сейв переноса для v1.0 сохранён: ${filename} (синхронизировано с Steam Cloud).`,
+        `💾 v1.0 carry-over save exported: ${filename} (synced to Steam Cloud).`
+      ),
+      'ok'
+    );
+  };
+
+  const handleContinueFullVersionFromDemo = () => {
+    setNextFestDemoMode(false);
+    setShowNextFestOutroModal(false);
+    showNotice(
+      t(
+        '🦅 Полная версия v1.0 разблокирована — продолжайте кампанию без лимита 8 ходов!',
+        '🦅 Full v1.0 Edition unlocked — continue your campaign beyond Turn 8!'
+      ),
+      'ok'
+    );
+  };
+
+  const handleOpenSteamWishlist = () => {
+    const overlayRes = triggerSteamOverlay('Store');
+    if (overlayRes.opened) {
+      showNotice(t(overlayRes.hintRu, overlayRes.hintEn), 'ok');
+      return;
+    }
+    copyTextSafe(NEXT_FEST_DEMO_CONFIG.storeUrl);
+    showNotice(
+      t(
+        `⭐ Ссылка Steam Wishlist скопирована (${NEXT_FEST_DEMO_CONFIG.storeUrl}) — спасибо за поддержку!`,
+        `⭐ Steam Wishlist URL copied (${NEXT_FEST_DEMO_CONFIG.storeUrl}) — thank you for your support!`
+      ),
+      'ok'
+    );
+  };
+
   // ===== ИГРОВОЙ ФРОНТ-ЭНД (GameHUD): титульный экран, меню паузы, алерты, подсказки ресурсов, горячие клавиши =====
   const [showTitleScreen, setShowTitleScreen] = useState(true);
   const [showPauseMenu, setShowPauseMenu] = useState(false);
@@ -11877,6 +11998,7 @@ struct FImamatCampaignSnapshot
       showDispatchesModal ||
       showReleaseHubModal ||
       showPlaytestFeedbackModal ||
+      showNextFestOutroModal ||
       activeHeroArcModal ||
       activeEpisodeModal ||
       campaignClimaxState
@@ -11909,6 +12031,7 @@ struct FImamatCampaignSnapshot
         setShowDispatchesModal(false);
         setShowReleaseHubModal(false);
         setShowPlaytestFeedbackModal(false);
+        setShowNextFestOutroModal(false);
         setActiveHeroArcModal(null);
         setActiveEpisodeModal(false);
         if (campaignClimaxState) {
@@ -13056,6 +13179,44 @@ struct FImamatCampaignSnapshot
         />
       )}
 
+      {/* СПРИНТ 12 (ФАЗА 6 / GATE 6): КОМПАКТНАЯ ПОЛОСА ПУБЛИЧНОГО ДЕМО STEAM NEXT FEST (ТОЛЬКО В ДЕМО-РЕЖИМЕ) */}
+      {nextFestDemoMode && !showTitleScreen && (
+        <div className="bg-gradient-to-r from-[#241809] via-[#1c150c] to-[#0f1d17] border-b border-amber-400/50 px-3 py-1.5">
+          <div className="max-w-[1640px] 2xl:max-w-[1880px] mx-auto flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-amber-400 text-stone-950 font-extrabold uppercase text-[10px]">
+                🎮 NEXT FEST DEMO
+              </span>
+              <span className="text-amber-100 font-bold">
+                {t(
+                  `Дарго 1845 • Ход ${nextFestDemoProgress.clampedTurn}/${nextFestDemoProgress.maxTurns} • Засада: ${nextFestDemoProgress.ambushCompleted ? '✓ 1/1' : '0/1'}`,
+                  `Dargo 1845 • Turn ${nextFestDemoProgress.clampedTurn}/${nextFestDemoProgress.maxTurns} • Ambush: ${nextFestDemoProgress.ambushCompleted ? '✓ 1/1' : '0/1'}`
+                )}
+              </span>
+              <span className="text-stone-400 hidden lg:inline">
+                ({t(`Вехи: ${nextFestDemoProgress.completedMilestones}/${nextFestDemoProgress.totalMilestones}`, `Milestones: ${nextFestDemoProgress.completedMilestones}/${nextFestDemoProgress.totalMilestones}`)})
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleOpenDemoForestAmbush}
+                className="px-2.5 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/55 text-emerald-200 font-bold cursor-pointer"
+              >
+                🌲 {t('Лесная засада (1/1)', 'Forest Ambush (1/1)')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowNextFestOutroModal(true)}
+                className="px-2.5 py-0.5 rounded bg-amber-500/25 hover:bg-amber-500/40 border border-amber-400/60 text-amber-200 font-bold cursor-pointer"
+              >
+                ⭐ {t('Итог Демо и Wishlist', 'Demo Summary & Wishlist')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ОСНОВНОЙ КОНТЕЙНЕР ВКЛАДОК */}
       <main className="max-w-[1640px] 2xl:max-w-[1880px] mx-auto px-2.5 mt-1.5">
         {/* ---------------- ВКЛАДКА 1: СТРАТЕГИЧЕСКАЯ КАРТА КАВКАЗА И УПРАВЛЕНИЕ НАИБАМИ ---------------- */}
@@ -13276,6 +13437,24 @@ struct FImamatCampaignSnapshot
           }}
         />
       )}
+      {/* СПРИНТ 12 (ФАЗА 6 / GATE 6): ФИНАЛЬНЫЙ ЭКРАН STEAM NEXT FEST PLAYABLE DEMO + WISHLIST CTA */}
+      {showNextFestOutroModal && (
+        <NextFestDemoOutroModal
+          {...{
+            demoProgress: nextFestDemoProgress,
+            handleContinueFullVersionFromDemo,
+            handleExportDemoCarryOverSave,
+            handleOpenFeedbackFromDemo: () => {
+              setShowNextFestOutroModal(false);
+              setShowPlaytestFeedbackModal(true);
+            },
+            handleOpenSteamWishlist,
+            setShowNextFestOutroModal,
+            t
+          }}
+        />
+      )}
+
       {showTitleScreen && (
         <TitleScreen
           t={t}
@@ -13289,6 +13468,7 @@ struct FImamatCampaignSnapshot
           difficultyWeight={simDifficultyWeight}
           onChangeDifficulty={setSimDifficultyWeight}
           onContinue={() => setShowTitleScreen(false)}
+          onStartNextFestDemo={handleStartNextFestDemo}
           onStartSpectator={handleStartSpectatorCampaign}
           onLoadSave={() => {
             handleLoadCampaignState();
