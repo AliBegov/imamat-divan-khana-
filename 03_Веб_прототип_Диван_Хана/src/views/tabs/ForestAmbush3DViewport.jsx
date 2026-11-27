@@ -40,10 +40,17 @@ import {
   disposePhotorealCavalryInstance
 } from '../shared/caucasusPhotorealCavalry3D.js';
 import {
+  createPhotorealImperialColumnInstance,
+  createPhotorealMuridInfantryInstance,
   createPhotorealSupplyWagonInstance,
   createPhotorealUnicornCannonInstance,
   disposePhotorealCorpsInstance
 } from '../shared/caucasusPhotorealColumnsArtillery3D.js';
+import {
+  createPhotorealBeechAbatisInstance,
+  createPhotorealVainakhTowerInstance,
+  disposePhotorealFortressInstance
+} from '../shared/caucasusPhotorealFortresses3D.js';
 import {
   createBeechFoliageAtlasTexture,
   createConiferBoughAtlasTexture,
@@ -83,6 +90,10 @@ export default function ForestAmbush3DViewport({
   setSelectedSplineIdx,
   soundEnabled = true,
   stats3D,
+  tacticalPaused = false,
+  onTogglePause,
+  deploymentStance = 'canopy_stealth',
+  stealthPct = 85,
   t = (ru) => ru
 }) {
   const mountRef = useRef(null);
@@ -112,6 +123,9 @@ export default function ForestAmbush3DViewport({
     soundEnabled,
     spatialAudioOn,
     stats3D,
+    tacticalPaused,
+    deploymentStance,
+    stealthPct,
     forestTimeOfDay,
     forestWeather
   });
@@ -125,10 +139,26 @@ export default function ForestAmbush3DViewport({
       soundEnabled,
       spatialAudioOn,
       stats3D,
+      tacticalPaused,
+      deploymentStance,
+      stealthPct,
       forestTimeOfDay,
       forestWeather
     };
-  }, [activePreset, splineSegments, splineEchelons, selectedSplineIdx, soundEnabled, spatialAudioOn, stats3D, forestTimeOfDay, forestWeather]);
+  }, [
+    activePreset,
+    splineSegments,
+    splineEchelons,
+    selectedSplineIdx,
+    soundEnabled,
+    spatialAudioOn,
+    stats3D,
+    tacticalPaused,
+    deploymentStance,
+    stealthPct,
+    forestTimeOfDay,
+    forestWeather
+  ]);
 
   const applyCameraPreset = (presetId) => {
     setActivePreset(presetId);
@@ -846,6 +876,17 @@ export default function ForestAmbush3DViewport({
     flagMesh.position.set(bannerX + 0.58, bannerY + 1.82, bannerZ);
     scene.add(flagMesh);
 
+    // Скульптурная вайнахская сторожевая башня Ичкерии на дальнем северном утёсе (Blender 4.2.9 LTS)
+    const ridgeWatchtower = createPhotorealVainakhTowerInstance({
+      scale: 0.96,
+      castShadow: true
+    });
+    const twX = -11.6;
+    const twZ = sampleRoadZ(twX) - 6.1;
+    ridgeWatchtower.position.set(twX, sampleForestY(twX, twZ) - 0.14, twZ);
+    ridgeWatchtower.rotation.y = 0.35;
+    scene.add(ridgeWatchtower);
+
     // Многослойная стелющаяся дымка в лесных лощинах Ичкерии и система осадков
     const mistTex = trackTex(createLayeredValleyMistTexture());
     const powderSmokeTex = trackTex(createBillowingSmokeTexture());
@@ -885,25 +926,10 @@ export default function ForestAmbush3DViewport({
     });
     scene.add(precipSys.group);
 
-    // 5. ДИНАМИЧЕСКАЯ ГРУППА СЕКТОРОВ #1..#5: БУКОВЫЕ ЗАСЕКИ, ЭШЕЛОНЫ ОБОЗА РИ И КОЛЬЦА ВЫБОРА
+    // 5. ДИНАМИЧЕСКАЯ ГРУППА СЕКТОРОВ #1..#5: СКУЛЬПТУРНЫЕ БУКОВЫЕ ЗАСЕКИ (BLENDER), ЭШЕЛОНЫ ОБОЗА РИ, МЮРИДЫ И КОЛЬЦА
     const dynamicGroup = new THREE.Group();
     scene.add(dynamicGroup);
     let disposed = false;
-
-    // Общие геометрии и материалы для динамических засек, повозок и пехоты РИ (не пересоздаются при каждом клике)
-    const felledTrunkGeo = trackGeo(createRealisticTrunkGeometry({ isPine: false }));
-    felledTrunkGeo.rotateX(Math.PI * 0.5);
-    felledTrunkGeo.scale(1.15, 1.15, 2.35);
-    const felledBranchGeo = trackGeo(createRealisticBeechCanopyGeometry());
-    felledBranchGeo.rotateX(Math.PI * 0.5);
-    felledBranchGeo.scale(1.05, 0.72, 1.05);
-    const felledWoodMat = trackMat(
-      new THREE.MeshStandardMaterial({ color: 0x625444, roughness: 0.92, vertexColors: true })
-    );
-    const felledLeafMat = trackMat(
-      createFoliageCardMaterial({ map: beechAtlasTex, windStrength: 0.008, isPine: false })
-    );
-    felledLeafMat.color.set('#5a863a');
 
     const {
       coatGeo: rusCoatGeo,
@@ -956,6 +982,32 @@ export default function ForestAmbush3DViewport({
         opacity: 0.45
       })
     );
+    const stanceAuraGeo = trackGeo(new THREE.RingGeometry(1.05, 1.26, 32));
+    stanceAuraGeo.rotateX(-Math.PI / 2);
+    const stanceStealthMat = trackMat(
+      new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.75
+      })
+    );
+    const stanceHighGroundMat = trackMat(
+      new THREE.MeshBasicMaterial({
+        color: 0xfbbf24,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.78
+      })
+    );
+    const stanceFlankMat = trackMat(
+      new THREE.MeshBasicMaterial({
+        color: 0xf97316,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.78
+      })
+    );
 
     const dynamicRiggedGlbs = [];
     const dynamicWheelMeshes = [];
@@ -968,17 +1020,31 @@ export default function ForestAmbush3DViewport({
           if (sub.isInstancedMesh) sub.dispose();
           disposePhotorealCavalryInstance(sub);
           disposePhotorealCorpsInstance(sub);
+          disposePhotorealFortressInstance(sub);
         });
         dynamicGroup.remove(ch);
       }
       dynamicRiggedGlbs.length = 0;
       dynamicWheelMeshes.length = 0;
-      const { splineSegments: segs, splineEchelons: echs, selectedSplineIdx: selIdx } =
-        latestPropsRef.current;
+      const {
+        splineSegments: segs,
+        splineEchelons: echs,
+        selectedSplineIdx: selIdx,
+        deploymentStance: depStance = 'canopy_stealth',
+        stealthPct: stPct = 85
+      } = latestPropsRef.current;
 
-      // Анатомический скакун и наиб Байсунгур Беноевский на командном выступе над выбранным участком
+      // Анатомический скакун Байсунгура + скульптурные сотни мюридов (Blender 4.2.9 LTS) в выбранной расстановке!
       const cmdX = SECTOR_WORLD_X[selIdx] ?? 0;
-      const cmdZ = sampleRoadZ(cmdX) - 3.0;
+      const stanceNorthOff =
+        depStance === 'high_ridge'
+          ? -4.4
+          : depStance === 'flank_baggage'
+          ? -2.35
+          : depStance === 'blindage_bastion'
+          ? -3.55
+          : -3.25;
+      const cmdZ = sampleRoadZ(cmdX) + stanceNorthOff;
       const cmdY = sampleForestY(cmdX, cmdZ);
       {
         const heroMount = createPhotorealCavalryInstance('hero_baysungur', {
@@ -989,6 +1055,45 @@ export default function ForestAmbush3DViewport({
         heroMount.rotation.y = 0.25;
         dynamicGroup.add(heroMount);
         dynamicRiggedGlbs.push({ obj: heroMount, moving: false, selected: true, phase: 0.4 });
+
+        const auraMat =
+          depStance === 'flank_baggage'
+            ? stanceFlankMat
+            : depStance === 'high_ridge'
+            ? stanceHighGroundMat
+            : stPct >= 60
+            ? stanceStealthMat
+            : stanceHighGroundMat;
+        const cmdAura = new THREE.Mesh(stanceAuraGeo, auraMat);
+        cmdAura.position.set(cmdX, cmdY + 0.1, cmdZ);
+        dynamicGroup.add(cmdAura);
+
+        // 2 скульптурных пеших отряда мюридов Имамата (Blender) по флангам засады
+        [
+          { dx: -1.75, dz: stanceNorthOff + 0.35, rotY: 0.15 },
+          { dx: 1.75, dz: depStance === 'flank_baggage' ? 2.45 : stanceNorthOff + 0.45, rotY: depStance === 'flank_baggage' ? Math.PI - 0.18 : -0.18 }
+        ].forEach((mCfg, mIdx) => {
+          const mx = Math.max(-14.5, Math.min(14.5, cmdX + mCfg.dx));
+          const mz = sampleRoadZ(mx) + mCfg.dz;
+          const my = sampleForestY(mx, mz);
+          const muridSq = createPhotorealMuridInfantryInstance({
+            scale: 0.64,
+            castShadow: true
+          });
+          muridSq.position.set(mx, my + 0.01, mz);
+          muridSq.rotation.y = mCfg.rotY;
+          dynamicGroup.add(muridSq);
+          dynamicRiggedGlbs.push({ obj: muridSq, moving: false, selected: false, phase: 1.1 + mIdx * 1.4 });
+        });
+
+        // В расстановке «Глубокие блиндажи» перед позицией мюридов возводится фланговая буковая засека
+        if (depStance === 'blindage_bastion') {
+          const bastAbatis = createPhotorealBeechAbatisInstance({ scale: 0.92, castShadow: true });
+          const bz = cmdZ + 1.05;
+          bastAbatis.position.set(cmdX, sampleForestY(cmdX, bz) + 0.02, bz);
+          bastAbatis.rotation.y = -sampleRoadTangentAngle(cmdX);
+          dynamicGroup.add(bastAbatis);
+        }
       }
 
       segs.forEach((seg, idx) => {
@@ -1003,44 +1108,46 @@ export default function ForestAmbush3DViewport({
         ring.position.set(sx, sy + 0.08, sz);
         dynamicGroup.add(ring);
 
-        // Поваленные вековые буки (засеки) поперёк лесной тропы пропорционально seg.barricades
+        // Скульптурные буковые лесные засеки (Blender 4.2.9 LTS) поперёк лесной тропы пропорционально seg.barricades
         const countBarricades = Math.min(5, seg.barricades || 0);
         for (let b = 0; b < countBarricades; b++) {
-          const offsetX = sx + 1.1 + b * 0.42;
-          const bZ = sampleRoadZ(offsetX);
+          const offsetX = sx + 1.05 + b * 0.48;
+          const bZ = sampleRoadZ(offsetX) + (b % 2 === 0 ? -0.18 : 0.22);
           const bY = sampleForestY(offsetX, bZ);
-          const logGroup = new THREE.Group();
-          logGroup.position.set(offsetX, bY + 0.16 + (b % 2) * 0.12, bZ);
-          logGroup.rotation.y = -roadAngle + (b % 2 === 0 ? 0.26 : -0.24);
-
-          const trunk = new THREE.Mesh(felledTrunkGeo, felledWoodMat);
-          trunk.position.set(0, 0.06, -1.45);
-          trunk.castShadow = true;
-          trunk.receiveShadow = true;
-          logGroup.add(trunk);
-
-          const crownA = new THREE.Mesh(felledBranchGeo, felledLeafMat);
-          crownA.position.set(0.08, 0.1, -0.35);
-          crownA.castShadow = true;
-          const crownB = new THREE.Mesh(felledBranchGeo, felledLeafMat);
-          crownB.position.set(-0.08, 0.08, 0.95);
-          crownB.rotation.z = 2.1;
-          crownB.castShadow = true;
-          logGroup.add(crownA, crownB);
-
-          dynamicGroup.add(logGroup);
+          const abatis = createPhotorealBeechAbatisInstance({
+            scale: 1.02 + (b % 2) * 0.14,
+            castShadow: true
+          });
+          abatis.position.set(offsetX, bY - 0.02, bZ);
+          abatis.rotation.y = -roadAngle + Math.PI * 0.5 + (b % 2 === 0 ? 0.24 : -0.22);
+          dynamicGroup.add(abatis);
         }
 
-        // Растянутый эшелон «Сухарной экспедиции» Воронцова (повозки с белыми тентами, орудия и пехота прикрытия)
+        // Растянутый эшелон «Сухарной экспедиции» Воронцова (фургоны с упряжным конём, орудия и скульптурная егерская колонна)
         const echelon = echs.find((e) => e.segmentIdx === idx);
         if (echelon) {
           const echGroup = new THREE.Group();
           dynamicGroup.add(echGroup);
           const canCreep = countBarricades === 0;
 
+          // Скульптурная егерская колонна прикрытия (Blender 4.2.9 LTS) в авангарде эшелона
+          {
+            const colX = sx - 1.95;
+            const colZ = sampleRoadZ(colX) + 0.14;
+            const colY = sampleForestY(colX, colZ);
+            const impCol = createPhotorealImperialColumnInstance({
+              scale: 0.54,
+              castShadow: true
+            });
+            impCol.position.set(colX, colY + 0.01, colZ);
+            impCol.rotation.y = -sampleRoadTangentAngle(colX) + Math.PI * 0.5;
+            echGroup.add(impCol);
+            dynamicRiggedGlbs.push({ obj: impCol, moving: canCreep, selected: false, phase: idx * 1.1 });
+          }
+
           // 2 сухарные фургонные повозки Воронцова с упряжным конём в русской дуге
           for (let w = 0; w < 2; w++) {
-            const wx = sx - 1.25 + w * 1.65;
+            const wx = sx - 0.95 + w * 1.55;
             const wz = sampleRoadZ(wx) + (w === 0 ? -0.16 : 0.18);
             const wy = sampleForestY(wx, wz);
             const wAngle = sampleRoadTangentAngle(wx) + (echelon.cohesion < 50 ? (w === 0 ? 0.22 : -0.28) : 0);
@@ -1224,27 +1331,28 @@ export default function ForestAmbush3DViewport({
             true
           );
         }
-      } else if (actionType === 'dagger_charge') {
+      } else if (actionType === 'dagger_charge' || actionType === 'convoy_strike') {
         chargeWaveTimer = 1.0;
-        forestMuridUniforms.uChargePulse.value = 1.15;
-        forestImpUniforms.uVolleyPulse.value = 0.85;
+        forestMuridUniforms.uChargePulse.value = 1.25;
+        forestImpUniforms.uVolleyPulse.value = 0.95;
         playSpatialBattleSound(
-          'dagger_charge_3d',
+          actionType === 'convoy_strike' ? 'explosion_3d' : 'dagger_charge_3d',
           { x: sx, y: sy + 0.6, z: sz },
           { enabled: audioOn, environment: 'forest' }
         );
-        for (let i = 0; i < 12; i++) {
+        const burstCount = actionType === 'convoy_strike' ? 18 : 12;
+        for (let i = 0; i < burstCount; i++) {
           const side = i % 2 === 0 ? -1 : 1;
           const fx = sx + (Math.random() - 0.5) * 3.0;
           const fz = sampleRoadZ(fx) + side * 2.4;
           const fy = sampleForestY(fx, fz) + 0.35;
           spawnCrossfireTracer(fx, fy, fz, sx, sy + 0.3, sz, true);
           spawnSmokePuff(
-            sx + (Math.random() - 0.5) * 1.8,
-            sy + 0.4,
-            sz + (Math.random() - 0.5) * 1.2,
-            1.2,
-            '#e2e8f0',
+            sx + (Math.random() - 0.5) * 2.1,
+            sy + 0.4 + Math.random() * 0.45,
+            sz + (Math.random() - 0.5) * 1.4,
+            actionType === 'convoy_strike' ? 1.45 : 1.2,
+            actionType === 'convoy_strike' && i % 2 === 0 ? '#f97316' : '#e2e8f0',
             true
           );
         }
@@ -1395,9 +1503,10 @@ export default function ForestAmbush3DViewport({
     });
     resizeObserver.observe(container);
 
-    // Главный цикл 60 FPS
+    // Главный цикл 60 FPS (поддержка Тактической Паузы Space: бой замирает, 3D-камера свободна!)
     let rafId = 0;
     let prevTime = performance.now();
+    let simElapsed = 0;
     let ambientSkirmishTimer = 0;
     let badgeSyncTimer = 0;
     let lastHandledShotSeq = latestPropsRef.current.stats3D?.lastShotEvent?.seq || 0;
@@ -1407,9 +1516,8 @@ export default function ForestAmbush3DViewport({
 
     const animate = (now) => {
       rafId = requestAnimationFrame(animate);
-      const dt = Math.min(0.05, (now - prevTime) / 1000);
+      const rawDt = Math.min(0.05, (now - prevTime) / 1000);
       prevTime = now;
-      const elapsed = now * 0.001;
 
       const {
         forestTimeOfDay: tod,
@@ -1417,9 +1525,13 @@ export default function ForestAmbush3DViewport({
         soundEnabled: sndOn,
         spatialAudioOn: spOn,
         stats3D: st3,
-        selectedSplineIdx: selIdx
+        selectedSplineIdx: selIdx,
+        tacticalPaused: isPaused = false
       } = latestPropsRef.current;
-      const audioActive = Boolean(sndOn && spOn);
+      const dt = isPaused ? 0 : rawDt;
+      simElapsed += dt;
+      const elapsed = simElapsed;
+      const audioActive = Boolean(sndOn && spOn && !isPaused);
 
       forestMuridUniforms.uTroopTime.value = elapsed;
       forestImpUniforms.uTroopTime.value = elapsed;
@@ -1565,7 +1677,7 @@ export default function ForestAmbush3DViewport({
       if (streamMat.uniforms?.uTime) {
         streamMat.uniforms.uTime.value = elapsed;
       }
-      [beechCrownMat, pineCrownMat, bushMat, felledLeafMat].forEach((m) => {
+      [beechCrownMat, pineCrownMat, bushMat].forEach((m) => {
         if (m.userData?.foliageUniforms?.uFoliageTime) {
           m.userData.foliageUniforms.uFoliageTime.value = elapsed;
         }
@@ -1650,8 +1762,8 @@ export default function ForestAmbush3DViewport({
         });
       }
 
-      // Проекция экранных координат плашек 5 участков сплайна (~12 раз в секунду)
-      badgeSyncTimer += dt;
+      // Проекция экранных координат плашек 5 участков сплайна (~12 раз в секунду — работает и на паузе!)
+      badgeSyncTimer += rawDt;
       if (badgeSyncTimer > 0.085) {
         badgeSyncTimer = 0;
         const w = renderer.domElement.clientWidth || initW;
@@ -1670,7 +1782,7 @@ export default function ForestAmbush3DViewport({
         setProjectedBadges(nextBadges);
       }
 
-      fpsGov.tick(dt);
+      fpsGov.tick(rawDt);
       renderer.domElement.dataset.camZoom = String(cameraCtrlRef.current.zoom.toFixed(3));
       renderer.domElement.dataset.camYaw = String(cameraCtrlRef.current.yaw.toFixed(3));
 
@@ -1710,6 +1822,7 @@ export default function ForestAmbush3DViewport({
         if (sub.isInstancedMesh) sub.dispose();
         disposePhotorealCavalryInstance(sub);
         disposePhotorealCorpsInstance(sub);
+        disposePhotorealFortressInstance(sub);
         disposePhotorealEagleInstance(sub);
       });
       disposableGeometries.forEach((g) => g.dispose());
@@ -1719,12 +1832,12 @@ export default function ForestAmbush3DViewport({
     };
   }, [setSelectedSplineIdx]);
 
-  // Перестраиваем 3D-засеки и эшелоны при изменении состояния боя
+  // Перестраиваем 3D-засеки, мюридов и эшелоны при изменении состояния боя или расстановки
   useEffect(() => {
     if (sceneApiRef.current?.rebuildDynamicSectors) {
       sceneApiRef.current.rebuildDynamicSectors();
     }
-  }, [splineSegments, splineEchelons, selectedSplineIdx]);
+  }, [splineSegments, splineEchelons, selectedSplineIdx, deploymentStance, stealthPct]);
 
   if (!webglReady) {
     return (
@@ -1741,6 +1854,26 @@ export default function ForestAmbush3DViewport({
       } max-h-[74dvh] lg:max-h-none`}
     >
       <div ref={mountRef} className="w-full h-full" />
+
+      {/* Телеметрия высоты и лесной скрытности + индикатор Тактической Паузы (Space) */}
+      <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+        <div className="flex flex-wrap items-center gap-1.5 bg-[#090f0c]/88 border border-emerald-500/45 rounded-lg px-2.5 py-1 text-[10.5px] backdrop-blur-sm shadow-lg">
+          <span className="font-serif font-bold text-emerald-300">
+            {stealthPct >= 60 ? '🌿 ' + t('СКРЫТЫ В БУКАХ', 'HIDDEN IN CANOPY') : '👁️ ' + t('ОБНАРУЖЕНЫ', 'SPOTTED')}
+          </span>
+          <span className="hud-num font-bold text-amber-200">{stealthPct}%</span>
+          <span className="text-stone-500">•</span>
+          <span className="text-sky-200 hud-num">
+            ⛰️ {splineSegments[selectedSplineIdx]?.elevation || '1480 м'}
+          </span>
+        </div>
+
+        {tacticalPaused && (
+          <div className="px-3 py-1 rounded-lg bg-amber-500/95 border border-amber-200 text-stone-950 font-serif font-extrabold text-[11px] uppercase tracking-wider shadow-xl animate-pulse">
+            ⏸ {t('ТАКТИЧЕСКАЯ ПАУЗА — ОСМОТР И ПРИКАЗЫ (SPACE)', 'TACTICAL PAUSE — INSPECT & ORDER (SPACE)')}
+          </div>
+        )}
+      </div>
 
       {/* Интерактивные тактические маркеры 5 участков Ичкерийской лесной тропы поверх 3D-дороги */}
       {projectedBadges.map((b) => {
@@ -1808,6 +1941,20 @@ export default function ForestAmbush3DViewport({
         </div>
 
         <div className="flex items-center gap-1 bg-[#090f0c]/88 border border-amber-500/35 rounded-lg p-1 pointer-events-auto backdrop-blur-sm">
+          {onTogglePause && (
+            <button
+              type="button"
+              onClick={onTogglePause}
+              className={`px-2 py-0.5 rounded text-[10.5px] font-serif font-bold cursor-pointer transition border ${
+                tacticalPaused
+                  ? 'bg-amber-400 text-stone-950 border-amber-200 shadow'
+                  : 'bg-stone-900/90 text-amber-200 border-amber-500/40 hover:bg-stone-800'
+              }`}
+              title={t('Тактическая пауза (пробел Space)', 'Tactical Pause (Spacebar)')}
+            >
+              {tacticalPaused ? t('▶ В бой', '▶ Resume') : t('⏸ Пауза', '⏸ Pause')}
+            </button>
+          )}
           {[
             { id: 'day', label: '☀️' },
             { id: 'sunset', label: '🌅' },

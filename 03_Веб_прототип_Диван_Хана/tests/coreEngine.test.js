@@ -48,6 +48,14 @@ import {
   validateAndMigrateSavePayload,
   writeSaveSlot
 } from '../src/game/saveSystem.js';
+import {
+  TACTICAL_STANCES,
+  computeAutoResolveForecast,
+  computeNextStealthAfterAction,
+  computeTacticalModifiers,
+  getTacticalStanceById,
+  resolveConvoyStrikeOutcome
+} from '../src/game/tacticalBattleEngine.js';
 
 function createMemoryStorage() {
   const map = new Map();
@@ -778,4 +786,131 @@ test('35. getSeasonMixValue returns canonical WebGL2 shader mix values for all 4
   assert.equal(getSeasonMixValue('summer'), 0.0);
   assert.equal(getSeasonMixValue('autumn'), 1.0);
   assert.equal(getSeasonMixValue('winter'), 2.0);
+});
+
+test('36. TACTICAL_STANCES exposes all 4 deployment postures and falls back safely', () => {
+  assert.equal(TACTICAL_STANCES.length, 4);
+  assert.equal(getTacticalStanceById('canopy_stealth').stealthBase, 100);
+  assert.equal(getTacticalStanceById('flank_baggage').spoilsMult, 1.55);
+  assert.equal(getTacticalStanceById('nonexistent').id, 'high_ridge');
+});
+
+test('37. computeTacticalModifiers rewards high-ground elevation and hidden forest stealth', () => {
+  const hiddenRidge = computeTacticalModifiers({
+    stanceId: 'canopy_stealth',
+    stealthPct: 90,
+    elevationMeters: 1680,
+    gazyrCharges: 15,
+    garrisonMorale: 88,
+    enemyMorale: 68,
+    supplyCut: true
+  });
+  const exposedLow = computeTacticalModifiers({
+    stanceId: 'flank_baggage',
+    stealthPct: 15,
+    elevationMeters: 1050,
+    gazyrCharges: 15,
+    garrisonMorale: 70,
+    enemyMorale: 85,
+    supplyCut: false
+  });
+  assert.equal(hiddenRidge.isAmbushHidden, true);
+  assert.equal(exposedLow.isAmbushHidden, false);
+  assert.ok(hiddenRidge.fireEffectiveness > exposedLow.fireEffectiveness + 0.35);
+  assert.ok(hiddenRidge.casualtyMultiplier < exposedLow.casualtyMultiplier * 0.6);
+});
+
+test('38. computeTacticalModifiers triggers forced shashka melee bonus when 18 gazyrs reach 0', () => {
+  const depleted = computeTacticalModifiers({
+    stanceId: 'high_ridge',
+    stealthPct: 30,
+    gazyrCharges: 0,
+    maxGazyrCharges: 18
+  });
+  const loaded = computeTacticalModifiers({
+    stanceId: 'high_ridge',
+    stealthPct: 30,
+    gazyrCharges: 18,
+    maxGazyrCharges: 18
+  });
+  assert.equal(depleted.forcedMelee, true);
+  assert.equal(loaded.forcedMelee, false);
+  assert.ok(depleted.meleeShockEffectiveness > loaded.meleeShockEffectiveness);
+});
+
+test('39. computeNextStealthAfterAction degrades stealth on gunfire and restores concealment on abatis felling', () => {
+  const afterVolley = computeNextStealthAfterAction(90, 'crossfire', 'canopy_stealth');
+  assert.ok(afterVolley < 90);
+  const afterAbatis = computeNextStealthAfterAction(afterVolley, 'fell_beeches', 'canopy_stealth');
+  assert.ok(afterAbatis > afterVolley);
+  const clampedHigh = computeNextStealthAfterAction(95, 'fell_beeches', 'canopy_stealth');
+  assert.equal(clampedHigh, 100);
+});
+
+test('40. resolveConvoyStrikeOutcome boosts powder/silver spoils when convoy is trapped behind barricades', () => {
+  const modsFlank = computeTacticalModifiers({ stanceId: 'flank_baggage', stealthPct: 80 });
+  const trapped = resolveConvoyStrikeOutcome({
+    echelon: { strength: 700, cohesion: 45 },
+    barricades: 3,
+    modifiers: modsFlank,
+    battleDoctrine: 'lava_charge'
+  });
+  const openRoad = resolveConvoyStrikeOutcome({
+    echelon: { strength: 700, cohesion: 85 },
+    barricades: 0,
+    modifiers: computeTacticalModifiers({ stanceId: 'high_ridge', stealthPct: 20 }),
+    battleDoctrine: 'ridge_snipers'
+  });
+  assert.equal(trapped.seversSupplyLine, true);
+  assert.ok(trapped.powderCaptured > openRoad.powderCaptured * 1.5);
+  assert.ok(trapped.silverCaptured > openRoad.silverCaptured * 1.4);
+  assert.ok(trapped.cohesionDrop > openRoad.cohesionDrop);
+});
+
+test('41. computeAutoResolveForecast predicts higher win odds & lower losses with stealth, elevation & supply cut', () => {
+  const strongPlan = computeAutoResolveForecast({
+    tacticalMode: 'forest_spline',
+    stanceId: 'canopy_stealth',
+    stealthPct: 95,
+    elevationMeters: 1650,
+    gazyrCharges: 18,
+    garrisonMorale: 90,
+    russianMorale: 62,
+    fortification: 4,
+    supplyCut: true,
+    splineSegments: [{ barricades: 3 }, { barricades: 2 }],
+    splineEchelons: [{ cohesion: 48 }, { cohesion: 52 }]
+  });
+  const weakPlan = computeAutoResolveForecast({
+    tacticalMode: 'forest_spline',
+    stanceId: 'flank_baggage',
+    stealthPct: 10,
+    elevationMeters: 1050,
+    gazyrCharges: 2,
+    garrisonMorale: 58,
+    russianMorale: 92,
+    fortification: 1,
+    supplyCut: false,
+    splineSegments: [{ barricades: 0 }, { barricades: 0 }],
+    splineEchelons: [{ cohesion: 90 }, { cohesion: 92 }]
+  });
+  assert.ok(strongPlan.winOdds >= 72);
+  assert.equal(strongPlan.isDecisiveVictory, true);
+  assert.ok(strongPlan.winOdds > weakPlan.winOdds + 25);
+  assert.ok(strongPlan.totalGarrisonCasualties < weakPlan.totalGarrisonCasualties);
+});
+
+test('42. computeAutoResolveForecast propagates convoy supply severance on flank_baggage stance', () => {
+  const res = computeAutoResolveForecast({
+    tacticalMode: 'milyutin_siege',
+    stanceId: 'flank_baggage',
+    stealthPct: 65,
+    gazyrCharges: 12,
+    garrisonMorale: 82,
+    russianMorale: 76
+  });
+  assert.equal(res.seversSupplyLine, true);
+  assert.ok(res.totalCapturedPowder > 0);
+  assert.ok(res.totalCapturedSilver > 0);
+  assert.equal(res.remainingGazyrs, 12 - res.gazyrsSpent);
 });

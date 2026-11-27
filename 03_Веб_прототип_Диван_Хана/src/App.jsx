@@ -47,6 +47,13 @@ import {
   validateAndMigrateSavePayload,
   writeSaveSlot
 } from './game/saveSystem.js';
+import {
+  computeAutoResolveForecast,
+  computeNextStealthAfterAction,
+  computeTacticalModifiers,
+  getTacticalStanceById,
+  resolveConvoyStrikeOutcome
+} from './game/tacticalBattleEngine.js';
 import { HighlandEagleIcon, WaxSealIcon } from './views/hud/PeriodIcons.jsx';
 import {
   CAMPAIGN_SCENARIOS,
@@ -8826,6 +8833,24 @@ export default function App() {
     pressureDropAccum: 0,
     forcedMeleeMode: false
   });
+  const [tacticalPaused, setTacticalPaused] = useState(false);
+  const [deploymentStance, setDeploymentStance] = useState('high_ridge');
+  const [forestStealthPct, setForestStealthPct] = useState(75);
+  const [convoyStruckInBattle, setConvoyStruckInBattle] = useState(false);
+
+  // Горячая клавиша Space: Тактическая пауза в 3D-сражениях (как в Total War)
+  useEffect(() => {
+    const onTacticalKeyDown = (e) => {
+      if (e.code !== 'Space') return;
+      if (activeTab !== 'siege' && activeTab !== '3d_tactical') return;
+      const tag = (e.target?.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable) return;
+      e.preventDefault();
+      setTacticalPaused((prev) => !prev);
+    };
+    window.addEventListener('keydown', onTacticalKeyDown);
+    return () => window.removeEventListener('keydown', onTacticalKeyDown);
+  }, [activeTab]);
 
   const activeTacticalNaibate = useMemo(
     () => naibates.find((n) => n.id === tacticalBattleSession.naibateId) || selectedNaibate,
@@ -8879,12 +8904,119 @@ export default function App() {
     return vectors[Math.max(0, (siegeState.day || 1) - 1) % vectors.length];
   }, [siegeState.day]);
 
+  const tacticalModifiers = useMemo(() => {
+    const isSupplyCutNow = Boolean(
+      convoyStruckInBattle ||
+        activeTacticalEncounter?.supplyCut ||
+        liveImperialColumns.some((c) => c.supplyCut)
+    );
+    const activeSecElev = splineSegments[selectedSplineIdx]?.elevation || '';
+    const isCounterMatch = Boolean(
+      enemyAssaultVector && deployedSector === enemyAssaultVector.counterSectorId
+    );
+    return computeTacticalModifiers({
+      stanceId: deploymentStance,
+      stealthPct: forestStealthPct,
+      elevationMeters: activeTacticalEncounter?.elevationMeters || 1480,
+      sectorElevationLabel: activeSecElev,
+      gazyrCharges: tacticalBattleSession.gazyrCharges ?? 18,
+      maxGazyrCharges: tacticalBattleSession.maxGazyrCharges || 18,
+      garrisonMorale: siegeState.garrisonMorale ?? 84,
+      enemyMorale: siegeState.russianMorale ?? 78,
+      supplyCut: isSupplyCutNow,
+      isNight: dioramaTimeOfDay === 'night',
+      isCounterStrike: isCounterMatch,
+      fortification: activeTacticalNaibate?.fortification || 3
+    });
+  }, [
+    convoyStruckInBattle,
+    activeTacticalEncounter,
+    liveImperialColumns,
+    splineSegments,
+    selectedSplineIdx,
+    enemyAssaultVector,
+    deployedSector,
+    deploymentStance,
+    forestStealthPct,
+    tacticalBattleSession.gazyrCharges,
+    tacticalBattleSession.maxGazyrCharges,
+    siegeState.garrisonMorale,
+    siegeState.russianMorale,
+    dioramaTimeOfDay,
+    activeTacticalNaibate
+  ]);
+
+  const autoResolveForecast = useMemo(() => {
+    const isSupplyCutNow = Boolean(
+      convoyStruckInBattle ||
+        activeTacticalEncounter?.supplyCut ||
+        liveImperialColumns.some((c) => c.supplyCut)
+    );
+    const isCounterMatch = Boolean(
+      enemyAssaultVector && deployedSector === enemyAssaultVector.counterSectorId
+    );
+    return computeAutoResolveForecast({
+      tacticalMode,
+      stanceId: deploymentStance,
+      stealthPct: forestStealthPct,
+      elevationMeters: activeTacticalEncounter?.elevationMeters || 1480,
+      gazyrCharges: tacticalBattleSession.gazyrCharges ?? 18,
+      maxGazyrCharges: tacticalBattleSession.maxGazyrCharges || 18,
+      garrisonMorale: siegeState.garrisonMorale ?? 84,
+      russianMorale: siegeState.russianMorale ?? 78,
+      fortification: activeTacticalNaibate?.fortification || 3,
+      supplyCut: isSupplyCutNow,
+      pressureDropAccum: tacticalBattleSession.pressureDropAccum || 0,
+      capturedPowderPoods: tacticalBattleSession.capturedPowderPoods || 0,
+      capturedSilverRubles: tacticalBattleSession.capturedSilverRubles || 0,
+      garrisonCasualties: tacticalBattleSession.garrisonCasualties || 0,
+      splineSegments,
+      splineEchelons,
+      battleDoctrine: tacticalBattleSession.battleDoctrine || 'lava_charge',
+      isCounterStrike: isCounterMatch,
+      isNight: dioramaTimeOfDay === 'night'
+    });
+  }, [
+    convoyStruckInBattle,
+    activeTacticalEncounter,
+    liveImperialColumns,
+    enemyAssaultVector,
+    deployedSector,
+    tacticalMode,
+    deploymentStance,
+    forestStealthPct,
+    tacticalBattleSession,
+    siegeState.garrisonMorale,
+    siegeState.russianMorale,
+    activeTacticalNaibate,
+    splineSegments,
+    splineEchelons,
+    dioramaTimeOfDay
+  ]);
+
+  const handleChangeDeploymentStance = (stanceId) => {
+    const stObj = getTacticalStanceById(stanceId);
+    setDeploymentStance(stObj.id);
+    setForestStealthPct(stObj.stealthBase);
+    playHistoricalSound('paper', soundEnabled);
+    alertMsg(
+      t(
+        `Расстановка изменена: ${stObj.icon} ${stObj.ru} (${stObj.shortRu}).`,
+        `Deployment changed: ${stObj.icon} ${stObj.en} (${stObj.shortEn}).`
+      )
+    );
+  };
+
   // Вызов BuildTacticalBattleContext из стратегической карты 10 наибств
   const handleEnterTacticalDiorama = (targetNaibate) => {
     playHistoricalSound('horn', soundEnabled);
     const forestIds = ['benoy', 'shali', 'vedeno', 'karata'];
     const isForest = forestIds.includes(targetNaibate.id);
     setTacticalMode(isForest ? 'forest_spline' : 'milyutin_siege');
+    setTacticalPaused(false);
+    setConvoyStruckInBattle(false);
+    setDeploymentStance(isForest ? 'canopy_stealth' : 'high_ridge');
+    setForestStealthPct(isForest ? 100 : 55);
     const localSquadron = liveFieldUnits.find(
       (u) => u.homeNaibateId === targetNaibate.id && u.id !== 'unit_powder_caravan'
     );
@@ -8960,18 +9092,35 @@ export default function App() {
   };
 
   // Передача FTacticalBattleResult обратно в UImamatStrategicSubsystem::ApplyTacticalBattleResult + живой стол карты
-  const handleApplyTacticalBattleResult = () => {
+  const handleApplyTacticalBattleResult = (autoResolveOverride = null) => {
+    const isAuto = Boolean(autoResolveOverride && typeof autoResolveOverride.winOdds === 'number');
     playHistoricalSound('horn', soundEnabled);
+    setTacticalPaused(false);
     const avgSplineCohesion =
       splineEchelons.reduce((s, e) => s + e.cohesion, 0) / Math.max(1, splineEchelons.length);
-    const isVictory =
-      tacticalBattleSession.pressureDropAccum >= 18 ||
-      siegeState.russianMorale <= 48 ||
-      avgSplineCohesion <= 52;
+    const isVictory = isAuto
+      ? Boolean(autoResolveOverride.isVictory)
+      : tacticalBattleSession.pressureDropAccum >= 18 ||
+        siegeState.russianMorale <= 48 ||
+        avgSplineCohesion <= 52;
     if (isVictory) unlockRelic('relic_safarov_copper_basin');
-    const pressureDrop = isVictory
+    const pressureDrop = isAuto
+      ? autoResolveOverride.totalPressureDrop
+      : isVictory
       ? Math.max(22, tacticalBattleSession.pressureDropAccum)
       : Math.max(8, tacticalBattleSession.pressureDropAccum);
+    const finalCapturedPowder = isAuto
+      ? autoResolveOverride.totalCapturedPowder
+      : tacticalBattleSession.capturedPowderPoods;
+    const finalCapturedSilver = isAuto
+      ? autoResolveOverride.totalCapturedSilver
+      : tacticalBattleSession.capturedSilverRubles;
+    const finalCasualties = isAuto
+      ? autoResolveOverride.totalGarrisonCasualties
+      : tacticalBattleSession.garrisonCasualties;
+    const severMapSupplyLine = Boolean(
+      convoyStruckInBattle || (isAuto && autoResolveOverride.seversSupplyLine)
+    );
 
     // Отражение исхода тактического боя непосредственно на колоннах РИ и сотнях мюридов на 3D-карте
     const engagedColId =
@@ -8983,12 +9132,14 @@ export default function App() {
       tacticalBattleSession.engagedUnitId ||
       activeTacticalEncounter?.unitId ||
       selectedUnitId;
-    const mapEnemyLoss = isVictory
+    const mapEnemyLoss = isAuto
+      ? autoResolveOverride.estimatedEnemyLoss
+      : isVictory
       ? 620 + Math.round(pressureDrop * 9)
       : 280 + Math.round(pressureDrop * 5);
     const mapSaberLoss = Math.max(
       14,
-      Math.round((tacticalBattleSession.garrisonCasualties || 35) * (isVictory ? 0.35 : 0.6))
+      Math.round((finalCasualties || 35) * (isVictory ? 0.35 : 0.6))
     );
 
     if (engagedColId) {
@@ -8996,11 +9147,13 @@ export default function App() {
         prev.map((col) => {
           if (col.id !== engagedColId) return col;
           const nextBay = Math.max(550, col.bayonets - mapEnemyLoss);
+          const nextSupplyCut = Boolean(col.supplyCut || severMapSupplyLine);
           if (isVictory || nextBay <= 1400) {
             const retreatPath = computeTerrainAwarePath(col.x, col.y, col.originX, col.originY);
             return {
               ...col,
               bayonets: nextBay,
+              supplyCut: nextSupplyCut,
               status: 'retreating',
               turnMarchBudget: 38,
               waypoints: retreatPath,
@@ -9010,6 +9163,7 @@ export default function App() {
           return {
             ...col,
             bayonets: nextBay,
+            supplyCut: nextSupplyCut,
             turnMarchBudget: 0
           };
         })
@@ -9046,7 +9200,7 @@ export default function App() {
       popupX,
       popupY,
       isVictory ? `★ ПОБЕДА В УЩЕЛЬЕ! -${mapEnemyLoss} шт. РИ` : `⚔️ РУБЕЖ УДЕРЖАН (-${mapEnemyLoss} шт.)`,
-      `Трофеи: +${tacticalBattleSession.capturedPowderPoods}п пороха, +${tacticalBattleSession.capturedSilverRubles}₽`,
+      `Трофеи: +${finalCapturedPowder}п пороха, +${finalCapturedSilver}₽${severMapSupplyLine ? ' • ОБОЗ ОТРЕЗАН' : ''}`,
       isVictory ? '#10b981' : '#f59e0b'
     );
 
@@ -9058,8 +9212,16 @@ export default function App() {
       seasonRu: tacSeasonRu,
       seasonEn: tacSeasonEn,
       isVictory,
-      modeLabelRu: tacticalMode === 'forest_spline' ? 'Лесная засека в дефиле' : 'Инженерная оборона аула',
-      modeLabelEn: tacticalMode === 'forest_spline' ? 'Forest Defile Ambush' : 'Fortified Aul Siege',
+      modeLabelRu: isAuto
+        ? 'Автобой (расчёт Диван-ханы)'
+        : tacticalMode === 'forest_spline'
+        ? 'Лесная засека в дефиле'
+        : 'Инженерная оборона аула',
+      modeLabelEn: isAuto
+        ? 'Auto-Resolve (Tactical Command)'
+        : tacticalMode === 'forest_spline'
+        ? 'Forest Defile Ambush'
+        : 'Fortified Aul Siege',
       titleRu: isVictory
         ? `Победа у рубежа «${activeTacticalNaibate.name}»`
         : `Упорная оборона «${activeTacticalNaibate.name}»`,
@@ -9071,9 +9233,9 @@ export default function App() {
       locationRu: activeTacticalNaibate.name,
       locationEn: activeTacticalNaibate.nameEn || activeTacticalNaibate.name,
       enemyLoss: mapEnemyLoss,
-      muridLoss: tacticalBattleSession.garrisonCasualties || mapSaberLoss,
-      powderGain: tacticalBattleSession.capturedPowderPoods,
-      silverGain: tacticalBattleSession.capturedSilverRubles,
+      muridLoss: finalCasualties || mapSaberLoss,
+      powderGain: finalCapturedPowder,
+      silverGain: finalCapturedSilver,
       capturedUnicorn: isVictory
     });
 
@@ -9092,23 +9254,22 @@ export default function App() {
           commanderRu: activeTacticalNaibate.naibName,
           commanderEn: activeTacticalNaibate.naibNameEn || activeTacticalNaibate.naibName,
           enemyLoss: mapEnemyLoss,
-          spoilsRu: `+${tacticalBattleSession.capturedPowderPoods}п пороха, +${tacticalBattleSession.capturedSilverRubles}₽ • Натиск -${pressureDrop}%`,
-          spoilsEn: `+${tacticalBattleSession.capturedPowderPoods}p powder, +${tacticalBattleSession.capturedSilverRubles}r • Press. -${pressureDrop}%`
+          spoilsRu: `+${finalCapturedPowder}п пороха, +${finalCapturedSilver}₽ • Натиск -${pressureDrop}%`,
+          spoilsEn: `+${finalCapturedPowder}p powder, +${finalCapturedSilver}r • Press. -${pressureDrop}%`
         },
         ...prev.slice(0, 11)
       ]);
     }
 
     setActiveTacticalEncounter(null);
+    setConvoyStruckInBattle(false);
 
     setNaibates((prev) =>
       prev.map((n) => {
         if (n.id !== tacticalBattleSession.naibateId) return n;
         const nextPowder = Math.max(
           4,
-          n.gunpowder -
-            tacticalBattleSession.expendedPowderPoods +
-            tacticalBattleSession.capturedPowderPoods
+          n.gunpowder - tacticalBattleSession.expendedPowderPoods + finalCapturedPowder
         );
         const nextPressure = isVictory
           ? Math.max(15, n.imperialPressure - pressureDrop)
@@ -9116,7 +9277,7 @@ export default function App() {
         return {
           ...n,
           gunpowder: nextPowder,
-          garrison: Math.max(200, n.garrison - tacticalBattleSession.garrisonCasualties),
+          garrison: Math.max(200, n.garrison - finalCasualties),
           imperialPressure: nextPressure,
           underSiege: isVictory ? nextPressure >= 80 : true,
           traits: {
@@ -9129,7 +9290,7 @@ export default function App() {
 
     setResources((prev) => ({
       ...prev,
-      silver: prev.silver + tacticalBattleSession.capturedSilverRubles,
+      silver: prev.silver + finalCapturedSilver,
       authority: isVictory ? Math.min(100, prev.authority + 5) : Math.max(15, prev.authority - 4)
     }));
 
@@ -9141,13 +9302,13 @@ export default function App() {
         sender: `Полевой штаб наибства «${activeTacticalNaibate.name}» (${activeTacticalNaibate.naibName})`,
         senderEn: `Field HQ of “${activeTacticalNaibate.nameEn || activeTacticalNaibate.name}” (${activeTacticalNaibate.naibNameEn || activeTacticalNaibate.naibName})`,
         title: isVictory
-          ? `★ ПОБЕДА НА ТАКТИЧЕСКОЙ ДИОРАМЕ: Округ «${activeTacticalNaibate.name}» отстоял рубежи!`
+          ? `★ ${isAuto ? 'АВТОБОЙ — ПОБЕДА' : 'ПОБЕДА НА ТАКТИЧЕСКОЙ ДИОРАМЕ'}: Округ «${activeTacticalNaibate.name}» отстоял рубежи!`
           : `Тяжёлый арьергардный бой в округе «${activeTacticalNaibate.name}»`,
         titleEn: isVictory
-          ? `★ TACTICAL DIORAMA VICTORY: “${activeTacticalNaibate.nameEn || activeTacticalNaibate.name}” Held the Line!`
+          ? `★ ${isAuto ? 'AUTO-RESOLVE VICTORY' : 'TACTICAL DIORAMA VICTORY'}: “${activeTacticalNaibate.nameEn || activeTacticalNaibate.name}” Held the Line!`
           : `Fierce Rearguard Engagement in “${activeTacticalNaibate.nameEn || activeTacticalNaibate.name}”`,
-        text: `Применён FTacticalBattleResult: израсходовано ${tacticalBattleSession.expendedPowderPoods} пуд. пороха, захвачено в бою +${tacticalBattleSession.capturedPowderPoods} пуд. пороха и +${tacticalBattleSession.capturedSilverRubles} руб. серебра. Натиск империи снижен на -${pressureDrop}%, потери гарнизона: ${tacticalBattleSession.garrisonCasualties} мюридов.`,
-        textEn: `FTacticalBattleResult applied: expended ${tacticalBattleSession.expendedPowderPoods} poods of powder, captured +${tacticalBattleSession.capturedPowderPoods} poods of powder and +${tacticalBattleSession.capturedSilverRubles} silver rubles. Imperial pressure reduced by -${pressureDrop}%, garrison casualties: ${tacticalBattleSession.garrisonCasualties} murids.`
+        text: `Применён FTacticalBattleResult: израсходовано ${tacticalBattleSession.expendedPowderPoods} пуд. пороха, захвачено в бою +${finalCapturedPowder} пуд. пороха и +${finalCapturedSilver} руб. серебра. Натиск империи снижен на -${pressureDrop}%, потери гарнизона: ${finalCasualties} мюридов.${severMapSupplyLine ? ' Обоз колонны РИ отрезан на 3D-карте!' : ''}`,
+        textEn: `FTacticalBattleResult applied: expended ${tacticalBattleSession.expendedPowderPoods} poods of powder, captured +${finalCapturedPowder} poods of powder and +${finalCapturedSilver} silver rubles. Imperial pressure reduced by -${pressureDrop}%, garrison casualties: ${finalCasualties} murids.${severMapSupplyLine ? ' Imperial column supply line severed on the 3D map!' : ''}`
       },
       ...prev
     ]);
@@ -9155,21 +9316,25 @@ export default function App() {
     setAdvisorBattleCompleted(true);
     setPlaytestTelemetry((prev) => ({
       ...prev,
-      totalPowderCapturedInTactics:
-        prev.totalPowderCapturedInTactics + tacticalBattleSession.capturedPowderPoods
+      totalPowderCapturedInTactics: prev.totalPowderCapturedInTactics + finalCapturedPowder
     }));
     setActiveTab('map');
     alertMsg(
       isVictory
         ? t(
-            `Победа! FTacticalBattleResult применён к «${activeTacticalNaibate.name}»: натиск -${pressureDrop}%, трофеи +${tacticalBattleSession.capturedPowderPoods} пуд. пороха.`,
-            `Victory! FTacticalBattleResult applied to “${activeTacticalNaibate.nameEn || activeTacticalNaibate.name}”: pressure -${pressureDrop}%, spoils +${tacticalBattleSession.capturedPowderPoods} poods powder.`
+            `${isAuto ? 'Автобой: Победа!' : 'Победа!'} Натиск на «${activeTacticalNaibate.name}» -${pressureDrop}%, трофеи +${finalCapturedPowder}п пороха, +${finalCapturedSilver}₽.`,
+            `${isAuto ? 'Auto-Resolve Victory!' : 'Victory!'} Pressure on “${activeTacticalNaibate.nameEn || activeTacticalNaibate.name}” -${pressureDrop}%, spoils +${finalCapturedPowder}p powder, +${finalCapturedSilver}r.`
           )
         : t(
             'Бой завершён. FTacticalBattleResult передан в Диван-хану.',
             'Battle concluded. FTacticalBattleResult transmitted to Divan-Khana.'
           )
     );
+  };
+
+  // Автобой из тактической ставки (Спринт 5 — использует расстановку, высоту, скрытность, 18 газырей и мораль)
+  const handleAutoResolveTacticalBattle = () => {
+    handleApplyTacticalBattleResult(autoResolveForecast);
   };
 
   const handleTacticalAction = (actionType, bypassQuota = false) => {
@@ -9212,12 +9377,24 @@ export default function App() {
     );
     const curDoctrine = tacticalBattleSession.battleDoctrine || 'lava_charge';
     const docLossMult = curDoctrine === 'ridge_snipers' ? 0.65 : 1;
-    const lossMult = (isCounterStrike ? 0.5 : 1) * docLossMult;
+    const lossMult = tacticalModifiers.casualtyMultiplier * docLossMult;
     const counterDropBonus = (isCounterStrike ? 6 : 0) + (curDoctrine === 'lava_charge' ? 2 : 0);
     const engagedSq = liveFieldUnits.find((u) => u.id === tacticalBattleSession.engagedUnitId);
     const trophyGunBonus = (engagedSq?.capturedGuns || 0) > 0 ? 3 : 0;
+    const convoyOutcome =
+      actionType === 'convoy_strike'
+        ? resolveConvoyStrikeOutcome({
+            modifiers: tacticalModifiers,
+            battleDoctrine: curDoctrine
+          })
+        : null;
+
+    setForestStealthPct((prev) =>
+      computeNextStealthAfterAction(prev, actionType, deploymentStance)
+    );
 
     if (actionType === 'sharpshooters') {
+      const fireScale = tacticalModifiers.fireEffectiveness;
       setTacticalBattleSession((prev) => {
         const nextGazyrs = Math.max(0, prev.gazyrCharges - 3);
         if (nextGazyrs === 0 && prev.gazyrCharges > 0) {
@@ -9229,7 +9406,8 @@ export default function App() {
         return {
           ...prev,
           gazyrCharges: nextGazyrs,
-          pressureDropAccum: prev.pressureDropAccum + 8 + counterDropBonus + trophyGunBonus,
+          pressureDropAccum:
+            prev.pressureDropAccum + Math.round(8 * fireScale) + counterDropBonus + trophyGunBonus,
           garrisonCasualties: prev.garrisonCasualties + Math.max(4, Math.round(12 * lossMult)),
           forcedMeleeMode: nextGazyrs === 0
         };
@@ -9239,6 +9417,7 @@ export default function App() {
         ...tp,
         camoufletsDetonated: tp.camoufletsDetonated + 1
       }));
+      const blindageStanceBonus = deploymentStance === 'blindage_bastion' ? 4 : 0;
       setTacticalBattleSession((prev) => {
         const useFreeMine = Boolean(prev.freeMineAvailable);
         return {
@@ -9246,7 +9425,12 @@ export default function App() {
           freeMineAvailable: false,
           expendedPowderPoods: prev.expendedPowderPoods + (useFreeMine ? 0 : 6),
           pressureDropAccum:
-            prev.pressureDropAccum + 14 + counterDropBonus + trophyGunBonus + (useFreeMine ? 6 : 0),
+            prev.pressureDropAccum +
+            14 +
+            blindageStanceBonus +
+            counterDropBonus +
+            trophyGunBonus +
+            (useFreeMine ? 6 : 0),
           garrisonCasualties: prev.garrisonCasualties + Math.max(3, Math.round(8 * lossMult))
         };
       });
@@ -9258,15 +9442,28 @@ export default function App() {
       }));
     } else if (actionType === 'night_sortie') {
       const hasBazalai = (engagedSq?.gear || []).includes('bazalai_daggers');
-      const spoilsMult = curDoctrine === 'lava_charge' ? 1.3 : 1;
+      const spoilsMult = (curDoctrine === 'lava_charge' ? 1.3 : 1) * tacticalModifiers.spoilsMultiplier;
       setTacticalBattleSession((prev) => ({
         ...prev,
         capturedPowderPoods: prev.capturedPowderPoods + Math.round(14 * spoilsMult),
         capturedSilverRubles: prev.capturedSilverRubles + Math.round(55 * spoilsMult),
         pressureDropAccum:
-          prev.pressureDropAccum + 16 + counterDropBonus + (hasBazalai ? 4 : 0) + (curDoctrine === 'lava_charge' ? 3 : 0),
+          prev.pressureDropAccum +
+          Math.round(16 * tacticalModifiers.meleeShockEffectiveness) +
+          counterDropBonus +
+          (hasBazalai ? 4 : 0) +
+          (curDoctrine === 'lava_charge' ? 3 : 0),
         garrisonCasualties:
           prev.garrisonCasualties + Math.max(6, Math.round(24 * lossMult * (hasBazalai ? 0.75 : 1)))
+      }));
+    } else if (actionType === 'convoy_strike' && convoyOutcome) {
+      setConvoyStruckInBattle(true);
+      setTacticalBattleSession((prev) => ({
+        ...prev,
+        capturedPowderPoods: prev.capturedPowderPoods + convoyOutcome.powderCaptured,
+        capturedSilverRubles: prev.capturedSilverRubles + convoyOutcome.silverCaptured,
+        pressureDropAccum: prev.pressureDropAccum + convoyOutcome.pressureDrop + counterDropBonus,
+        garrisonCasualties: prev.garrisonCasualties + convoyOutcome.garrisonCasualties
       }));
     }
 
@@ -9308,8 +9505,15 @@ export default function App() {
         nextGarrisonMorale = Math.min(100, prev.garrisonMorale + 6);
         nextMineDist = Math.min(16, +(prev.russianMineDistance + 2.2).toFixed(1));
         logEntry = t(
-          `День ${nextDay}-й: НОЧНАЯ КИНЖАЛЬНАЯ ВЫЛАЗКА! Сотня мюридов ворвалась в головную сапу, заклепала 2 единорога и захватила +14 пуд. пороха и +55 руб. серебра!`,
-          `Day ${nextDay}: NIGHT KINDJAL SORTIE! A hundred murids stormed the lead sap, spiked 2 unicorn howitzers, and captured +14 poods powder and +55 silver rubles!`
+          `День ${nextDay}-й: НОЧНАЯ КИНЖАЛЬНАЯ ВЫЛАЗКА! Сотня мюридов ворвалась в головную сапу, заклепала 2 единорога и захватила трофеи!`,
+          `Day ${nextDay}: NIGHT KINDJAL SORTIE! A hundred murids stormed the lead sap, spiked 2 unicorn howitzers, and captured spoils!`
+        );
+      } else if (actionType === 'convoy_strike' && convoyOutcome) {
+        nextRussianMorale = Math.max(10, prev.russianMorale - convoyOutcome.enemyMoraleDrop);
+        nextGarrisonMorale = Math.min(100, prev.garrisonMorale + 8);
+        logEntry = t(
+          `День ${nextDay}-й: 🥖 УДАР ПО СУХАРНОМУ И ПОРОХОВОМУ ОБОЗУ РИ! Сожжены фургоны, захвачено +${convoyOutcome.powderCaptured} пуд. пороха и +${convoyOutcome.silverCaptured}₽ серебра — снабжение колонны на 3D-карте отрезано!`,
+          `Day ${nextDay}: 🥖 IMPERIAL CONVOY RAID! Wagons torched, +${convoyOutcome.powderCaptured} poods powder & +${convoyOutcome.silverCaptured}r silver seized — column supply severed on the 3D map!`
         );
       }
 
@@ -9392,7 +9596,10 @@ export default function App() {
       tacticalMovesUsed: bypassQuota ? prev.tacticalMovesUsed : prev.tacticalMovesUsed + 1
     }));
 
-    playHistoricalSound(actionType === 'dagger_charge' ? 'blade' : 'cannon', soundEnabled);
+    playHistoricalSound(
+      actionType === 'dagger_charge' || actionType === 'convoy_strike' ? 'blade' : 'cannon',
+      soundEnabled
+    );
     setStats3D((prev) => ({
       ...prev,
       lastShotEvent: {
@@ -9403,11 +9610,19 @@ export default function App() {
       }
     }));
     const seg = splineSegments[selectedSplineIdx];
+    const echAtSeg = splineEchelons.find((e) => e.segmentIdx === selectedSplineIdx) || null;
     const nextStep = ambushStep + 1;
     setAmbushStep(nextStep);
     const ambDoc = tacticalBattleSession.battleDoctrine || 'lava_charge';
-    const ambLossMult = ambDoc === 'ridge_snipers' ? 0.65 : 1;
-    const ambSpoilsMult = ambDoc === 'lava_charge' ? 1.3 : 1;
+    const ambLossMult = tacticalModifiers.casualtyMultiplier * (ambDoc === 'ridge_snipers' ? 0.65 : 1);
+    const ambSpoilsMult = tacticalModifiers.spoilsMultiplier * (ambDoc === 'lava_charge' ? 1.3 : 1);
+    const ambushTag = tacticalModifiers.isAmbushHidden
+      ? t('🌿 [ВНЕЗАПНО ИЗ ЧАЩИ ×1.45] ', '🌿 [FOREST AMBUSH ×1.45] ')
+      : '';
+
+    setForestStealthPct((prev) =>
+      computeNextStealthAfterAction(prev, actionType, deploymentStance)
+    );
 
     if (actionType === 'fell_beeches') {
       setTacticalBattleSession((prev) => {
@@ -9435,18 +9650,22 @@ export default function App() {
       );
       setAmbushLog((prev) => [
         t(
-          `Шаг ${nextStep}: На участке «${seg.name}» подрублены и повалены поперёк тропы вековые буки! Колонна разорвана, колёса орудий заклинило в завале. Егеря прикрытия открыли ответный огонь в чащу.`,
-          `Step ${nextStep}: Giant beech trees felled across the trail at “${seg.nameEn || seg.name}”! Column severed, artillery wheels jammed in the abatis; Russian jägers return fire into the woods.`
+          `Шаг ${nextStep}: На участке «${seg.name}» подрублены и повалены поперёк тропы вековые буки! Колонна разорвана, скрытность мюридов в чаще усилена.`,
+          `Step ${nextStep}: Giant beech trees felled across the trail at “${seg.nameEn || seg.name}”! Column severed and forest stealth reinforced.`
         ),
         ...prev
       ]);
     } else if (actionType === 'crossfire') {
+      const fireEff = tacticalModifiers.fireEffectiveness;
+      const cohLoss = Math.round(18 * tacticalModifiers.ambushShockMult);
+      const strLoss = Math.round(135 * fireEff);
       setTacticalBattleSession((prev) => {
         const nextGazyrs = Math.max(0, prev.gazyrCharges - 3);
         return {
           ...prev,
           gazyrCharges: nextGazyrs,
-          pressureDropAccum: prev.pressureDropAccum + 9 + (ambDoc === 'ridge_snipers' ? 3 : 0),
+          pressureDropAccum:
+            prev.pressureDropAccum + Math.round(9 * fireEff) + (ambDoc === 'ridge_snipers' ? 3 : 0),
           garrisonCasualties: prev.garrisonCasualties + Math.max(4, Math.round(10 * ambLossMult)),
           forcedMeleeMode: nextGazyrs === 0
         };
@@ -9456,27 +9675,30 @@ export default function App() {
           ech.segmentIdx === selectedSplineIdx
             ? {
                 ...ech,
-                strength: Math.max(120, ech.strength - 135),
-                cohesion: Math.max(10, ech.cohesion - 18)
+                strength: Math.max(120, ech.strength - strLoss),
+                cohesion: Math.max(10, ech.cohesion - cohLoss)
               }
             : ech
         )
       );
       setAmbushLog((prev) => [
-        t(
-          `Шаг ${nextStep}: Перекрёстный огонь штуцеров (-3 газыря) из-за буковых завалов на участке «${seg.name}»! Офицеры и артиллерийская прислуга несут тяжёлые потери; картечь врага рубит ветви над головами мюридов.`,
-          `Step ${nextStep}: Rifled crossfire (-3 gazyrs) from behind beech abatis at “${seg.nameEn || seg.name}”! Officers and gun crews suffer heavy casualties while enemy canister shot splinters the canopy.`
-        ),
+        ambushTag +
+          t(
+            `Шаг ${nextStep}: Перекрёстный огонь штуцеров (-3 газыря, высота ×${fireEff}) на участке «${seg.name}»! Потери колонны -${strLoss} шт., строй -${cohLoss}%.`,
+            `Step ${nextStep}: Rifled crossfire (-3 gazyrs, high-ground ×${fireEff}) at “${seg.nameEn || seg.name}”! Column lost -${strLoss} bay., cohesion -${cohLoss}%.`
+          ),
         ...prev
       ]);
     } else if (actionType === 'dagger_charge') {
       const gainedPowder = Math.round(18 * ambSpoilsMult);
       const gainedSilver = Math.round(65 * ambSpoilsMult);
+      const shockMult = tacticalModifiers.meleeShockEffectiveness;
       setTacticalBattleSession((prev) => ({
         ...prev,
         capturedPowderPoods: prev.capturedPowderPoods + gainedPowder,
         capturedSilverRubles: prev.capturedSilverRubles + gainedSilver,
-        pressureDropAccum: prev.pressureDropAccum + 15 + (ambDoc === 'lava_charge' ? 4 : 0),
+        pressureDropAccum:
+          prev.pressureDropAccum + Math.round(15 * shockMult) + (ambDoc === 'lava_charge' ? 4 : 0),
         garrisonCasualties: prev.garrisonCasualties + Math.max(8, Math.round(22 * ambLossMult))
       }));
       setSplineEchelons((prev) => {
@@ -9484,8 +9706,8 @@ export default function App() {
           ech.segmentIdx === selectedSplineIdx
             ? {
                 ...ech,
-                strength: Math.max(80, ech.strength - 220),
-                cohesion: Math.max(5, ech.cohesion - 25),
+                strength: Math.max(80, ech.strength - Math.round(220 * shockMult)),
+                cohesion: Math.max(5, ech.cohesion - Math.round(25 * tacticalModifiers.ambushShockMult)),
                 guns: Math.max(0, ech.guns - 1)
               }
             : ech
@@ -9498,10 +9720,45 @@ export default function App() {
         return updated;
       });
       setAmbushLog((prev) => [
-        t(
-          `Шаг ${nextStep}: КИНЖАЛЬНЫЙ УДАР ВО ФЛАНГ на участке «${seg.name}»! Чеченские и андийские мюриды ворвались в растянутый обоз: захвачены вьюки с порохом (+${gainedPowder} пуд.) и полковая казна (+${gainedSilver} руб.) для FTacticalBattleResult!`,
-          `Step ${nextStep}: FLANKING KINDJAL CHARGE at “${seg.nameEn || seg.name}”! Chechen and Andi murids stormed the overstretched baggage train: captured +${gainedPowder} poods powder and +${gainedSilver} rubles regimental treasury for FTacticalBattleResult!`
-        ),
+        ambushTag +
+          t(
+            `Шаг ${nextStep}: КИНЖАЛЬНЫЙ УДАР ВО ФЛАНГ на участке «${seg.name}»! Захвачены вьюки с порохом (+${gainedPowder} пуд.) и полковая казна (+${gainedSilver} руб.)!`,
+            `Step ${nextStep}: FLANKING KINDJAL CHARGE at “${seg.nameEn || seg.name}”! Captured +${gainedPowder} poods powder and +${gainedSilver} rubles regimental treasury!`
+          ),
+        ...prev
+      ]);
+    } else if (actionType === 'convoy_strike') {
+      const cRes = resolveConvoyStrikeOutcome({
+        echelon: echAtSeg,
+        barricades: seg?.barricades || 0,
+        modifiers: tacticalModifiers,
+        battleDoctrine: ambDoc
+      });
+      setConvoyStruckInBattle(true);
+      setTacticalBattleSession((prev) => ({
+        ...prev,
+        capturedPowderPoods: prev.capturedPowderPoods + cRes.powderCaptured,
+        capturedSilverRubles: prev.capturedSilverRubles + cRes.silverCaptured,
+        pressureDropAccum: prev.pressureDropAccum + cRes.pressureDrop,
+        garrisonCasualties: prev.garrisonCasualties + cRes.garrisonCasualties
+      }));
+      setSplineEchelons((prev) =>
+        prev.map((ech) =>
+          ech.segmentIdx === selectedSplineIdx
+            ? {
+                ...ech,
+                strength: Math.max(80, ech.strength - cRes.enemyStrengthLoss),
+                cohesion: Math.max(5, ech.cohesion - cRes.cohesionDrop)
+              }
+            : ech
+        )
+      );
+      setAmbushLog((prev) => [
+        ambushTag +
+          t(
+            `Шаг ${nextStep}: 🥖 УДАР ПО СУХАРНОМУ И ПОРОХОВОМУ ОБОЗУ на участке «${seg.name}»! Фургоны Воронцова разбиты у завала: +${cRes.powderCaptured} пуд. пороха, +${cRes.silverCaptured}₽ серебра, строй -${cRes.cohesionDrop}%, снабжение колонны на 3D-карте ОТРЕЗАНО!`,
+            `Step ${nextStep}: 🥖 BISCUIT & POWDER CONVOY STRIKE at “${seg.nameEn || seg.name}”! Vorontsov’s wagons smashed at the abatis: +${cRes.powderCaptured}p powder, +${cRes.silverCaptured}r silver, cohesion -${cRes.cohesionDrop}%, strategic supply SEVERED!`
+          ),
         ...prev
       ]);
     }
@@ -12333,7 +12590,7 @@ struct FImamatCampaignSnapshot
         {activeTab === 'diplomacy' && <DiplomacyTab {...{ handleAwardOrder, handleOttomanDiplomacy, resources, selectedNaibate, t }} />}
 
         {/* ---------------- ВКЛАДКА 4: БЕЗСЕТОЧНЫЙ ТАКТИЧЕСКИЙ СИМУЛЯТОР (ОСАДА МИЛЮТИНА + ЛЕСНОЙ СПЛАЙН) ---------------- */}
-        {activeTab === 'siege' && <SiegeTab {...{ active3DTerrain, activeTacticalEncounter, activeTacticalNaibate, ambushLog, ambushStep, cam3D, canvas3DRef, deployedSector, enemyAssaultVector, handleApplyTacticalBattleResult, handleCanvasPointerDown, handleCanvasPointerMove, handleCanvasPointerUp, handleEnterTacticalDiorama, handleLaunch3DProjectile, handleReloadGazyrs, handleResetSplineAmbush, handleSplineAmbushAction, handleTacticalAction, liveImperialColumns: enrichedImperialColumns, mortarAngle3D, naibates, selectedSiegeZone, selectedSplineIdx, setActiveTab, setCam3D, setDeployedSector, setMortarAngle3D, setSelectedSiegeZone, setSelectedSplineIdx, setTacticalMode, setUnicornAngle3D, siegeInline3D, setSiegeInline3D, siegeState, soundEnabled, splineEchelons, splineSegments, stats3D, t, tacticalBattleSession, tacticalMode, turnActionQuota, unicornAngle3D }} />}
+        {activeTab === 'siege' && <SiegeTab {...{ active3DTerrain, activeTacticalEncounter, activeTacticalNaibate, ambushLog, ambushStep, autoResolveForecast, cam3D, canvas3DRef, convoyStruckInBattle, deployedSector, deploymentStance, enemyAssaultVector, forestStealthPct, handleApplyTacticalBattleResult, handleAutoResolveTacticalBattle, handleCanvasPointerDown, handleCanvasPointerMove, handleCanvasPointerUp, handleChangeDeploymentStance, handleEnterTacticalDiorama, handleLaunch3DProjectile, handleReloadGazyrs, handleResetSplineAmbush, handleSplineAmbushAction, handleTacticalAction, liveImperialColumns: enrichedImperialColumns, mortarAngle3D, naibates, selectedSiegeZone, selectedSplineIdx, setActiveTab, setCam3D, setDeployedSector, setMortarAngle3D, setSelectedSiegeZone, setSelectedSplineIdx, setTacticalMode, setTacticalPaused, setUnicornAngle3D, siegeInline3D, setSiegeInline3D, siegeState, soundEnabled, splineEchelons, splineSegments, stats3D, t, tacticalBattleSession, tacticalMode, tacticalModifiers, tacticalPaused, turnActionQuota, unicornAngle3D }} />}
 
         {/* ---------------- ВКЛАДКА 5: АРСЕНАЛ ВЕДЕНО, ЛИТЕЙНЫЙ ДВОР И ШТАБ ПРОТИВНИКА ---------------- */}
         {activeTab === 'arsenal' && <ArsenalTab {...{ arsenalItems, handleCraftArsenalItem, handleDisruptImperialColumn, imperialAi, naibates, t }} />}
@@ -12397,7 +12654,7 @@ struct FImamatCampaignSnapshot
         {activeTab === 'archive_ballistics' && <ArchiveBallisticsTab {...{ activatedFigurePerks, ballisticsConfig, ballisticsSimData, copyTextSafe, handleActivateFigurePerk, selectedFigureId, selectedHistoricalFigure, setActiveTab, setBallisticsConfig, setSelectedFigureId, studioMode, t }} />}
 
         {/* ---------------- ВКЛАДКА 11: ИНТЕРАКТИВНЫЙ 3D-ПОЛИГОН И РАЗРЕЗ СКАЛЫ МИЛЮТИНА (ЭТАП 2) ---------------- */}
-        {activeTab === '3d_tactical' && <Tactical3DTab {...{ active3DTerrain, cam3D, canvas3DRef, handleCanvasPointerDown, handleCanvasPointerMove, handleCanvasPointerUp, handleLaunch3DProjectile, handleTacticalAction, mortarAngle3D, selected3DTerrainId, setActiveTab, setCam3D, setMortarAngle3D, setSelected3DTerrainId, setUnicornAngle3D, siegeState, soundEnabled, stats3D, t, unicornAngle3D }} />}
+        {activeTab === '3d_tactical' && <Tactical3DTab {...{ active3DTerrain, cam3D, canvas3DRef, deploymentStance, forestStealthPct, handleCanvasPointerDown, handleCanvasPointerMove, handleCanvasPointerUp, handleLaunch3DProjectile, handleTacticalAction, mortarAngle3D, selected3DTerrainId, setActiveTab, setCam3D, setMortarAngle3D, setSelected3DTerrainId, setTacticalPaused, setUnicornAngle3D, siegeState, soundEnabled, stats3D, t, tacticalPaused, unicornAngle3D }} />}
       </main>
 
       {/* ===== ИГРОВЫЕ ОВЕРЛЕИ: заставка смены хода, меню паузы (Esc) и титульный экран ===== */}

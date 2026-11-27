@@ -10,6 +10,7 @@ import {
   WatchtowerIcon
 } from '../hud/PeriodIcons.jsx';
 import { playHistoricalSound } from '../../game/audio.js';
+import { TACTICAL_STANCES } from '../../game/tacticalBattleEngine.js';
 import GorgeCutaway3DViewport from './GorgeCutaway3DViewport.jsx';
 import ForestAmbush3DViewport from './ForestAmbush3DViewport.jsx';
 
@@ -19,14 +20,20 @@ export default function SiegeTab({
   activeTacticalNaibate,
   ambushLog,
   ambushStep,
+  autoResolveForecast,
   cam3D,
   canvas3DRef,
+  convoyStruckInBattle = false,
   deployedSector: propDeployedSector,
+  deploymentStance = 'high_ridge',
   enemyAssaultVector = null,
+  forestStealthPct = 75,
   handleApplyTacticalBattleResult,
+  handleAutoResolveTacticalBattle,
   handleCanvasPointerDown,
   handleCanvasPointerMove,
   handleCanvasPointerUp,
+  handleChangeDeploymentStance,
   handleEnterTacticalDiorama,
   handleLaunch3DProjectile,
   handleReloadGazyrs,
@@ -45,6 +52,7 @@ export default function SiegeTab({
   setSelectedSiegeZone,
   setSelectedSplineIdx,
   setTacticalMode,
+  setTacticalPaused,
   setUnicornAngle3D,
   siegeInline3D = false,
   setSiegeInline3D,
@@ -56,6 +64,8 @@ export default function SiegeTab({
   t,
   tacticalBattleSession,
   tacticalMode,
+  tacticalModifiers,
+  tacticalPaused = false,
   turnActionQuota,
   unicornAngle3D = 15
 }) {
@@ -65,7 +75,9 @@ export default function SiegeTab({
   const setDeployedSector = propSetDeployedSector || setLocalDeployedSector;
 
   const isEnemySupplyCut = Boolean(
-    activeTacticalEncounter?.supplyCut || liveImperialColumns.some((c) => c.supplyCut)
+    convoyStruckInBattle ||
+      activeTacticalEncounter?.supplyCut ||
+      liveImperialColumns.some((c) => c.supplyCut)
   );
 
   const DEFENSIVE_SECTORS = [
@@ -213,6 +225,20 @@ export default function SiegeTab({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1.5">
+                  {setTacticalPaused && (
+                    <button
+                      type="button"
+                      onClick={() => setTacticalPaused((p) => !p)}
+                      className={`px-2.5 py-1 rounded-lg border text-[11px] font-serif font-bold cursor-pointer transition ${
+                        tacticalPaused
+                          ? 'bg-amber-400 border-amber-200 text-stone-950 shadow-md'
+                          : 'bg-[#171411] hover:bg-stone-800 border-amber-500/45 text-amber-200'
+                      }`}
+                      title={t('Тактическая пауза боя (Space)', 'Tactical Battle Pause (Space)')}
+                    >
+                      {tacticalPaused ? t('▶ В бой (Space)', '▶ Resume (Space)') : t('⏸ Пауза (Space)', '⏸ Pause (Space)')}
+                    </button>
+                  )}
                   <button
                     onClick={handleReloadGazyrs}
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 text-[11px] font-bold cursor-pointer transition"
@@ -220,12 +246,74 @@ export default function SiegeTab({
                     <PowderFlaskIcon className="w-3.5 h-3.5 text-amber-300" />
                     <span>{t('Пополнить 18 газырей (-4п)', 'Reload 18 Gazyrs (-4p)')}</span>
                   </button>
+                  {handleAutoResolveTacticalBattle && autoResolveForecast && (
+                    <button
+                      type="button"
+                      onClick={handleAutoResolveTacticalBattle}
+                      title={t(
+                        `Автобой: ${autoResolveForecast.verdictRu} (${autoResolveForecast.winOdds}%) • Враг -${autoResolveForecast.estimatedEnemyLoss} шт. • Трофеи +${autoResolveForecast.addedPowder}п / +${autoResolveForecast.addedSilver}₽`,
+                        `Auto-Resolve: ${autoResolveForecast.verdictEn} (${autoResolveForecast.winOdds}%) • Enemy -${autoResolveForecast.estimatedEnemyLoss} bay. • Spoils +${autoResolveForecast.addedPowder}p / +${autoResolveForecast.addedSilver}r`
+                      )}
+                      className="px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/35 border border-sky-400/60 text-sky-200 font-serif font-bold text-[11px] cursor-pointer transition"
+                    >
+                      ⚡ {t(`Автобой (${autoResolveForecast.winOdds}%)`, `Auto-Resolve (${autoResolveForecast.winOdds}%)`)}
+                    </button>
+                  )}
                   <button
-                    onClick={handleApplyTacticalBattleResult}
+                    onClick={() => handleApplyTacticalBattleResult()}
                     className="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-[11px] uppercase tracking-wide shadow-md cursor-pointer transition"
                   >
                     {t('★ Завершить бой и доложить в Диван', '★ Finish Battle & Report to Divan')}
                   </button>
+                </div>
+              </div>
+
+              {/* СПРИНТ 5: РАССТАНОВКА ВОЙСК, ВЫСОТА, СКРЫТНОСТЬ В ЛЕСУ И ПРОГНОЗ АВТОБОЯ */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-center bg-[#0e0c0a]/95 border border-amber-500/30 rounded-lg px-2.5 py-1.5 text-[10.5px]">
+                <div className="lg:col-span-7 flex flex-wrap items-center gap-1.5">
+                  <span className="text-amber-300 font-serif font-bold shrink-0">
+                    {t('Расстановка:', 'Deployment:')}
+                  </span>
+                  {TACTICAL_STANCES.map((st) => {
+                    const active = deploymentStance === st.id;
+                    return (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => handleChangeDeploymentStance && handleChangeDeploymentStance(st.id)}
+                        title={t(st.descRu, st.descEn)}
+                        className={`px-2 py-0.5 rounded border cursor-pointer transition font-serif font-bold ${
+                          active
+                            ? 'bg-amber-500/25 border-amber-400 text-amber-100 shadow'
+                            : 'bg-[#161310] border-stone-800 text-stone-300 hover:border-amber-500/45'
+                        }`}
+                      >
+                        {st.icon} {t(st.shortRu, st.shortEn)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="lg:col-span-5 flex flex-wrap items-center lg:justify-end gap-1.5 hud-num">
+                  <span className="px-2 py-0.5 rounded bg-sky-950/75 border border-sky-500/40 text-sky-200 font-bold">
+                    ⛰️ {t('Высота:', 'Elev:')} +{Math.round((tacticalModifiers?.totalElevationBonus || 0.2) * 100)}%
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded border font-bold ${
+                      (tacticalModifiers?.effectiveStealthPct ?? forestStealthPct) >= 60
+                        ? 'bg-emerald-950/80 border-emerald-400/60 text-emerald-200'
+                        : 'bg-stone-900 border-stone-700 text-stone-300'
+                    }`}
+                  >
+                    🌿 {t('Скрытность:', 'Stealth:')} {tacticalModifiers?.effectiveStealthPct ?? forestStealthPct}%
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-stone-900 border border-stone-700 text-amber-200 font-bold">
+                    🛡️ {t('Потери', 'Loss')} ×{(tacticalModifiers?.casualtyMultiplier ?? 0.85).toFixed(2)}
+                  </span>
+                  {autoResolveForecast && (
+                    <span className="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-400/45 text-amber-200 font-serif font-bold">
+                      {t(autoResolveForecast.verdictRu, autoResolveForecast.verdictEn)}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -328,7 +416,7 @@ export default function SiegeTab({
                   </div>
                   <button
                     type="button"
-                    onClick={handleApplyTacticalBattleResult}
+                    onClick={() => handleApplyTacticalBattleResult()}
                     className="px-3.5 py-1.5 rounded-lg bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 hover:from-amber-200 hover:to-amber-500 text-stone-950 font-serif font-extrabold text-xs cursor-pointer shadow-md"
                   >
                     🏆 {t('Принять победу и вернуться на 3D-карту →', 'Claim Victory & Return to 3D Map →')}
@@ -570,6 +658,10 @@ export default function SiegeTab({
                           soundEnabled={soundEnabled}
                           stats3D={stats3D}
                           deployedSector={deployedSector}
+                          tacticalPaused={tacticalPaused}
+                          onTogglePause={setTacticalPaused ? () => setTacticalPaused((p) => !p) : undefined}
+                          deploymentStance={deploymentStance}
+                          stealthPct={forestStealthPct}
                           t={t}
                           fallbackCanvasRef={canvas3DRef}
                           onPointerDownFallback={handleCanvasPointerDown}
@@ -1286,6 +1378,21 @@ export default function SiegeTab({
                         )}
                       </div>
                     </button>
+
+                    <button
+                      onClick={() => handleTacticalAction('convoy_strike')}
+                      className="w-full text-left p-2.5 rounded-lg bg-orange-950/45 hover:bg-orange-900/50 border border-orange-500/50 text-xs cursor-pointer transition"
+                    >
+                      <div className="font-bold text-orange-300">
+                        🥖 {t('5. Удар по сухарному и пороховому обозу РИ', '5. Raid Imperial Biscuit & Powder Convoy')}
+                      </div>
+                      <div className="text-[11px] text-stone-300">
+                        {t(
+                          'Сжечь тыловые фургоны, захватить порох/казну и отрезать снабжение колонны на 3D-карте',
+                          'Torch rear wagons, capture powder/silver, and sever column supply on the 3D map'
+                        )}
+                      </div>
+                    </button>
                   </div>
 
                   <div className="bg-[#0b0d11] border border-stone-800 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2 text-xs font-mono">
@@ -1378,6 +1485,10 @@ export default function SiegeTab({
                       setSelectedSplineIdx={setSelectedSplineIdx}
                       soundEnabled={soundEnabled}
                       stats3D={stats3D}
+                      tacticalPaused={tacticalPaused}
+                      onTogglePause={setTacticalPaused ? () => setTacticalPaused((p) => !p) : undefined}
+                      deploymentStance={deploymentStance}
+                      stealthPct={forestStealthPct}
                       t={t}
                     />
                   ) : (
@@ -1547,7 +1658,7 @@ export default function SiegeTab({
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                   <button
                     onClick={() => handleSplineAmbushAction('fell_beeches')}
                     className="p-3 rounded-xl bg-[#171b22] hover:bg-emerald-500/15 border border-stone-800 hover:border-emerald-500/50 text-left text-xs cursor-pointer transition"
@@ -1557,8 +1668,8 @@ export default function SiegeTab({
                     </div>
                     <div className="text-[11px] text-stone-400 mt-1">
                       {t(
-                        `Разорвать дистанцию между авангардом и обозом на выбранном участке #${selectedSplineIdx + 1}`,
-                        `Sever the gap between vanguard and supply train at Sector #${selectedSplineIdx + 1}`
+                        `Разорвать колонну и усилить скрытность на участке #${selectedSplineIdx + 1}`,
+                        `Sever the column and boost stealth at Sector #${selectedSplineIdx + 1}`
                       )}
                     </div>
                   </button>
@@ -1568,12 +1679,12 @@ export default function SiegeTab({
                     className="p-3 rounded-xl bg-[#171b22] hover:bg-amber-500/15 border border-stone-800 hover:border-amber-500/50 text-left text-xs cursor-pointer transition"
                   >
                     <div className="font-bold text-amber-300">
-                      {t('2. Перекрёстный залп штуцеров из леса', '2. Crossfire Rifled Volley from Canopy')}
+                      {t('2. Перекрёстный залп штуцеров (-3 газ.)', '2. Crossfire Rifled Volley (-3 gaz.)')}
                     </div>
                     <div className="text-[11px] text-stone-400 mt-1">
                       {t(
-                        'Сбить сплочённость (Cohesion) остановленной у завала колонны',
-                        'Shatter the Cohesion of the column halted before the beech abatis'
+                        'Огонь с высоты и из чащи (бонус внезапности при скрытности ≥60%)',
+                        'Fire from height & canopy (ambush shock bonus at stealth ≥60%)'
                       )}
                     </div>
                   </button>
@@ -1583,12 +1694,27 @@ export default function SiegeTab({
                     className="p-3 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/40 text-left text-xs cursor-pointer transition"
                   >
                     <div className="font-bold text-red-300">
-                      {t('3. Кинжальная атака во фланг обоза', '3. Flank Dagger Charge into Supply Train')}
+                      {t('3. Кинжальная атака во фланг колонны', '3. Flank Dagger Charge into Column')}
                     </div>
                     <div className="text-[11px] text-stone-300 mt-1">
                       {t(
-                        'Ворваться в сухарный обоз и захватить порох, провиант и полковую казну',
-                        'Storm the biscuit wagon train to capture powder, provisions, and regimental silver'
+                        'Сломить строй и захватить орудия (бонус +25% при пустых газырях)',
+                        'Break formation and seize guns (+25% bonus when gazyrs depleted)'
+                      )}
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => handleSplineAmbushAction('convoy_strike')}
+                    className="p-3 rounded-xl bg-orange-950/50 hover:bg-orange-900/55 border border-orange-500/55 text-left text-xs cursor-pointer transition"
+                  >
+                    <div className="font-bold text-orange-300">
+                      🥖 {t('4. Удар по сухарному и пороховому обозу', '4. Strike Biscuit & Powder Convoy')}
+                    </div>
+                    <div className="text-[11px] text-stone-200 mt-1">
+                      {t(
+                        'Разгромить фургоны у завала: макс. трофеи пороха/казны и отрез снабжения на 3D-карте',
+                        'Smash wagons at the abatis: max powder/silver spoils & sever supply on the 3D map'
                       )}
                     </div>
                   </button>

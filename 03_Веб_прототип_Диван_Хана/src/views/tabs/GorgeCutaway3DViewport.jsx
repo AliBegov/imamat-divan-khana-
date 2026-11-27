@@ -47,9 +47,11 @@ import {
   disposePhotorealCorpsInstance
 } from '../shared/caucasusPhotorealColumnsArtillery3D.js';
 import {
+  createPhotorealBeechAbatisInstance,
   createPhotorealStoneBridgeInstance,
   createPhotorealVainakhTowerInstance,
-  disposePhotorealFortressInstance
+  disposePhotorealFortressInstance,
+  getDetailedSaklyaAssets
 } from '../shared/caucasusPhotorealFortresses3D.js';
 import {
   createBarkPbrMaterials,
@@ -93,6 +95,10 @@ export default function GorgeCutaway3DViewport({
   soundEnabled = true,
   stats3D,
   deployedSector = 'blindage',
+  tacticalPaused = false,
+  onTogglePause,
+  deploymentStance = 'high_ridge',
+  stealthPct = 65,
   t = (ru) => ru,
   fallbackCanvasRef,
   onPointerDownFallback,
@@ -117,6 +123,9 @@ export default function GorgeCutaway3DViewport({
     spatialAudioOn,
     stats3D,
     deployedSector,
+    tacticalPaused,
+    deploymentStance,
+    stealthPct,
     battleTimeOfDay,
     battleWeather,
     activePreset
@@ -131,11 +140,29 @@ export default function GorgeCutaway3DViewport({
       spatialAudioOn,
       stats3D,
       deployedSector,
+      tacticalPaused,
+      deploymentStance,
+      stealthPct,
       battleTimeOfDay,
       battleWeather,
       activePreset
     };
-  }, [cam3D, mortarAngle3D, unicornAngle3D, siegeState, soundEnabled, spatialAudioOn, stats3D, deployedSector, battleTimeOfDay, battleWeather, activePreset]);
+  }, [
+    cam3D,
+    mortarAngle3D,
+    unicornAngle3D,
+    siegeState,
+    soundEnabled,
+    spatialAudioOn,
+    stats3D,
+    deployedSector,
+    tacticalPaused,
+    deploymentStance,
+    stealthPct,
+    battleTimeOfDay,
+    battleWeather,
+    activePreset
+  ]);
 
   const applyTacticalPreset = (presetId) => {
     setActivePreset(presetId);
@@ -721,29 +748,6 @@ export default function GorgeCutaway3DViewport({
       return m;
     };
 
-    const saklyaStoneMat = trackMat(
-      new THREE.MeshStandardMaterial({
-        color: '#c2b6a3',
-        map: pbrPack.masonryDiff,
-        normalMap: pbrPack.masonryNor,
-        normalScale: new THREE.Vector2(0.85, 0.85),
-        roughnessMap: pbrPack.masonryArm,
-        roughness: 0.9,
-        metalness: 0.02,
-        clippingPlanes: [clipPlane]
-      })
-    );
-    const saklyaRoofMat = trackMat(
-      new THREE.MeshStandardMaterial({
-        color: '#6e5e4e',
-        map: pbrPack.mudDiff,
-        normalMap: pbrPack.mudNor,
-        normalScale: new THREE.Vector2(0.55, 0.55),
-        roughness: 0.94,
-        metalness: 0.02,
-        clippingPlanes: [clipPlane]
-      })
-    );
     const oakTimberMat = trackMat(
       new THREE.MeshStandardMaterial({
         color: '#6d3b16',
@@ -773,7 +777,7 @@ export default function GorgeCutaway3DViewport({
       })
     );
 
-    // 5.1. 16 ступенчатых каменных саклей аула вокруг главной башни + каменные брустверы + крытый спуск к Койсу
+    // 5.1. 16 СКУЛЬПТУРНЫХ ТЕРРАСНЫХ САКЛЕЙ АУЛА (BLENDER 4.2.9 LTS INSTANCEDMESH) + БРУСТВЕРЫ + СПУСК К КОЙСУ
     const saklyaLayout = [
       [-4.1, -1.1, 1.25, 0.82, 1.05, 0.12],
       [-4.0, 0.35, 1.32, 0.86, 1.12, -0.08],
@@ -794,76 +798,48 @@ export default function GorgeCutaway3DViewport({
     ];
 
     const saklyaBodyGeo = trackGeo(new THREE.BoxGeometry(1, 1, 1));
-    const saklyaRoofGeo = trackGeo(new THREE.BoxGeometry(1.08, 0.12, 1.08));
-    const saklyaBeamGeo = trackGeo(new THREE.CylinderGeometry(0.032, 0.036, 1.24, 6));
-    saklyaBeamGeo.rotateX(Math.PI / 2);
-    const saklyaChimneyGeo = trackGeo(new THREE.CylinderGeometry(0.065, 0.085, 0.24, 7));
-    const windowSlitGeo = trackGeo(new THREE.BoxGeometry(0.14, 0.18, 0.05));
     const rifleFiringPoints = [];
+    const detailedSaklya = getDetailedSaklyaAssets();
+    const sculptedSaklyaStoneMat = trackMat(detailedSaklya.stoneMat.clone());
+    sculptedSaklyaStoneMat.clippingPlanes = [clipPlane];
+    const sculptedSaklyaTimberMat = trackMat(detailedSaklya.roofTimberMat.clone());
+    sculptedSaklyaTimberMat.clippingPlanes = [clipPlane];
+
+    const saklyaStoneInst = new THREE.InstancedMesh(
+      detailedSaklya.stoneGeo,
+      sculptedSaklyaStoneMat,
+      saklyaLayout.length
+    );
+    const saklyaRoofInst = new THREE.InstancedMesh(
+      detailedSaklya.roofTimberGeo,
+      sculptedSaklyaTimberMat,
+      saklyaLayout.length
+    );
+    const saklyaWinInst = new THREE.InstancedMesh(
+      detailedSaklya.winGeo,
+      saklyaWindowMat,
+      saklyaLayout.length
+    );
+    saklyaStoneInst.castShadow = true;
+    saklyaStoneInst.receiveShadow = true;
+    saklyaRoofInst.castShadow = true;
+    saklyaRoofInst.receiveShadow = true;
 
     saklyaLayout.forEach(([sx, sz, w, h, d, rotY], sIdx) => {
       const sy = sampleHeightAt(sx, sz);
-      const house = new THREE.Group();
-      house.position.set(sx, sy, sz);
-      house.rotation.y = rotY;
-
-      // Каменный цоколь и стены сакли (уходят на 0.45 в склон, чтобы нигде не висеть в воздухе)
-      const body = new THREE.Mesh(saklyaBodyGeo, saklyaStoneMat);
-      body.scale.set(w, h + 0.55, d);
-      body.position.y = (h - 0.55) * 0.5 + 0.22;
-      body.castShadow = true;
-      body.receiveShadow = true;
-      house.add(body);
-
-      // Плоская глинобитная кровля на выступающих дубовых балках + дымоход
-      const roof = new THREE.Mesh(saklyaRoofGeo, saklyaRoofMat);
-      roof.scale.set(w, 1, d);
-      roof.position.y = h + 0.02;
-      roof.castShadow = true;
-      roof.receiveShadow = true;
-      house.add(roof);
-
-      [-0.32, 0.0, 0.32].forEach((bOff) => {
-        const beam = new THREE.Mesh(saklyaBeamGeo, oakTimberMat);
-        beam.scale.set(1, 1, d);
-        beam.position.set(w * bOff, h - 0.04, 0);
-        house.add(beam);
-      });
-      if (sIdx % 2 === 0) {
-        const chim = new THREE.Mesh(saklyaChimneyGeo, parapetStoneMat);
-        chim.position.set(-w * 0.28, h + 0.16, d * 0.26);
-        chim.castShadow = true;
-        house.add(chim);
-      }
-
-      // Каменный стрелковый парапет с зубцами на крыше сакли, обращённой к русским батареям
-      const parapet = new THREE.Mesh(saklyaBodyGeo, parapetStoneMat);
-      parapet.scale.set(0.14, 0.24, d * 0.92);
-      parapet.position.set(w * 0.44, h + 0.16, 0);
-      parapet.castShadow = true;
-      house.add(parapet);
-
-      // Деревянная приставная лестница террасных саклей
-      if (sIdx % 3 === 0) {
-        const ladder = new THREE.Mesh(saklyaBeamGeo, oakTimberMat);
-        ladder.scale.set(0.85, 0.85, h * 0.82);
-        ladder.rotation.set(Math.PI * 0.38, 0, 0);
-        ladder.position.set(-w * 0.48, h * 0.48, d * 0.52);
-        house.add(ladder);
-      }
-
-      // Светящиеся бойницы / окна сакли
-      const win1 = new THREE.Mesh(windowSlitGeo, saklyaWindowMat);
-      win1.position.set(w * 0.5 + 0.01, h * 0.56, -d * 0.22);
-      win1.rotation.y = Math.PI / 2;
-      const win2 = new THREE.Mesh(windowSlitGeo, saklyaWindowMat);
-      win2.position.set(w * 0.5 + 0.01, h * 0.56, d * 0.22);
-      win2.rotation.y = Math.PI / 2;
-      house.add(win1, win2);
-
-      battlefieldStructures.add(house);
+      dummy.position.set(sx, sy - 0.08, sz);
+      dummy.rotation.set(0, rotY + Math.PI * 0.5, 0);
+      dummy.scale.set(d * 1.18, h * 1.32, w * 1.18);
+      dummy.updateMatrix();
+      saklyaStoneInst.setMatrixAt(sIdx, dummy.matrix);
+      saklyaRoofInst.setMatrixAt(sIdx, dummy.matrix);
+      saklyaWinInst.setMatrixAt(sIdx, dummy.matrix);
       rifleFiringPoints.push(new THREE.Vector3(sx + w * 0.42, sy + h + 0.34, sz));
     });
+    saklyaStoneInst.instanceMatrix.needsUpdate = true;
+    saklyaRoofInst.instanceMatrix.needsUpdate = true;
+    saklyaWinInst.instanceMatrix.needsUpdate = true;
+    battlefieldStructures.add(saklyaStoneInst, saklyaRoofInst, saklyaWinInst);
 
     // Наземный дубовый накат блиндажа Хаджи-Юсуфа у подножия главной башни (число слоёв = blindageLayers)
     const surfaceBlindageGroup = new THREE.Group();
@@ -1381,21 +1357,37 @@ export default function GorgeCutaway3DViewport({
       actorsGroup.add(heroMount);
       heroRefs.push(heroMount);
     });
-    // Скульптурная пешая сотня мюридов Имамата на солнечном гребне утёса рядом с Хаджи-Муратом
-    {
-      const mx = -3.55;
-      const mz = 3.45;
+    // Скульптурные пешие сотни мюридов Имамата и фланговые буковые засеки на утёсах аула (Blender 4.2.9 LTS)
+    [
+      { mx: -3.55, mz: 3.45, sc: 0.68, rotY: Math.PI / 2 - 0.18 },
+      { mx: -3.95, mz: -2.65, sc: 0.62, rotY: Math.PI / 2 + 0.24 }
+    ].forEach(({ mx, mz, sc, rotY }) => {
       const my = sampleHeightAt(mx, mz);
       const muridDetachment = createPhotorealMuridInfantryInstance({
-        scale: 0.68,
+        scale: sc,
         castShadow: true,
         clippingPlanes: [clipPlane]
       });
       muridDetachment.position.set(mx, my, mz);
-      muridDetachment.rotation.y = Math.PI / 2 - 0.18;
+      muridDetachment.rotation.y = rotY;
       actorsGroup.add(muridDetachment);
       marchSupportRefs.push(muridDetachment);
-    }
+    });
+    [
+      { ax: -2.15, az: -2.75, rotY: 0.35 },
+      { ax: -2.35, az: 2.65, rotY: -0.4 }
+    ].forEach(({ ax, az, rotY }) => {
+      const ay = sampleHeightAt(ax, az);
+      const gorgeAbatis = createPhotorealBeechAbatisInstance({
+        scale: 0.92,
+        castShadow: true,
+        clippingPlanes: [clipPlane]
+      });
+      gorgeAbatis.position.set(ax, ay - 0.02, az);
+      gorgeAbatis.rotation.y = rotY;
+      scene.add(gorgeAbatis);
+      fortressArchRefs.push(gorgeAbatis);
+    });
     {
       const gorgeBeacon = createPhotorealSignalBeaconInstance({
         isLit: true,
@@ -1776,15 +1768,21 @@ export default function GorgeCutaway3DViewport({
         return;
       }
 
-      if (shotType === 'night_sortie') {
-        // Кинжальная вылазка мюридов через каменный мост в передовые апроши и заклёпка пушек!
-        muridAnimUniforms.uChargePulse.value = 1.05;
-        impAnimUniforms.uVolleyPulse.value = 0.9;
+      if (shotType === 'night_sortie' || shotType === 'convoy_strike') {
+        // Кинжальная вылазка мюридов через каменный мост в передовые апроши или рейд по сухарному обозу РИ!
+        muridAnimUniforms.uChargePulse.value = 1.15;
+        impAnimUniforms.uVolleyPulse.value = 0.92;
         playSpatialBattleSound(
-          'dagger_charge_3d',
-          { x: 0.85, y: 1.45, z: 1.8 },
+          shotType === 'convoy_strike' ? 'explosion_3d' : 'dagger_charge_3d',
+          { x: shotType === 'convoy_strike' ? 11.6 : 0.85, y: 1.45, z: shotType === 'convoy_strike' ? -1.4 : 1.8 },
           { enabled: audioOn, environment: 'gorge' }
         );
+        if (shotType === 'convoy_strike') {
+          spawnImpactExplosionFX(11.6, sampleHeightAt(11.6, -1.6) + 0.55, -1.6, 'camouflet');
+          spawnImpactExplosionFX(11.9, sampleHeightAt(11.9, 1.8) + 0.55, 1.8, 'camouflet');
+          animState.cameraShake = 0.36;
+          return;
+        }
         sapZigZag.forEach(([zx, zz], idx) => {
           const zy = sampleHeightAt(zx, zz);
           if (idx % 2 === 0) {
@@ -1964,6 +1962,7 @@ export default function GorgeCutaway3DViewport({
     let lastMortarAngleBuilt = NaN;
     let lastUnicornAngleBuilt = NaN;
     let cachedMortarPts = [];
+    let simTime = 0;
     const clock = new THREE.Clock();
 
     const applyLightingMood = (tod) => {
@@ -2026,9 +2025,12 @@ export default function GorgeCutaway3DViewport({
     const animate = () => {
       if (disposed) return;
       raf = requestAnimationFrame(animate);
-      const dt = Math.min(0.05, clock.getDelta());
-      const tSec = clock.elapsedTime;
+      const rawDt = Math.min(0.05, clock.getDelta());
       const st = latestRef.current;
+      const isPaused = Boolean(st.tacticalPaused);
+      const dt = isPaused ? 0 : rawDt;
+      simTime += dt;
+      const tSec = simTime;
 
       if (st.battleTimeOfDay !== lastTimeOfDayApplied) {
         lastTimeOfDayApplied = st.battleTimeOfDay;
@@ -2056,21 +2058,21 @@ export default function GorgeCutaway3DViewport({
       muridAnimUniforms.uVolleyPulse.value = Math.max(0, muridAnimUniforms.uVolleyPulse.value - dt * 2.4);
       muridAnimUniforms.uChargePulse.value = Math.max(0, muridAnimUniforms.uChargePulse.value - dt * 1.4);
 
-      const audioActive = Boolean(st.soundEnabled && st.spatialAudioOn);
+      const audioActive = Boolean(st.soundEnabled && st.spatialAudioOn && !isPaused);
 
-      // 1. Новые боевые приказы и живая перестрелка штуцеров и артиллерии
+      // 1. Новые боевые приказы и живая перестрелка штуцеров и артиллерии (на Паузе бой замирает, но приказы принимаются!)
       const incomingEvt = st.stats3D?.lastShotEvent;
       if (incomingEvt && incomingEvt.seq !== animState.lastProcessedSeq) {
         animState.lastProcessedSeq = incomingEvt.seq;
         animState.nextAmbientShotAt = tSec + 6.5;
         trigger3DShot(incomingEvt.type, incomingEvt.angleDeg, incomingEvt.blockedByDeadZone);
-      } else if (tSec >= animState.nextAmbientShotAt) {
+      } else if (!isPaused && tSec >= animState.nextAmbientShotAt) {
         animState.nextAmbientShotAt = tSec + 5.6;
         const cyc = Math.floor(tSec) % 3;
         trigger3DShot(cyc === 0 ? 'mortar_3d' : cyc === 1 ? 'unicorn_3d' : 'flank_3d');
       }
 
-      if (tSec >= animState.nextSkirmishAt && rifleFiringPoints.length > 0 && trenchFiringPoints.length > 0) {
+      if (!isPaused && tSec >= animState.nextSkirmishAt && rifleFiringPoints.length > 0 && trenchFiringPoints.length > 0) {
         animState.nextSkirmishAt = tSec + 0.78 + Math.random() * 0.65;
         const fromAul = Math.random() > 0.42;
         const rp = rifleFiringPoints[Math.floor(Math.random() * rifleFiringPoints.length)];
@@ -2224,6 +2226,15 @@ export default function GorgeCutaway3DViewport({
           : [-4.65, -0.35];
       sectorHighlightRing.position.set(secPos[0], sampleHeightAt(secPos[0], secPos[1]) + 0.16, secPos[1]);
       sectorHighlightRing.scale.setScalar(0.92 + Math.sin(tSec * 3.5) * 0.08);
+      sectorRingMat.color.set(
+        st.deploymentStance === 'canopy_stealth'
+          ? '#10b981'
+          : st.deploymentStance === 'flank_baggage'
+          ? '#f97316'
+          : st.deploymentStance === 'blindage_bastion'
+          ? '#38bdf8'
+          : '#fbbf24'
+      );
 
       const mineDist = st.siegeState?.russianMineDistance ?? 9.5;
       const dangerSpeed = mineDist < 5 ? 4.2 : 2.1;
@@ -2494,7 +2505,7 @@ export default function GorgeCutaway3DViewport({
         });
       }
 
-      fpsGov.tick(dt);
+      fpsGov.tick(rawDt);
       dom.dataset.camZoom = String((c.zoom || 1.16).toFixed(3));
       dom.dataset.camYaw = String(liveYaw.toFixed(3));
 
@@ -2616,6 +2627,13 @@ export default function GorgeCutaway3DViewport({
     >
       <div ref={mountRef} className="w-full h-full block cursor-grab active:cursor-grabbing" />
 
+      {/* Индикатор Тактической Паузы (Space) поверх 3D-ущелья */}
+      {tacticalPaused && (
+        <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-lg bg-amber-500/95 border border-amber-200 text-stone-950 font-serif font-extrabold text-[11px] uppercase tracking-wider shadow-xl pointer-events-none animate-pulse">
+          ⏸ {t('ТАКТИЧЕСКАЯ ПАУЗА — ОСМОТР И ПРИКАЗЫ (SPACE)', 'TACTICAL PAUSE — INSPECT & ORDER (SPACE)')}
+        </div>
+      )}
+
       {/* Нижняя тактическая плашка быстрых ракурсов Total War, времени суток и широкого экрана */}
       <div className="absolute bottom-2 left-2 right-2 flex flex-wrap items-center justify-between gap-1.5 pointer-events-none">
         <div className="hud-mobile-scroll pointer-events-auto max-w-full overflow-x-auto flex items-center flex-nowrap lg:flex-wrap gap-1 bg-[#120e0a]/90 border border-amber-500/45 rounded-lg px-2 py-1 text-[10.5px] backdrop-blur-sm">
@@ -2643,6 +2661,20 @@ export default function GorgeCutaway3DViewport({
         </div>
 
         <div className="pointer-events-auto flex items-center gap-1 bg-[#120e0a]/90 border border-amber-500/45 rounded-lg px-1.5 py-1 text-[10.5px] backdrop-blur-sm">
+          {onTogglePause && (
+            <button
+              type="button"
+              onClick={onTogglePause}
+              className={`px-2 py-0.5 rounded font-serif font-bold cursor-pointer transition border ${
+                tacticalPaused
+                  ? 'bg-amber-400 text-stone-950 border-amber-200 shadow'
+                  : 'bg-stone-900/90 hover:bg-stone-800 text-amber-200 border-amber-500/40'
+              }`}
+              title={t('Тактическая пауза (пробел Space)', 'Tactical Pause (Spacebar)')}
+            >
+              {tacticalPaused ? t('▶ В бой', '▶ Resume') : t('⏸ Пауза', '⏸ Pause')}
+            </button>
+          )}
           {[
             ['day', '☀️', t('День', 'Day')],
             ['sunset', '🌅', t('Закат', 'Sunset')],

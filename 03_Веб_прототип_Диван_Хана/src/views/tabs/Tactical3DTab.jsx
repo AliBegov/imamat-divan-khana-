@@ -11,6 +11,8 @@ export default function Tactical3DTab({
   active3DTerrain,
   cam3D,
   canvas3DRef,
+  deploymentStance = 'high_ridge',
+  forestStealthPct = 65,
   handleCanvasPointerDown,
   handleCanvasPointerMove,
   handleCanvasPointerUp,
@@ -22,11 +24,13 @@ export default function Tactical3DTab({
   setCam3D,
   setMortarAngle3D,
   setSelected3DTerrainId,
+  setTacticalPaused,
   setUnicornAngle3D,
   siegeState,
   soundEnabled = true,
   stats3D,
   t,
+  tacticalPaused = false,
   unicornAngle3D
 }) {
   return (
@@ -180,6 +184,10 @@ export default function Tactical3DTab({
                     siegeState={siegeState}
                     soundEnabled={soundEnabled}
                     stats3D={stats3D}
+                    tacticalPaused={tacticalPaused}
+                    onTogglePause={setTacticalPaused ? () => setTacticalPaused((p) => !p) : undefined}
+                    deploymentStance={deploymentStance}
+                    stealthPct={forestStealthPct}
                     t={t}
                     fallbackCanvasRef={canvas3DRef}
                     onPointerDownFallback={handleCanvasPointerDown}
